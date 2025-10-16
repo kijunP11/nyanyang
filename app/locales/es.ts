@@ -2,8 +2,8 @@ import type { Translation } from "./types";
 
 const es: Translation = {
   home: {
-    title: "Supaplate",
-    subtitle: "Es hora de construir!",
+    title: "Bienvenido a Nyanyang",
+    subtitle: "Espera especiales de personajes AI",
   },
   navigation: {
     en: "Inglés",
