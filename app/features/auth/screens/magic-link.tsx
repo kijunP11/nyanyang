@@ -3,7 +3,7 @@
  *
  * This component handles passwordless authentication via magic links.
  * Users enter their email and receive a link that automatically logs them in.
- * 
+ *
  * The component includes:
  * - Email input field with validation
  * - Form submission handling
@@ -128,7 +128,7 @@ export async function action({ request }: Route.ActionArgs) {
 export default function MagicLink({ actionData }: Route.ComponentProps) {
   // Reference to the form element for resetting after successful submission
   const formRef = useRef<HTMLFormElement>(null);
-  
+
   // Reset the form when the magic link is successfully sent
   useEffect(() => {
     if (actionData && "success" in actionData && actionData.success) {
@@ -162,7 +162,7 @@ export default function MagicLink({ actionData }: Route.ComponentProps) {
                 name="email"
                 required
                 type="email"
-                placeholder="nico@supaplate.com"
+                placeholder="Enter your email"
               />
             </div>
             <FormButton label="Send magic link" className="w-full" />

@@ -72,12 +72,12 @@ export function loader({ request }: Route.LoaderArgs) {
   const { success, data: validData } = paramsSchema.safeParse(
     Object.fromEntries(url.searchParams),
   );
-  
+
   // Redirect to start page if email is missing or invalid
   if (!success) {
     return redirect("/auth/otp/start");
   }
-  
+
   // Return the validated email to the component
   return { email: validData.email };
 }
@@ -158,15 +158,15 @@ export default function OtpComplete({
 }: Route.ComponentProps) {
   // Reference to the form element for submission
   const formRef = useRef<HTMLFormElement>(null);
-  
+
   // Hook to programmatically submit the form
   const submit = useSubmit();
-  
+
   // Handler to automatically submit the form when all OTP digits are entered
   const handleComplete = () => {
     submit(formRef.current);
   };
-  
+
   return (
     <div className="flex items-center justify-center">
       <Card className="w-full max-w-md">
@@ -192,7 +192,7 @@ export default function OtpComplete({
               required
               type="email"
               defaultValue={loaderData.email}
-              placeholder="nico@supaplate.com"
+              placeholder="Enter your email"
             />
 
             {/* Specialized OTP input component with 6 digit slots */}

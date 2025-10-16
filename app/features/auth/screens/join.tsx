@@ -174,7 +174,7 @@ export async function action({ request }: Route.ActionArgs) {
 export default function Join({ actionData }: Route.ComponentProps) {
   // Reference to the form element for resetting after successful submission
   const formRef = useRef<HTMLFormElement>(null);
-  
+
   // Reset the form when registration is successful
   useEffect(() => {
     if (actionData && "success" in actionData && actionData.success) {
@@ -228,7 +228,7 @@ export default function Join({ actionData }: Route.ComponentProps) {
                 name="email"
                 required
                 type="email"
-                placeholder="nico@supaplate.com"
+                placeholder="Enter your email"
               />
               {actionData &&
               "fieldErrors" in actionData &&

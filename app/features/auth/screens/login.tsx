@@ -177,7 +177,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
                 name="email"
                 required
                 type="email"
-                placeholder="i.e nico@supaplate.com"
+                placeholder="Enter your email"
               />
               {actionData &&
               "fieldErrors" in actionData &&
