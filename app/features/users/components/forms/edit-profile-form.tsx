@@ -99,7 +99,7 @@ export default function EditProfileForm({
                 name="name"
                 required
                 type="text"
-                placeholder="Nico"
+                placeholder="Enter your name"
                 defaultValue={name}
               />
               {fetcher.data &&

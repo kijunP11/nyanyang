@@ -140,7 +140,7 @@ export default function OtpStart({ actionData }: Route.ComponentProps) {
                 name="email"
                 required
                 type="email"
-                placeholder="nico@supaplate.com"
+                placeholder="Enter your email"
               />
             </div>
             {/* Submit button */}
