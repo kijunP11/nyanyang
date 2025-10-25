@@ -1,31 +1,3 @@
-/**
- * Social Authentication Start Screen
- *
- * This component initiates the OAuth flow for social authentication providers.
- * It handles the redirection to the third-party authentication provider (e.g., GitHub, Kakao)
- * and sets up the callback URL for when the authentication is complete.
- *
- * The social authentication flow consists of two steps:
- * 1. This screen: Initiates the OAuth flow and redirects to the provider
- * 2. Complete screen: Handles the callback from the provider and completes the authentication
- *
- * This implementation uses Supabase's OAuth authentication system.
- */
-import type { Route } from "./+types/start";
-
-import { data, redirect } from "react-router";
-import { z } from "zod";
-
-import makeServerClient from "~/core/lib/supa-client.server";
-
-/**
- * Schema for validating URL parameters
- *
- * Ensures that a valid OAuth provider is specified in the URL parameters
- * Add more providers as you enable them in your Supabase dashboard
- */
-const paramsSchema = z.object({
-  provider: z.enum(["github", "kakao"]),
 });
 
 /**
