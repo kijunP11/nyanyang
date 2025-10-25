@@ -1,15 +1,5 @@
 /**
  * Social Authentication Complete Screen
- *
- * This component handles the callback from third-party OAuth providers after authentication.
- * It processes the authentication code returned by the provider and exchanges it for a session.
- *
- * The social authentication flow consists of two steps:
- * 1. Start screen: Initiates the OAuth flow and redirects to the provider
- * 2. This screen: Handles the callback from the provider and completes the authentication
- *
- * This implementation uses Supabase's OAuth authentication system to exchange the OAuth code
- * for a valid session, creating or updating the user in the Supabase database.
  */
 import type { Route } from "./+types/complete";
 
@@ -18,111 +8,85 @@ import { z } from "zod";
 
 import makeServerClient from "~/core/lib/supa-client.server";
 
-/**
- * Meta function for the social authentication complete page
- *
- * Sets the page title using the application name from environment variables
- */
-export const meta: Route.MetaFunction = () => {
-  return [
-    {
-      title: `Confirm | ${import.meta.env.VITE_APP_NAME}`,
-    },
-  ];
-};
+/** 페이지 메타 */
+export const meta: Route.MetaFunction = () => [
+  { title: `Confirm | ${import.meta.env.VITE_APP_NAME}` },
+];
 
-/**
- * Schema for validating successful OAuth callback parameters
- *
- * When the OAuth flow is successful, the provider redirects back with a code
- * that can be exchanged for a session
- */
-const searchParamsSchema = z.object({
+/** 성공 콜백 쿼리: code (+ 선택적으로 next/state) */
+const successSchema = z.object({
   code: z.string(),
+  next: z.string().optional(), // ✅ next 지원
+  state: z.string().optional(), // ✅ 필요 시 state로 복구 경로 싣는 경우
 });
 
-/**
- * Schema for validating error parameters from OAuth providers
- *
- * When the OAuth flow fails (e.g., user denies permission), the provider
- * redirects back with error information in standard OAuth error format
- */
+/** 에러 콜백 쿼리: 카카오는 error_code가 없을 수 있음 → optional */
 const errorSchema = z.object({
   error: z.string(),
-  error_code: z.string(),
-  error_description: z.string(),
+  error_description: z.string().optional(),
+  error_code: z.string().optional(), // ✅ optional 로 변경
 });
 
-/**
- * Loader function for the social authentication complete page
- *
- * This function handles the OAuth callback and completes the authentication process:
- * 1. Extracts and validates the code or error from URL query parameters
- * 2. For successful flows, exchanges the code for a session with Supabase
- * 3. For error flows, extracts and displays the error message
- * 4. Redirects authenticated users to the home page with session cookies
- *
- * @param request - The incoming request with OAuth callback parameters
- * @returns Redirect to home page with auth cookies or error response
- */
 export async function loader({ request }: Route.LoaderArgs) {
-  // Extract query parameters from the URL
-  const { searchParams } = new URL(request.url);
-  
-  // Try to validate the parameters as a successful OAuth callback
-  const { success, data: validData } = searchParamsSchema.safeParse(
-    Object.fromEntries(searchParams),
-  );
-  
-  // If not a successful callback, check if it's an error callback
-  if (!success) {
-    const { data: errorData, success: errorSuccess } = errorSchema.safeParse(
-      Object.fromEntries(searchParams),
+  const url = new URL(request.url);
+  const raw = Object.fromEntries(url.searchParams);
+
+  // 1) 성공 쿼리 파싱
+  const ok = successSchema.safeParse(raw);
+
+  // 2) 실패 쿼리 파싱
+  const bad = errorSchema.safeParse(raw);
+
+  // 3) 실패 케이스 먼저 처리(명시적 에러이면 바로 사용자에게 보여줌)
+  if (!ok.success && bad.success) {
+    const { error, error_description, error_code } = bad.data;
+    const msg = [
+      `OAuth error: ${error}`,
+      error_code ? `(code: ${error_code})` : "",
+      error_description ? `- ${error_description}` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return data({ error: msg }, { status: 400 });
+  }
+
+  // 4) 성공/실패 모두 아닌 이상한 콜백
+  if (!ok.success) {
+    return data(
+      { error: "Invalid OAuth callback (missing code)" },
+      { status: 400 },
     );
-    
-    // If neither a successful nor error callback, return generic error
-    if (!errorSuccess) {
-      return data({ error: "Invalid code" }, { status: 400 });
-    }
-    
-    // Return the error description from the provider
-    return data({ error: errorData.error_description }, { status: 400 });
   }
 
-  // Create Supabase client and get response headers for auth cookies
+  // 5) code → 세션 교환
   const [client, headers] = makeServerClient(request);
-  
-  // Exchange the OAuth code for a session
-  const { error } = await client.auth.exchangeCodeForSession(validData.code);
 
-  // Return error if session exchange fails
-  if (error) {
-    return data({ error: error.message }, { status: 400 });
+  // ❗중요: Supabase v2는 객체 형태로 넘겨야 해요.
+  //    기존 코드: exchangeCodeForSession(validData.code)  (X)
+  //    수정 코드: exchangeCodeForSession({ code: validData.code })  (O)
+  const { code, next } = ok.data;
+  const { error: xErr } = await client.auth.exchangeCodeForSession({ code }); // ✅ 수정
+
+  if (xErr) {
+    return data(
+      { error: `Session exchange failed: ${xErr.message}` },
+      { status: 400, headers },
+    );
   }
 
-  // Redirect to home page with auth cookies in headers
-  return redirect("/", { headers });
+  // 6) 세션 생김 → 이동
+  return redirect(next || "/", { headers }); // ✅ next 있으면 우선
 }
 
-/**
- * Social Authentication Complete Component
- *
- * This component is only rendered if there's an error during the OAuth callback processing.
- * Under normal circumstances, the loader function will redirect the user directly to
- * the home page after successful authentication before this component is rendered.
- *
- * If there's an error (e.g., invalid code, authentication denied by user, network issues),
- * this component displays the error message to inform the user about the failure.
- *
- * @param loaderData - Data from the loader containing any error messages
- */
+/** 에러 시에만 렌더됨 */
 export default function Confirm({ loaderData }: Route.ComponentProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-2.5">
-      {/* Display error heading */}
       <h1 className="text-2xl font-semibold">Login failed</h1>
-      {/* Display specific error message from the provider or Supabase */}
-      <p className="text-muted-foreground">{loaderData.error}</p>
+      <p className="text-muted-foreground">
+        {loaderData?.error ?? "Unknown error"}
+      </p>
     </div>
   );
 }
