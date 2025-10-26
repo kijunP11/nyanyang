@@ -25,7 +25,7 @@ import makeServerClient from "~/core/lib/supa-client.server";
  * Add more providers as you enable them in your Supabase dashboard
  */
 const paramsSchema = z.object({
-  provider: z.enum(["github", "kakao"]),
+  provider: z.enum(["kakao", "google", "apple"]),
 });
 
 /**
