@@ -139,7 +139,11 @@ function AuthButtons() {
       </Button>
 
       {/* Sign up button (more prominent) */}
-      <Button variant="default" asChild>
+      <Button
+        variant="default"
+        className="bg-[#41C7BD] text-white hover:bg-[#41C7BD]/90"
+        asChild
+      >
         <SheetClose asChild>
           <Link to="/join" viewTransition>
             회원가입
