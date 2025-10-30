@@ -256,7 +256,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
             data-testid="form-signup-link"
             className="text-muted-foreground hover:text-foreground text-underline underline transition-colors"
           >
-            Sign up
+            Sign Up
           </Link>
         </p>
       </div>

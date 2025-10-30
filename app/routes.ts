@@ -1,9 +1,9 @@
 /**
  * Application Routes Configuration
- * 
+ *
  * This file defines all routes for the application using React Router's
  * file-based routing system. Routes are organized by feature and access level.
- * 
+ *
  * The structure uses layouts for shared UI elements and prefixes for route grouping.
  * This approach creates a hierarchical routing system that's both maintainable and scalable.
  */
@@ -54,6 +54,8 @@ export default [
       route("/join", "features/auth/screens/join.tsx"),
       ...prefix("/auth", [
         route("/api/resend", "features/auth/api/resend.tsx"),
+        route("/naver", "features/auth/api/naver.tsx"),
+        route("/naver/callback", "features/auth/api/naver-callback.tsx"),
         route(
           "/forgot-password/reset",
           "features/auth/screens/forgot-password.tsx",

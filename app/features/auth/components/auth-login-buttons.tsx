@@ -22,6 +22,7 @@ import { AppleLogo } from "./logos/apple";
 import { GithubLogo } from "./logos/github";
 import { GoogleLogo } from "./logos/google";
 import { KakaoLogo } from "./logos/kakao";
+import { NaverLogo } from "./logos/naver";
 
 /**
  * Generic authentication button component
@@ -121,6 +122,11 @@ function _SignInButtons() {
 function SocialLoginButtons() {
   return (
     <>
+      <AuthLoginButton
+        logo={<NaverLogo className="size-4" />}
+        label="Naver"
+        href="/auth/naver" // Supabase OAuth가 아닌 커스텀 엔드포인트
+      />
       <AuthLoginButton
         logo={<GoogleLogo className="size-4" />}
         label="Google"
