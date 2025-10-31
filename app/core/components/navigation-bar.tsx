@@ -18,7 +18,7 @@
  */
 import { CogIcon, HomeIcon, LogOutIcon, MenuIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { Link, NavLink } from "react-router";
 
 import LangSwitcher from "./lang-switcher";
 import ThemeSwitcher from "./theme-switcher";
@@ -168,42 +168,7 @@ function AuthButtons() {
  * @returns Fragment containing settings dropdown, theme switcher, and language switcher
  */
 function Actions() {
-  return (
-    <>
-      {/* Settings/debug dropdown menu */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild className="cursor-pointer">
-          <Button variant="ghost" size="icon">
-            <CogIcon className="size-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {/* Sentry monitoring link */}
-          <DropdownMenuItem asChild>
-            <SheetClose asChild>
-              <Link to="/debug/sentry" viewTransition>
-                Sentry
-              </Link>
-            </SheetClose>
-          </DropdownMenuItem>
-          {/* Google Analytics link */}
-          <DropdownMenuItem asChild>
-            <SheetClose asChild>
-              <Link to="/debug/analytics" viewTransition>
-                Google Tag
-              </Link>
-            </SheetClose>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* Theme switcher component (light/dark mode) */}
-      <ThemeSwitcher />
-
-      {/* Language switcher component */}
-      <LangSwitcher />
-    </>
-  );
+  return null;
 }
 
 /**
@@ -245,64 +210,90 @@ export function NavigationBar({
   return (
     <nav
       className={
-        "mx-auto flex h-16 w-full items-center justify-between border-b px-5 shadow-xs backdrop-blur-lg transition-opacity md:px-10"
+        "mx-auto flex h-full w-full items-center justify-between border-b px-5 shadow-xs backdrop-blur-lg transition-opacity md:px-10"
       }
     >
-      <div className="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-between py-3">
+      <div className="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-start py-3">
         {/* Application logo/title with link to home */}
         <Link to="/">
-          <h1 className="text-lg font-extrabold">{t("home.title")}</h1>
+          <img src="/logo3.png" alt="NYANYANG" className="h-6 md:h-7" />
         </Link>
 
         {/* Desktop navigation menu (hidden on mobile) */}
-        <div className="hidden h-full items-center gap-5 md:flex">
+        <div className="ml-6 h-full flex-1 items-center gap-5 md:flex">
           {/* Main navigation links */}
-          <Link
+          <NavLink
             to="/blog"
             viewTransition
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            className={({ isActive }) =>
+              isActive
+                ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
+            }
           >
-            Blog
-          </Link>
-          <Link
+            스토리
+          </NavLink>
+          <NavLink
             to="/contact"
             viewTransition
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            className={({ isActive }) =>
+              isActive
+                ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
+            }
           >
-            Contact
-          </Link>
-          <Link
-            to="/payments/checkout"
+            내 작품
+          </NavLink>
+          <NavLink
+            to="/points"
             viewTransition
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            className={({ isActive }) =>
+              isActive
+                ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
+            }
           >
-            Payments
-          </Link>
+            포인트
+          </NavLink>
+          <NavLink
+            to="/guide"
+            viewTransition
+            className={({ isActive }) =>
+              isActive
+                ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
+            }
+          >
+            이용 가이드
+          </NavLink>
 
-          <Separator orientation="vertical" />
+          {/* 우측 유틸/인증 영역 래퍼: 오른쪽 끝으로 밀기 */}
+          <div className="ml-auto flex items-center gap-5">
+            <Separator orientation="vertical" />
 
-          {/* Settings, theme switcher, and language switcher */}
-          <Actions />
+            {/* Settings, theme switcher, and language switcher */}
+            <Actions />
 
-          <Separator orientation="vertical" />
+            <Separator orientation="vertical" />
 
-          {/* Conditional rendering based on authentication state */}
-          {loading ? (
-            // Loading state with skeleton placeholder
-            <div className="flex items-center">
-              <div className="bg-muted-foreground/20 size-8 animate-pulse rounded-lg" />
-            </div>
-          ) : (
-            <>
-              {name ? (
-                // Authenticated state with user menu
-                <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
-              ) : (
-                // Unauthenticated state with auth buttons
-                <AuthButtons />
-              )}
-            </>
-          )}
+            {/* Conditional rendering based on authentication state */}
+            {loading ? (
+              // Loading state with skeleton placeholder
+              <div className="flex items-center">
+                <div className="bg-muted-foreground/20 size-8 animate-pulse rounded-lg" />
+              </div>
+            ) : (
+              <>
+                {name ? (
+                  // Authenticated state with user menu
+                  <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
+                ) : (
+                  // Unauthenticated state with auth buttons
+                  <AuthButtons />
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Mobile menu trigger (hidden on desktop) */}
@@ -312,13 +303,52 @@ export function NavigationBar({
         <SheetContent>
           <SheetHeader>
             <SheetClose asChild>
-              <Link to="/blog">Blog</Link>
+              <NavLink
+                to="/blog"
+                className={({ isActive }) =>
+                  isActive
+                    ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                    : "text-muted-foreground hover:text-foreground relative"
+                }
+              >
+                스토리
+              </NavLink>
             </SheetClose>
             <SheetClose asChild>
-              <Link to="/contact">Contact</Link>
+              <NavLink
+                to="/contact"
+                className={({ isActive }) =>
+                  isActive
+                    ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                    : "text-muted-foreground hover:text-foreground relative"
+                }
+              >
+                내 작품
+              </NavLink>
             </SheetClose>
             <SheetClose asChild>
-              <Link to="/payments/checkout">Payments</Link>
+              <NavLink
+                to="/payments/checkout"
+                className={({ isActive }) =>
+                  isActive
+                    ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                    : "text-muted-foreground hover:text-foreground relative"
+                }
+              >
+                포인트
+              </NavLink>
+            </SheetClose>
+            <SheetClose asChild>
+              <NavLink
+                to="/blog"
+                className={({ isActive }) =>
+                  isActive
+                    ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                    : "text-muted-foreground hover:text-foreground relative"
+                }
+              >
+                이용 가이드
+              </NavLink>
             </SheetClose>
           </SheetHeader>
           {loading ? (

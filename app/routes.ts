@@ -93,6 +93,14 @@ export default [
         route("/failure", "features/payments/screens/failure.tsx"),
       ]),
     ]),
+    // Points and Guide top-level routes under main navigation
+    route("/points", "features/points/screens/points.tsx"),
+    route("/guide", "features/guide/screens/guide.tsx"),
+    // Blog routes moved under the main navigation layout so the NavigationBar persists
+    ...prefix("/blog", [
+      index("features/blog/screens/posts.tsx"),
+      route(":slug", "features/blog/screens/post.tsx"),
+    ]),
   ]),
 
   layout("core/layouts/private.layout.tsx", { id: "private-dashboard" }, [
@@ -106,10 +114,4 @@ export default [
   ]),
 
   ...prefix("/legal", [route("/:slug", "features/legal/screens/policy.tsx")]),
-  layout("features/blog/layouts/blog.layout.tsx", [
-    ...prefix("/blog", [
-      index("features/blog/screens/posts.tsx"),
-      route("/:slug", "features/blog/screens/post.tsx"),
-    ]),
-  ]),
 ] satisfies RouteConfig;
