@@ -40,6 +40,7 @@
     "@tosspayments/tosspayments-sdk": "^2.3.4",
     "@vercel/og": "^0.6.5",
     "@vercel/react-router": "^1.1.0",
+    "ai": "^5.0.89",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",
@@ -69,6 +70,7 @@
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
+    "taskmaster": "^0.0.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {

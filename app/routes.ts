@@ -81,6 +81,10 @@ export default [
           "features/auth/screens/new-password.tsx",
         ),
         route("/email-verified", "features/auth/screens/email-verified.tsx"),
+        route(
+          "/complete-profile",
+          "features/auth/screens/complete-profile.tsx",
+        ),
       ]),
       // Routes that should only be visible to authenticated users.
       route("/logout", "features/auth/screens/logout.tsx"),
