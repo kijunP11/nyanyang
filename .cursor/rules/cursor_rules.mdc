@@ -1,0 +1,68 @@
+# === Project Context ===
+This project is built with:
+- Supaplate template
+- React (client-side routing)
+- React Router v7
+- Supabase (auth, DB, storage)
+- TailwindCSS + shadcn/ui
+- Drizzle ORM
+- Vite + TypeScript
+
+Use ONLY the technologies above.
+
+# === File/Directory Structure ===
+Follow the structure below:
+- src/app/ → main App, routing setup
+- src/routes/** → route-level components
+- src/components/** → UI components
+- src/lib/supabase.ts → Supabase client
+- src/db/schema.ts → Drizzle ORM schema
+- src/db/index.ts → drizzle client
+- src/actions/** → server actions with "use server"
+- src/utils/** → utility functions
+
+NEVER generate Next.js-specific folders like app/, pages/, api/.
+
+# === Coding Style Guide ===
+- Use functional components with TypeScript.
+- Use React Router loader/action patterns.
+- For form submissions, use actions (server-side).
+- For Supabase queries, use Drizzle ORM.
+- Avoid using Prisma, Express, Next.js, or server frameworks.
+- Do not generate database functions without using Drizzle conventions.
+- Use Tailwind for styling; avoid inline CSS.
+- Use shadcn/ui components when possible.
+
+# === Supabase Usage ===
+- All auth should use Supabase Auth.
+- Profiles table: id, email, name, created_at.
+- Use supabase.auth.getUser(), supabase.auth.signInWithPassword, etc.
+- Use RLS-safe patterns only.
+
+# === Drizzle ORM Conventions ===
+- Schema is defined in src/db/schema.ts
+- Queries must use the drizzle client from src/db/index.ts
+- Avoid raw SQL unless necessary.
+
+# === Safety / Compliance ===
+- Never output illegal, harmful, or unethical code.
+- Never leak API keys or secret env variables.
+- Never produce data that could compromise the client.
+
+# === Things to Avoid ===
+Do NOT use:
+- Next.js "use client"/"use server" in pages
+- getServerSideProps, getStaticProps
+- Prisma
+- Express
+- Firebase
+- Server components (Next.js style)
+- Random alternative libraries that are not part of this project
+
+# === Your Role ===
+Your job is to:
+1) Modify code strictly within this project's structure.
+2) Use React Router v7 routing patterns.
+3) Use Drizzle ORM for all DB interactions.
+4) Maintain clean TypeScript patterns.
+5) Avoid over-engineering; keep code simple and consistent.
