@@ -15,6 +15,13 @@
       "when": 1744715791562,
       "tag": "0001_great_junta",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763684774112,
+      "tag": "0002_reflective_maximus",
+      "breakpoints": true
     }
   ]
 }

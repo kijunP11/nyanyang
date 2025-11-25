@@ -4,23 +4,23 @@
  * Handles sending messages to AI and getting responses
  * Supports multiple AI providers: OpenAI, Google Gemini, Anthropic Claude
  */
-import type { ActionFunctionArgs } from "react-router";
+import type { Route } from "./+types/send-message";
 
 import { data } from "react-router";
 import { z } from "zod";
 
-import { requireUser } from "~/core/lib/guards.server";
-import { getCharacterWithDetails } from "~/features/characters/queries";
+import makeServerClient from "~/core/lib/supa-client.server";
 
 const sendMessageSchema = z.object({
-  character_id: z.string().uuid(),
+  character_id: z.number(),
   message: z.string().min(1).max(2000),
   message_type: z.enum(["dialogue", "action"]),
   model: z.enum([
     "gemini-2.5-pro",
+    "gemini-2.5-flash",
     "claude-sonnet",
     "opus",
-    "gpt-4",
+    "gpt-4o",
     "custom",
   ]),
   conversation_history: z
@@ -55,7 +55,7 @@ async function callOpenAI(
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: model === "gpt-4" ? "gpt-4" : "gpt-3.5-turbo",
+      model: model === "gpt-4o" ? "gpt-4o" : "gpt-4o-mini",
       messages,
       temperature: 0.9,
       max_tokens: 500,
@@ -87,13 +87,15 @@ async function callGemini(
   }
 
   // Convert messages to Gemini format
-  const contents = messages.map((msg) => ({
-    role: msg.role === "character" ? "model" : "user",
-    parts: [{ text: msg.content }],
-  }));
+  const contents = messages
+    .filter((msg) => msg.role !== "system")
+    .map((msg) => ({
+      role: msg.role === "character" ? "model" : "user",
+      parts: [{ text: msg.content }],
+    }));
 
   const modelName =
-    model === "gemini-2.5-pro" ? "gemini-2.0-flash-exp" : "gemini-1.5-pro";
+    model === "gemini-2.5-pro" ? "gemini-2.0-flash-exp" : "gemini-1.5-flash";
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
@@ -141,16 +143,21 @@ async function callClaude(
     );
   }
 
-  // Convert messages to Claude format
-  const claudeMessages = messages.map((msg) => ({
-    role: msg.role === "character" ? "assistant" : "user",
-    content: msg.content,
-  }));
+  // Extract system message
+  const systemMessage = messages.find((m) => m.role === "system");
+
+  // Convert messages to Claude format (excluding system)
+  const claudeMessages = messages
+    .filter((msg) => msg.role !== "system")
+    .map((msg) => ({
+      role: msg.role === "character" ? "assistant" : "user",
+      content: msg.content,
+    }));
 
   const modelName =
     model === "claude-sonnet"
-      ? "claude-3-5-sonnet-20241022"
-      : "claude-3-opus-20240229";
+      ? "claude-sonnet-4-20250514"
+      : "claude-sonnet-4-20250514";
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -161,6 +168,7 @@ async function callClaude(
     },
     body: JSON.stringify({
       model: modelName,
+      system: systemMessage?.content,
       messages: claudeMessages,
       max_tokens: 500,
       temperature: 0.9,
@@ -181,94 +189,138 @@ async function callClaude(
 /**
  * Build system prompt from character data
  */
-function buildSystemPrompt(character: any): string {
+function buildSystemPrompt(character: {
+  name: string;
+  description: string;
+  personality: string;
+  system_prompt: string;
+  greeting_message: string;
+}): string {
   let prompt = `당신은 ${character.name}입니다.\n\n`;
 
   if (character.description) {
     prompt += `설명: ${character.description}\n\n`;
   }
 
-  if (character.personality_traits && character.personality_traits.length > 0) {
-    prompt += `성격: ${character.personality_traits.join(", ")}\n\n`;
+  if (character.personality) {
+    prompt += `성격: ${character.personality}\n\n`;
   }
 
-  if (character.tone) {
-    prompt += `말투: ${character.tone}\n\n`;
-  }
-
-  // Add keywords to system prompt
-  if (character.keywords && character.keywords.length > 0) {
-    prompt += `중요 키워드:\n`;
-    character.keywords.forEach((kw: any) => {
-      prompt += `- ${kw.keyword}: ${kw.description || ""}\n`;
-      if (kw.response_template) {
-        prompt += `  응답 템플릿: ${kw.response_template}\n`;
-      }
-    });
-    prompt += "\n";
-  }
-
-  // Add safety filter guidelines
-  if (character.safetyFilter) {
-    const filter = character.safetyFilter;
-    prompt += `안전 가이드라인:\n`;
-    if (filter.block_nsfw) prompt += `- NSFW 콘텐츠는 생성하지 마세요\n`;
-    if (filter.block_violence) prompt += `- 폭력적인 콘텐츠는 생성하지 마세요\n`;
-    if (filter.block_hate_speech)
-      prompt += `- 혐오 발언은 생성하지 마세요\n`;
-    if (filter.block_personal_info)
-      prompt += `- 개인정보는 요청하거나 공유하지 마세요\n`;
-
-    if (filter.blocked_words && filter.blocked_words.length > 0) {
-      prompt += `- 다음 단어는 사용하지 마세요: ${filter.blocked_words.join(", ")}\n`;
-    }
-    prompt += "\n";
+  if (character.system_prompt) {
+    prompt += `${character.system_prompt}\n\n`;
   }
 
   prompt += `사용자와 자연스럽고 매력적인 대화를 나누세요. 캐릭터의 성격과 말투를 유지하세요.\n`;
   prompt += `대화 형식:\n`;
   prompt += `- *행동*: 행동이나 지문은 별표로 감쌉니다\n`;
-  prompt += `- "대사": 말하는 내용은 따옴표로 감쌉니다\n`;
 
   return prompt;
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+export async function action({ request }: Route.ActionArgs) {
+  const [client] = makeServerClient(request);
 
   if (request.method !== "POST") {
     return data({ error: "Method not allowed" }, { status: 405 });
   }
 
+  // 인증 확인
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return data({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const formData = await request.json();
-    const validatedData = sendMessageSchema.parse(formData);
+    const result = sendMessageSchema.safeParse(formData);
+
+    if (!result.success) {
+      return data(
+        {
+          error: "유효성 검사 실패",
+          fieldErrors: result.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+
     const {
       character_id,
       message,
       message_type,
       model,
       conversation_history = [],
-    } = validatedData;
+    } = result.data;
 
-    // Get character details
-    const character = await getCharacterWithDetails(character_id);
+    // 캐릭터 정보 조회
+    const { data: character } = await client
+      .from("characters")
+      .select("*")
+      .eq("character_id", character_id)
+      .single();
 
     if (!character) {
       return data({ error: "캐릭터를 찾을 수 없습니다" }, { status: 404 });
     }
+
+    // 채팅방 확인/생성
+    let { data: room } = await client
+      .from("chat_rooms")
+      .select("*")
+      .eq("character_id", character_id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (!room) {
+      const { data: newRoom } = await client
+        .from("chat_rooms")
+        .insert({
+          character_id,
+          user_id: user.id,
+          title: `${character.name}과의 대화`,
+        })
+        .select()
+        .single();
+      room = newRoom;
+    }
+
+    // 다음 시퀀스 번호 가져오기
+    const { data: lastMessage } = await client
+      .from("messages")
+      .select("sequence_number")
+      .eq("room_id", room!.room_id)
+      .order("sequence_number", { ascending: false })
+      .limit(1)
+      .single();
+
+    const nextSeq = (lastMessage?.sequence_number || 0) + 1;
 
     // Build system prompt
     const systemPrompt = buildSystemPrompt(character);
 
     // Format user message
     const formattedMessage =
-      message_type === "action" ? `*${message}*` : `"${message}"`;
+      message_type === "action" ? `*${message}*` : message;
 
-    // Build messages array
+    // 사용자 메시지 저장
+    await client.from("messages").insert({
+      room_id: room!.room_id,
+      user_id: user.id,
+      role: "user",
+      content: formattedMessage,
+      sequence_number: nextSeq,
+    });
+
+    // Build messages array for AI
     const messages = [
       { role: "system", content: systemPrompt },
-      ...conversation_history,
+      ...conversation_history.map((h) => ({
+        role: h.role === "character" ? "assistant" : "user",
+        content: h.content,
+      })),
       { role: "user", content: formattedMessage },
     ];
 
@@ -276,33 +328,53 @@ export async function action({ request }: ActionFunctionArgs) {
     let aiResponse: string;
 
     try {
-      if (model === "gemini-2.5-pro") {
+      if (model === "gemini-2.5-pro" || model === "gemini-2.5-flash") {
         aiResponse = await callGemini(messages, model);
       } else if (model === "claude-sonnet" || model === "opus") {
         aiResponse = await callClaude(messages, model);
-      } else if (model === "gpt-4" || model === "custom") {
+      } else if (model === "gpt-4o" || model === "custom") {
         aiResponse = await callOpenAI(messages, model);
       } else {
-        // Default to Gemini
-        aiResponse = await callGemini(messages, "gemini-2.5-pro");
+        // Default to OpenAI
+        aiResponse = await callOpenAI(messages, "gpt-4o");
       }
-    } catch (aiError: any) {
+    } catch (aiError: unknown) {
       console.error("AI API error:", aiError);
 
+      const errorMessage =
+        aiError instanceof Error ? aiError.message : "Unknown error";
+
       // Return a friendly error message
-      return data(
-        {
-          error: "AI 응답 생성 중 오류가 발생했습니다",
-          details: aiError.message,
-          fallback: true,
-          response: {
-            content: "죄송합니다. 지금은 응답을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.",
-            character_name: character.name,
-          },
+      return data({
+        success: false,
+        error: "AI 응답 생성 중 오류가 발생했습니다",
+        details: errorMessage,
+        response: {
+          content:
+            "죄송합니다. 지금은 응답을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.",
+          character_name: character.name,
         },
-        { status: 500 },
-      );
+      });
     }
+
+    // AI 응답 저장
+    await client.from("messages").insert({
+      room_id: room!.room_id,
+      user_id: user.id,
+      role: "assistant",
+      content: aiResponse,
+      sequence_number: nextSeq + 1,
+    });
+
+    // 채팅방 업데이트 (마지막 메시지, 메시지 수)
+    await client
+      .from("chat_rooms")
+      .update({
+        last_message: aiResponse.substring(0, 100),
+        last_message_at: new Date().toISOString(),
+        message_count: (room!.message_count || 0) + 2,
+      })
+      .eq("room_id", room!.room_id);
 
     return data({
       success: true,
@@ -313,16 +385,6 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return data(
-        {
-          error: "유효성 검사 실패",
-          details: error.errors,
-        },
-        { status: 400 },
-      );
-    }
-
     console.error("Send message error:", error);
     return data(
       {

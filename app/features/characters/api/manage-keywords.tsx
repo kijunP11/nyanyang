@@ -1,41 +1,37 @@
 /**
  * Manage Character Keywords API
  *
- * Handles CRUD operations for character keywords
+ * Handles CRUD operations for character keywords using Supabase Client
  */
-import type { ActionFunctionArgs } from "react-router";
+import type { Route } from "./+types/manage-keywords";
 
 import { data } from "react-router";
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
 
-import { requireUser } from "~/core/lib/guards.server";
-import { db } from "~/core/db/drizzle-client.server";
-
-import { characters, characterKeywords } from "../schema";
+import makeServerClient from "~/core/lib/supa-client.server";
 
 const addKeywordSchema = z.object({
   action: z.literal("add"),
-  character_id: z.string().uuid(),
+  character_id: z.number(),
   keyword: z.string().min(1).max(100),
-  description: z.string().max(500).optional(),
-  response_template: z.string().max(1000).optional(),
+  description: z.string().max(500).optional().nullable(),
+  response_template: z.string().max(1000).optional().nullable(),
   priority: z.number().int().min(0).default(0),
 });
 
 const updateKeywordSchema = z.object({
   action: z.literal("update"),
-  keyword_id: z.string(),
+  keyword_id: z.number(),
   keyword: z.string().min(1).max(100).optional(),
-  description: z.string().max(500).optional(),
-  response_template: z.string().max(1000).optional(),
+  description: z.string().max(500).optional().nullable(),
+  response_template: z.string().max(1000).optional().nullable(),
   priority: z.number().int().min(0).optional(),
   is_active: z.boolean().optional(),
 });
 
 const deleteKeywordSchema = z.object({
   action: z.literal("delete"),
-  keyword_id: z.string(),
+  keyword_id: z.number(),
 });
 
 const keywordActionSchema = z.discriminatedUnion("action", [
@@ -44,24 +40,45 @@ const keywordActionSchema = z.discriminatedUnion("action", [
   deleteKeywordSchema,
 ]);
 
-export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+export async function action({ request }: Route.ActionArgs) {
+  const [client] = makeServerClient(request);
 
   if (request.method !== "POST") {
     return data({ error: "Method not allowed" }, { status: 405 });
   }
 
+  // 인증 확인
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return data({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const formData = await request.json();
-    const validatedData = keywordActionSchema.parse(formData);
+    const result = keywordActionSchema.safeParse(formData);
+
+    if (!result.success) {
+      return data(
+        {
+          error: "유효성 검사 실패",
+          fieldErrors: result.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+
+    const validatedData = result.data;
 
     if (validatedData.action === "add") {
-      // Check ownership
-      const [character] = await db
-        .select()
-        .from(characters)
-        .where(eq(characters.character_id, validatedData.character_id))
-        .limit(1);
+      // 캐릭터 소유권 확인
+      const { data: character } = await client
+        .from("characters")
+        .select("creator_id")
+        .eq("character_id", validatedData.character_id)
+        .single();
 
       if (!character) {
         return data({ error: "캐릭터를 찾을 수 없습니다" }, { status: 404 });
@@ -71,17 +88,23 @@ export async function action({ request }: ActionFunctionArgs) {
         return data({ error: "권한이 없습니다" }, { status: 403 });
       }
 
-      // Add keyword
-      const [newKeyword] = await db
-        .insert(characterKeywords)
-        .values({
+      // 키워드 추가
+      const { data: newKeyword, error } = await client
+        .from("character_keywords")
+        .insert({
           character_id: validatedData.character_id,
           keyword: validatedData.keyword,
           description: validatedData.description,
           response_template: validatedData.response_template,
           priority: validatedData.priority,
         })
-        .returning();
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Add keyword error:", error);
+        return data({ error: error.message }, { status: 500 });
+      }
 
       return data({
         success: true,
@@ -91,38 +114,34 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     if (validatedData.action === "update") {
-      // Check ownership through character
-      const [keyword] = await db
-        .select({
-          keyword: characterKeywords,
-          character: characters,
-        })
-        .from(characterKeywords)
-        .innerJoin(
-          characters,
-          eq(characters.character_id, characterKeywords.character_id),
-        )
-        .where(eq(characterKeywords.keyword_id, validatedData.keyword_id))
-        .limit(1);
+      // 키워드 조회 및 소유권 확인
+      const { data: keyword } = await client
+        .from("character_keywords")
+        .select("*, characters!inner(creator_id)")
+        .eq("keyword_id", validatedData.keyword_id)
+        .single();
 
       if (!keyword) {
         return data({ error: "키워드를 찾을 수 없습니다" }, { status: 404 });
       }
 
-      if (keyword.character.creator_id !== user.id) {
+      if ((keyword.characters as { creator_id: string }).creator_id !== user.id) {
         return data({ error: "권한이 없습니다" }, { status: 403 });
       }
 
-      // Update keyword
+      // 키워드 업데이트
       const { action: _, keyword_id, ...updateData } = validatedData;
-      const [updatedKeyword] = await db
-        .update(characterKeywords)
-        .set({
-          ...updateData,
-          updated_at: new Date(),
-        })
-        .where(eq(characterKeywords.keyword_id, keyword_id))
-        .returning();
+      const { data: updatedKeyword, error } = await client
+        .from("character_keywords")
+        .update(updateData)
+        .eq("keyword_id", keyword_id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Update keyword error:", error);
+        return data({ error: error.message }, { status: 500 });
+      }
 
       return data({
         success: true,
@@ -132,32 +151,31 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     if (validatedData.action === "delete") {
-      // Check ownership through character
-      const [keyword] = await db
-        .select({
-          keyword: characterKeywords,
-          character: characters,
-        })
-        .from(characterKeywords)
-        .innerJoin(
-          characters,
-          eq(characters.character_id, characterKeywords.character_id),
-        )
-        .where(eq(characterKeywords.keyword_id, validatedData.keyword_id))
-        .limit(1);
+      // 키워드 조회 및 소유권 확인
+      const { data: keyword } = await client
+        .from("character_keywords")
+        .select("*, characters!inner(creator_id)")
+        .eq("keyword_id", validatedData.keyword_id)
+        .single();
 
       if (!keyword) {
         return data({ error: "키워드를 찾을 수 없습니다" }, { status: 404 });
       }
 
-      if (keyword.character.creator_id !== user.id) {
+      if ((keyword.characters as { creator_id: string }).creator_id !== user.id) {
         return data({ error: "권한이 없습니다" }, { status: 403 });
       }
 
-      // Delete keyword
-      await db
-        .delete(characterKeywords)
-        .where(eq(characterKeywords.keyword_id, validatedData.keyword_id));
+      // 키워드 삭제
+      const { error } = await client
+        .from("character_keywords")
+        .delete()
+        .eq("keyword_id", validatedData.keyword_id);
+
+      if (error) {
+        console.error("Delete keyword error:", error);
+        return data({ error: error.message }, { status: 500 });
+      }
 
       return data({
         success: true,
@@ -167,16 +185,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return data({ error: "잘못된 요청입니다" }, { status: 400 });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return data(
-        {
-          error: "유효성 검사 실패",
-          details: error.errors,
-        },
-        { status: 400 },
-      );
-    }
-
     console.error("Manage keywords error:", error);
     return data(
       {

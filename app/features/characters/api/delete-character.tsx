@@ -1,69 +1,69 @@
 /**
  * Delete Character API
  *
- * Handles character deletion with ownership checks
+ * Handles character deletion with ownership checks using Supabase Client
  */
-import type { ActionFunctionArgs } from "react-router";
+import type { Route } from "./+types/delete-character";
 
 import { data } from "react-router";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 
-import { requireUser } from "~/core/lib/guards.server";
-import { db } from "~/core/db/drizzle-client.server";
-
-import { characters } from "../schema";
+import makeServerClient from "~/core/lib/supa-client.server";
 
 const deleteCharacterSchema = z.object({
-  character_id: z.string().uuid(),
+  character_id: z.number(),
 });
 
-export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+export async function action({ request }: Route.ActionArgs) {
+  const [client] = makeServerClient(request);
 
-  if (request.method !== "DELETE") {
+  if (request.method !== "DELETE" && request.method !== "POST") {
     return data({ error: "Method not allowed" }, { status: 405 });
+  }
+
+  // 인증 확인
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return data({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const formData = await request.json();
-    const { character_id } = deleteCharacterSchema.parse(formData);
+    const result = deleteCharacterSchema.safeParse(formData);
 
-    // Check ownership
-    const [existingCharacter] = await db
-      .select()
-      .from(characters)
-      .where(eq(characters.character_id, character_id))
-      .limit(1);
-
-    if (!existingCharacter) {
-      return data({ error: "캐릭터를 찾을 수 없습니다" }, { status: 404 });
+    if (!result.success) {
+      return data(
+        {
+          error: "유효성 검사 실패",
+          fieldErrors: result.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
     }
 
-    if (existingCharacter.creator_id !== user.id) {
-      return data({ error: "권한이 없습니다" }, { status: 403 });
-    }
+    const { character_id } = result.data;
 
-    // Delete character (cascades to related data)
-    await db
-      .delete(characters)
-      .where(eq(characters.character_id, character_id));
+    // 삭제 실행 (소유자 확인 포함)
+    // CASCADE로 관련 데이터(keywords, safety_filters 등)도 자동 삭제됨
+    const { error } = await client
+      .from("characters")
+      .delete()
+      .eq("character_id", character_id)
+      .eq("creator_id", user.id); // 소유자만 삭제 가능
+
+    if (error) {
+      console.error("Delete character error:", error);
+      return data({ error: error.message }, { status: 500 });
+    }
 
     return data({
       success: true,
       message: "캐릭터가 성공적으로 삭제되었습니다",
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return data(
-        {
-          error: "유효성 검사 실패",
-          details: error.errors,
-        },
-        { status: 400 },
-      );
-    }
-
     console.error("Delete character error:", error);
     return data(
       {

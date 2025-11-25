@@ -6,14 +6,18 @@
 import type { Route } from "./+types/character-create";
 
 import { Form, redirect, useActionData, useNavigation } from "react-router";
-import { useState } from "react";
 
-import { requireUser } from "~/core/lib/guards.server";
+import makeServerClient from "~/core/lib/supa-client.server";
 import { Button } from "~/core/components/ui/button";
 import { Input } from "~/core/components/ui/input";
 import { Label } from "~/core/components/ui/label";
 import { Textarea } from "~/core/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "~/core/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "~/core/components/ui/card";
 import { Alert, AlertDescription } from "~/core/components/ui/alert";
 
 export const meta: Route.MetaFunction = () => {
@@ -25,22 +29,36 @@ export const meta: Route.MetaFunction = () => {
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await requireUser(request);
+  const [client] = makeServerClient(request);
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return redirect("/login");
+  }
+
   return {};
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const user = await requireUser(request);
+  const [client] = makeServerClient(request);
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return redirect("/login");
+  }
+
   const formData = await request.formData();
 
   const name = formData.get("name") as string;
+  const display_name = formData.get("display_name") as string || name;
   const description = formData.get("description") as string;
+  const personality = formData.get("personality") as string;
+  const system_prompt = formData.get("system_prompt") as string;
   const greeting_message = formData.get("greeting_message") as string;
-  const personality_traits = (formData.get("personality_traits") as string)
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
-  const tone = formData.get("tone") as string;
   const tags = (formData.get("tags") as string)
     .split(",")
     .map((t) => t.trim())
@@ -59,10 +77,11 @@ export async function action({ request }: Route.ActionArgs) {
         },
         body: JSON.stringify({
           name,
+          display_name,
           description,
+          personality,
+          system_prompt,
           greeting_message,
-          personality_traits,
-          tone,
           tags,
           is_public,
           is_nsfw,
@@ -123,23 +142,33 @@ export default function CharacterCreate() {
               </div>
 
               <div>
-                <Label htmlFor="description">설명</Label>
+                <Label htmlFor="display_name">표시 이름</Label>
+                <Input
+                  id="display_name"
+                  name="display_name"
+                  maxLength={50}
+                  placeholder="화면에 표시될 이름 (비워두면 캐릭터 이름 사용)"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="description">설명 *</Label>
                 <Textarea
                   id="description"
                   name="description"
+                  required
                   rows={3}
-                  maxLength={500}
                   placeholder="캐릭터에 대한 간단한 설명을 작성해주세요"
                 />
               </div>
 
               <div>
-                <Label htmlFor="greeting_message">인사말</Label>
+                <Label htmlFor="greeting_message">인사말 *</Label>
                 <Textarea
                   id="greeting_message"
                   name="greeting_message"
+                  required
                   rows={2}
-                  maxLength={200}
                   placeholder="예: 안녕! 만나서 반가워!"
                 />
               </div>
@@ -149,28 +178,32 @@ export default function CharacterCreate() {
           {/* Personality */}
           <Card>
             <CardHeader>
-              <CardTitle>성격 설정</CardTitle>
+              <CardTitle>성격 및 AI 설정</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="personality_traits">성격 특성</Label>
-                <Input
-                  id="personality_traits"
-                  name="personality_traits"
-                  placeholder="예: 귀여움, 친근함, 장난기 (쉼표로 구분)"
+                <Label htmlFor="personality">성격 *</Label>
+                <Textarea
+                  id="personality"
+                  name="personality"
+                  required
+                  rows={3}
+                  placeholder="캐릭터의 성격을 자세히 설명해주세요"
                 />
-                <p className="text-sm text-muted-foreground mt-1">
-                  쉼표(,)로 구분하여 여러 개 입력
-                </p>
               </div>
 
               <div>
-                <Label htmlFor="tone">말투</Label>
-                <Input
-                  id="tone"
-                  name="tone"
-                  placeholder="예: 귀엽고 발랄한 말투"
+                <Label htmlFor="system_prompt">시스템 프롬프트 *</Label>
+                <Textarea
+                  id="system_prompt"
+                  name="system_prompt"
+                  required
+                  rows={5}
+                  placeholder="AI가 이 캐릭터를 연기할 때 따를 지침을 작성해주세요"
                 />
+                <p className="text-sm text-muted-foreground mt-1">
+                  캐릭터의 말투, 행동 방식, 배경 설정 등을 상세히 작성해주세요
+                </p>
               </div>
             </CardContent>
           </Card>

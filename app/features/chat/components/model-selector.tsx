@@ -1,6 +1,6 @@
 /**
  * AI Model Selector Component
- * 
+ *
  * Allows users to select AI model (Gemini, Claude, Opus, etc.)
  */
 import { Check } from "lucide-react";
@@ -15,7 +15,12 @@ import {
   DropdownMenuTrigger,
 } from "~/core/components/ui/dropdown-menu";
 
-export type AIModel = "gemini-2.5-pro" | "claude-sonnet" | "opus" | "custom";
+export type AIModel =
+  | "gpt-4o"
+  | "gemini-2.5-pro"
+  | "claude-sonnet"
+  | "opus"
+  | "custom";
 
 export interface ModelOption {
   id: AIModel;
@@ -31,7 +36,8 @@ interface ModelSelectorProps {
 }
 
 const defaultModels: ModelOption[] = [
-  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", recommended: true },
+  { id: "gpt-4o", name: "GPT-4o", recommended: true },
+  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro" },
   { id: "claude-sonnet", name: "Claude Sonnet", recommended: true },
   { id: "opus", name: "Opus" },
 ];
@@ -65,9 +71,7 @@ export function ModelSelector({
             className="flex items-center justify-between"
           >
             <span>{model.name}</span>
-            {selectedModel === model.id && (
-              <Check className="ml-2 h-4 w-4" />
-            )}
+            {selectedModel === model.id && <Check className="ml-2 h-4 w-4" />}
             {model.recommended && (
               <span className="ml-2 text-xs text-[#41C7BD]">권장</span>
             )}
@@ -77,5 +81,3 @@ export function ModelSelector({
     </DropdownMenu>
   );
 }
-
-

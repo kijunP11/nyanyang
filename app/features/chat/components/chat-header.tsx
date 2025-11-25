@@ -1,12 +1,16 @@
 /**
  * Chat Header Component
- * 
+ *
  * Displays character information, back button, and menu
  */
 import { ArrowLeft, MoreVertical } from "lucide-react";
 import { Link } from "react-router";
 
-import { Avatar, AvatarFallback, AvatarImage } from "~/core/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "~/core/components/ui/avatar";
 import { Button } from "~/core/components/ui/button";
 import {
   DropdownMenu,
@@ -30,7 +34,7 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ character, onMenuClick }: ChatHeaderProps) {
   return (
-    <div className="flex h-20 items-center gap-4 border-b bg-background px-4">
+    <div className="bg-background flex h-20 items-center gap-4 border-b px-4">
       {/* Back Button */}
       <Button variant="ghost" size="icon" asChild>
         <Link to="/">
@@ -68,5 +72,3 @@ export function ChatHeader({ character, onMenuClick }: ChatHeaderProps) {
     </div>
   );
 }
-
-

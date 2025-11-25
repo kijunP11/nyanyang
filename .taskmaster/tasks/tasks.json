@@ -1,0 +1,144 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 11,
+        "title": "Set Up Home Route and Component Structure",
+        "description": "Create the main dashboard route and component structure for the home page.",
+        "details": "Create a new route in `app/routes/home.tsx` and a main component in `app/features/home/screens/home-dashboard.tsx`. Ensure the route is correctly integrated into the existing routing strategy.",
+        "testStrategy": "Verify the route loads without errors and the component renders a basic layout.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Implement Navigation Bar Integration",
+        "description": "Ensure the existing navigation bar integrates seamlessly with the new home structure.",
+        "details": "Maintain the current navigation bar layout and links (Home, Create, Explore, Profile). Ensure it is compatible with the new home page structure.",
+        "testStrategy": "Check that the navigation bar displays correctly and links navigate to the correct pages.",
+        "priority": "medium",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Develop Hero Section",
+        "description": "Create a static hero section as a placeholder for future dynamic content.",
+        "details": "Implement a simple banner with a title, subtitle, and CTA button using a gray box or gradient as a placeholder.",
+        "testStrategy": "Ensure the hero section displays correctly with placeholder content.",
+        "priority": "medium",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Create 'My Characters' and 'Recent Chats' Sections",
+        "description": "Develop sections for displaying user's characters and recent chats with data fetching.",
+        "details": "Fetch user's characters and recent chat rooms using `creator_id = user.id` and sort chats by `last_message_at`. Implement horizontal scroll or grid layout for displaying items.",
+        "testStrategy": "Validate that the correct data is fetched and displayed in the specified layout.",
+        "priority": "high",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Implement Discovery/Popular Section",
+        "description": "Develop a section for exploring public characters based on popularity and recency.",
+        "details": "Fetch popular characters sorted by `like_count` or `chat_count` and new characters by `created_at`. Use a responsive grid layout for display.",
+        "testStrategy": "Check that the section displays characters correctly and updates based on sorting criteria.",
+        "priority": "medium",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "Add Category Filter Functionality",
+        "description": "Implement category filtering for characters using pill-shaped buttons.",
+        "details": "Create filter buttons for categories like 'All', 'Romance', 'Fantasy'. Implement filtering logic to update displayed characters based on selected category.",
+        "testStrategy": "Ensure that selecting a category updates the displayed characters accordingly.",
+        "priority": "medium",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Optimize Data Fetching with Parallel Requests",
+        "description": "Enhance data fetching performance using parallel requests.",
+        "details": "Use `Promise.all` in the `loader` function to fetch user's characters, recent chats, and popular characters simultaneously. Limit results to improve performance.",
+        "testStrategy": "Monitor network requests to ensure they are executed in parallel and verify data integrity.",
+        "priority": "high",
+        "dependencies": [
+          14,
+          15
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Refactor and Reuse UI Components",
+        "description": "Refactor existing components for reuse in the new dashboard.",
+        "details": "Refactor `CharacterCard` for reuse if necessary. Create a `SectionLayout` component for consistent section headers with a title and 'See All' link.",
+        "testStrategy": "Check that components are reused correctly and maintain consistent styling across sections.",
+        "priority": "medium",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Ensure Layout Matches Figma Design",
+        "description": "Align the dashboard layout with the Figma design specifications.",
+        "details": "Adjust CSS and component structure to ensure the layout closely matches the Figma design (Node 27:3404).",
+        "testStrategy": "Compare the rendered layout with the Figma design to ensure alignment.",
+        "priority": "high",
+        "dependencies": [
+          13,
+          14,
+          15,
+          16
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Conduct Error Handling and Success Metrics Validation",
+        "description": "Implement error handling and validate success metrics for the dashboard.",
+        "details": "Ensure no '400 Bad Request' or '500' errors occur during data fetching. Validate that logged-in users see their content at the top.",
+        "testStrategy": "Perform tests to trigger potential errors and verify that success metrics are met.",
+        "priority": "high",
+        "dependencies": [
+          17,
+          19
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-11-20T23:58:08.864Z",
+      "updated": "2025-11-25T06:09:40.548Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

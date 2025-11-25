@@ -1,48 +1,64 @@
 /**
  * Manage Character Safety Filter API
  *
- * Handles safety filter configuration for characters
+ * Handles safety filter configuration for characters using Supabase Client
  */
-import type { ActionFunctionArgs } from "react-router";
+import type { Route } from "./+types/manage-safety-filter";
 
 import { data } from "react-router";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 
-import { requireUser } from "~/core/lib/guards.server";
-import { db } from "~/core/db/drizzle-client.server";
-
-import { characters, characterSafetyFilters } from "../schema";
+import makeServerClient from "~/core/lib/supa-client.server";
 
 const updateSafetyFilterSchema = z.object({
-  character_id: z.string().uuid(),
+  character_id: z.number(),
   block_nsfw: z.boolean().optional(),
   block_violence: z.boolean().optional(),
   block_hate_speech: z.boolean().optional(),
   block_personal_info: z.boolean().optional(),
-  blocked_words: z.array(z.string()).optional(),
-  blocked_phrases: z.array(z.string()).optional(),
+  blocked_words: z.array(z.string()).optional().nullable(),
+  blocked_phrases: z.array(z.string()).optional().nullable(),
   sensitivity_level: z.number().int().min(1).max(10).optional(),
 });
 
-export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+export async function action({ request }: Route.ActionArgs) {
+  const [client] = makeServerClient(request);
 
   if (request.method !== "POST" && request.method !== "PUT") {
     return data({ error: "Method not allowed" }, { status: 405 });
   }
 
+  // 인증 확인
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return data({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const formData = await request.json();
-    const validatedData = updateSafetyFilterSchema.parse(formData);
-    const { character_id, ...filterData } = validatedData;
+    const result = updateSafetyFilterSchema.safeParse(formData);
 
-    // Check ownership
-    const [character] = await db
-      .select()
-      .from(characters)
-      .where(eq(characters.character_id, character_id))
-      .limit(1);
+    if (!result.success) {
+      return data(
+        {
+          error: "유효성 검사 실패",
+          fieldErrors: result.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+
+    const { character_id, ...filterData } = result.data;
+
+    // 캐릭터 소유권 확인
+    const { data: character } = await client
+      .from("characters")
+      .select("creator_id")
+      .eq("character_id", character_id)
+      .single();
 
     if (!character) {
       return data({ error: "캐릭터를 찾을 수 없습니다" }, { status: 404 });
@@ -52,52 +68,30 @@ export async function action({ request }: ActionFunctionArgs) {
       return data({ error: "권한이 없습니다" }, { status: 403 });
     }
 
-    // Check if filter exists
-    const [existingFilter] = await db
-      .select()
-      .from(characterSafetyFilters)
-      .where(eq(characterSafetyFilters.character_id, character_id))
-      .limit(1);
-
-    let result;
-
-    if (existingFilter) {
-      // Update existing filter
-      [result] = await db
-        .update(characterSafetyFilters)
-        .set({
-          ...filterData,
-          updated_at: new Date(),
-        })
-        .where(eq(characterSafetyFilters.character_id, character_id))
-        .returning();
-    } else {
-      // Create new filter
-      [result] = await db
-        .insert(characterSafetyFilters)
-        .values({
+    // upsert 패턴: 있으면 업데이트, 없으면 생성
+    const { data: filter, error } = await client
+      .from("character_safety_filters")
+      .upsert(
+        {
           character_id,
           ...filterData,
-        })
-        .returning();
+        },
+        { onConflict: "character_id" },
+      )
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Manage safety filter error:", error);
+      return data({ error: error.message }, { status: 500 });
     }
 
     return data({
       success: true,
-      filter: result,
+      filter,
       message: "안전 필터가 업데이트되었습니다",
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return data(
-        {
-          error: "유효성 검사 실패",
-          details: error.errors,
-        },
-        { status: 400 },
-      );
-    }
-
     console.error("Manage safety filter error:", error);
     return data(
       {

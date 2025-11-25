@@ -4,7 +4,7 @@
  * One-click button for daily and cumulative rewards
  */
 import { Calendar, Gift } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "~/core/components/ui/button";
 import {
@@ -27,8 +27,16 @@ export function AttendanceCheck({
   cumulativeDays = 0,
   cumulativeReward = 500,
   onCheckIn,
-}: AttendanceCheckProps) {
-  const [checkedIn, setCheckedIn] = useState(false);
+  checkedIn: externalCheckedIn,
+}: AttendanceCheckProps & { checkedIn?: boolean }) {
+  const [checkedIn, setCheckedIn] = useState(externalCheckedIn || false);
+
+  // 외부에서 전달된 checkedIn 상태가 변경되면 업데이트
+  useEffect(() => {
+    if (externalCheckedIn !== undefined) {
+      setCheckedIn(externalCheckedIn);
+    }
+  }, [externalCheckedIn]);
 
   const handleCheckIn = () => {
     if (checkedIn) return;

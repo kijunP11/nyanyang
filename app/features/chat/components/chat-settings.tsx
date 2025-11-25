@@ -1,6 +1,6 @@
 /**
  * Chat Settings Component
- * 
+ *
  * Customization options: font size, colors, bubble colors, theme, background
  */
 import { Settings } from "lucide-react";
@@ -179,5 +179,3 @@ export function ChatSettingsDialog({
     </Dialog>
   );
 }
-
-

@@ -34,6 +34,10 @@ export default [
       route("/password", "features/users/api/change-password.tsx"),
       route("/email", "features/users/api/change-email.tsx"),
       route("/profile", "features/users/api/edit-profile.tsx"),
+      route(
+        "/referral-code/validate",
+        "features/users/api/validate-referral-code.tsx",
+      ),
       route("/providers", "features/users/api/connect-provider.tsx"),
       route(
         "/providers/:provider",
@@ -45,7 +49,10 @@ export default [
       route("/update", "features/characters/api/update-character.tsx"),
       route("/delete", "features/characters/api/delete-character.tsx"),
       route("/keywords", "features/characters/api/manage-keywords.tsx"),
-      route("/safety-filter", "features/characters/api/manage-safety-filter.tsx"),
+      route(
+        "/safety-filter",
+        "features/characters/api/manage-safety-filter.tsx",
+      ),
       route("/upload-media", "features/characters/api/upload-media.tsx"),
     ]),
     ...prefix("/chat", [
@@ -125,7 +132,10 @@ export default [
       index("features/characters/screens/character-list.tsx"),
       layout("core/layouts/private.layout.tsx", { id: "private-characters" }, [
         route("/create", "features/characters/screens/character-create.tsx"),
-        route("/:characterId/edit", "features/characters/screens/character-edit.tsx"),
+        route(
+          "/:characterId/edit",
+          "features/characters/screens/character-edit.tsx",
+        ),
       ]),
     ]),
   ]),

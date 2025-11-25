@@ -1,57 +1,97 @@
 /**
  * Create Character API
  *
- * Handles character creation with validation
+ * Handles character creation with validation using Supabase Client
  */
-import type { ActionFunctionArgs } from "react-router";
+import type { Route } from "./+types/create-character";
 
-import { data } from "react-router";
+import { data, redirect } from "react-router";
 import { z } from "zod";
 
-import { requireUser } from "~/core/lib/guards.server";
-import { db } from "~/core/db/drizzle-client.server";
-
-import { characters, characterSafetyFilters } from "../schema";
+import makeServerClient from "~/core/lib/supa-client.server";
 
 const createCharacterSchema = z.object({
   name: z.string().min(1, "캐릭터 이름은 필수입니다").max(50),
-  display_name: z.string().max(50).optional(),
-  description: z.string().max(500).optional(),
-  greeting_message: z.string().max(200).optional(),
-  avatar_url: z.string().url().optional(),
-  banner_url: z.string().url().optional(),
-  personality_traits: z.array(z.string()).default([]),
-  tone: z.string().optional(),
-  age: z.number().int().positive().optional(),
-  gender: z.string().optional(),
+  display_name: z.string().min(1).max(50),
+  description: z.string().min(1),
+  personality: z.string().min(1),
+  system_prompt: z.string().min(1),
+  greeting_message: z.string().min(1),
+  avatar_url: z.string().url().optional().nullable(),
+  banner_url: z.string().url().optional().nullable(),
+  tags: z.array(z.string()).default([]),
+  category: z.string().optional().nullable(),
+  age_rating: z.string().default("everyone"),
   is_public: z.boolean().default(false),
   is_nsfw: z.boolean().default(false),
-  tags: z.array(z.string()).default([]),
+  enable_memory: z.boolean().default(true),
+  example_dialogues: z.any().optional().nullable(),
 });
 
-export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+export async function action({ request }: Route.ActionArgs) {
+  const [client] = makeServerClient(request);
 
   if (request.method !== "POST") {
     return data({ error: "Method not allowed" }, { status: 405 });
   }
 
+  // 인증 확인
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return redirect("/login");
+  }
+
   try {
     const formData = await request.json();
-    const validatedData = createCharacterSchema.parse(formData);
+    const result = createCharacterSchema.safeParse(formData);
 
-    // Create character
-    const [newCharacter] = await db
-      .insert(characters)
-      .values({
-        ...validatedData,
+    if (!result.success) {
+      return data(
+        {
+          error: "유효성 검사 실패",
+          fieldErrors: result.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+
+    const validData = result.data;
+
+    // DB 저장
+    const { data: newCharacter, error } = await client
+      .from("characters")
+      .insert({
         creator_id: user.id,
-        status: "draft",
+        name: validData.name,
+        display_name: validData.display_name,
+        description: validData.description,
+        personality: validData.personality,
+        system_prompt: validData.system_prompt,
+        greeting_message: validData.greeting_message,
+        avatar_url: validData.avatar_url,
+        banner_url: validData.banner_url,
+        tags: validData.tags,
+        category: validData.category,
+        age_rating: validData.age_rating,
+        is_public: true,
+        is_nsfw: validData.is_nsfw,
+        enable_memory: validData.enable_memory,
+        example_dialogues: validData.example_dialogues,
+        status: "approved",
       })
-      .returning();
+      .select()
+      .single();
 
-    // Create default safety filter for the character
-    await db.insert(characterSafetyFilters).values({
+    if (error) {
+      console.error("Create character error:", error);
+      return data({ error: error.message }, { status: 500 });
+    }
+
+    // 기본 Safety Filter 생성
+    await client.from("character_safety_filters").insert({
       character_id: newCharacter.character_id,
       block_nsfw: true,
       block_violence: true,
@@ -69,16 +109,6 @@ export async function action({ request }: ActionFunctionArgs) {
       { status: 201 },
     );
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return data(
-        {
-          error: "유효성 검사 실패",
-          details: error.errors,
-        },
-        { status: 400 },
-      );
-    }
-
     console.error("Create character error:", error);
     return data(
       {

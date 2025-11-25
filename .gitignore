@@ -165,3 +165,7 @@ dev-debug.log
 # Task files
 # tasks.json
 # tasks/ 
+
+
+.cursor/rules/kluster-code-verify.mdc
+.kluster

@@ -1,23 +1,18 @@
 /**
  * Upload Character Media API
  *
- * Handles image uploads to Supabase Storage for character avatars, banners, and gallery
+ * Handles image uploads to Supabase Storage for character avatars and banners
  */
-import type { ActionFunctionArgs } from "react-router";
+import type { Route } from "./+types/upload-media";
 
 import { data } from "react-router";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 
-import { requireUser } from "~/core/lib/guards.server";
-import { db } from "~/core/db/drizzle-client.server";
-import { supabaseAdmin } from "~/core/lib/supa-admin-client.server";
-
-import { characters } from "../schema";
+import makeServerClient from "~/core/lib/supa-client.server";
 
 const uploadMediaSchema = z.object({
-  character_id: z.string().uuid(),
-  media_type: z.enum(["avatar", "banner", "gallery"]),
+  character_id: z.number(),
+  media_type: z.enum(["avatar", "banner"]),
   file_data: z.string(), // base64 encoded file data
   file_name: z.string(),
   file_type: z.string().refine((type) => type.startsWith("image/"), {
@@ -28,25 +23,45 @@ const uploadMediaSchema = z.object({
 const STORAGE_BUCKET = "character-media";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+export async function action({ request }: Route.ActionArgs) {
+  const [client] = makeServerClient(request);
 
   if (request.method !== "POST") {
     return data({ error: "Method not allowed" }, { status: 405 });
   }
 
+  // 인증 확인
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return data({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const formData = await request.json();
-    const validatedData = uploadMediaSchema.parse(formData);
-    const { character_id, media_type, file_data, file_name, file_type } =
-      validatedData;
+    const result = uploadMediaSchema.safeParse(formData);
 
-    // Check ownership
-    const [character] = await db
-      .select()
-      .from(characters)
-      .where(eq(characters.character_id, character_id))
-      .limit(1);
+    if (!result.success) {
+      return data(
+        {
+          error: "유효성 검사 실패",
+          fieldErrors: result.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+
+    const { character_id, media_type, file_data, file_name, file_type } =
+      result.data;
+
+    // 캐릭터 소유권 확인
+    const { data: character } = await client
+      .from("characters")
+      .select("creator_id")
+      .eq("character_id", character_id)
+      .single();
 
     if (!character) {
       return data({ error: "캐릭터를 찾을 수 없습니다" }, { status: 404 });
@@ -73,11 +88,11 @@ export async function action({ request }: ActionFunctionArgs) {
     const uniqueFileName = `${character_id}/${media_type}/${Date.now()}.${fileExtension}`;
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+    const { error: uploadError } = await client.storage
       .from(STORAGE_BUCKET)
       .upload(uniqueFileName, buffer, {
         contentType: file_type,
-        upsert: false,
+        upsert: true,
       });
 
     if (uploadError) {
@@ -91,40 +106,23 @@ export async function action({ request }: ActionFunctionArgs) {
     // Get public URL
     const {
       data: { publicUrl },
-    } = supabaseAdmin.storage.from(STORAGE_BUCKET).getPublicUrl(uniqueFileName);
+    } = client.storage.from(STORAGE_BUCKET).getPublicUrl(uniqueFileName);
 
     // Update character with new media URL
-    let updatedCharacter;
+    const updateField =
+      media_type === "avatar" ? { avatar_url: publicUrl } : { banner_url: publicUrl };
 
-    if (media_type === "avatar") {
-      [updatedCharacter] = await db
-        .update(characters)
-        .set({
-          avatar_url: publicUrl,
-          updated_at: new Date(),
-        })
-        .where(eq(characters.character_id, character_id))
-        .returning();
-    } else if (media_type === "banner") {
-      [updatedCharacter] = await db
-        .update(characters)
-        .set({
-          banner_url: publicUrl,
-          updated_at: new Date(),
-        })
-        .where(eq(characters.character_id, character_id))
-        .returning();
-    } else if (media_type === "gallery") {
-      // Add to gallery_urls array
-      const currentGalleryUrls = character.gallery_urls || [];
-      [updatedCharacter] = await db
-        .update(characters)
-        .set({
-          gallery_urls: [...currentGalleryUrls, publicUrl],
-          updated_at: new Date(),
-        })
-        .where(eq(characters.character_id, character_id))
-        .returning();
+    const { data: updatedCharacter, error: updateError } = await client
+      .from("characters")
+      .update(updateField)
+      .eq("character_id", character_id)
+      .eq("creator_id", user.id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error("Update character error:", updateError);
+      return data({ error: updateError.message }, { status: 500 });
     }
 
     return data({
@@ -134,16 +132,6 @@ export async function action({ request }: ActionFunctionArgs) {
       message: "미디어가 성공적으로 업로드되었습니다",
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return data(
-        {
-          error: "유효성 검사 실패",
-          details: error.errors,
-        },
-        { status: 400 },
-      );
-    }
-
     console.error("Upload media error:", error);
     return data(
       {
