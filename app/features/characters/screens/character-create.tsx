@@ -132,7 +132,7 @@ export default function CharacterCreate() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
-  const [role, setRole] = useState<string>("");
+  const [role, setRole] = useState<string | undefined>(undefined);
 
   return (
     <div className="container mx-auto max-w-3xl py-8">
