@@ -98,8 +98,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     i18next.getLocale(request),
   ]);
 
+  // Get theme from session, default to "dark" if not set
+  const theme = getTheme() ?? "dark";
+
   return {
-    theme: getTheme(),
+    theme,
     locale,
   };
 }

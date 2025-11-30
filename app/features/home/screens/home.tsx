@@ -25,6 +25,7 @@ import { Dialog, DialogContent } from "~/core/components/ui/dialog";
 import i18next from "~/core/lib/i18next.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 import type { Database } from "~/database.types";
+import { checkAttendance } from "~/features/attendance/lib/attendance.server";
 import { CharacterCard } from "~/features/characters/components/character-card";
 import { AttendanceCheck } from "~/features/home/components/attendance-check";
 import {
@@ -182,71 +183,20 @@ export async function action({ request }: Route.ActionArgs) {
     return data({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  const result = await checkAttendance(client, user.id);
 
-  try {
-    // 1. 중복 체크
-    const { data: existing } = await client
-      .from("attendance_records")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("attendance_date", today)
-      .maybeSingle();
-
-    if (existing) {
-      return data({ error: "Already checked today" }, { status: 400 });
-    }
-
-    // 2. 연속일 계산
-    const yesterday = new Date(Date.now() - 86400000)
-      .toISOString()
-      .split("T")[0];
-    const { data: yesterdayRecord } = await client
-      .from("attendance_records")
-      .select("consecutive_days")
-      .eq("user_id", user.id)
-      .eq("attendance_date", yesterday)
-      .maybeSingle();
-
-    const consecutiveDays = yesterdayRecord
-      ? yesterdayRecord.consecutive_days + 1
-      : 1;
-    const pointsToAward = 100;
-
-    // 3. 현재 포인트 조회
-    const { data: userPoints } = await client
-      .from("user_points")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    // 4. 출석 기록 저장
-    await client.from("attendance_records").insert({
-      user_id: user.id,
-      attendance_date: today,
-      consecutive_days: consecutiveDays,
-      points_awarded: pointsToAward,
-    });
-
-    // 5. 포인트 업데이트 (onConflict 옵션 추가)
-    await client.from("user_points").upsert(
-      {
-        user_id: user.id,
-        current_balance: (userPoints?.current_balance || 0) + pointsToAward,
-        total_earned: (userPoints?.total_earned || 0) + pointsToAward,
-      },
-      { onConflict: "user_id" },
+  if (!result.success) {
+    return data(
+      { error: result.error || "Failed to check attendance" },
+      { status: result.error === "Already checked today" ? 400 : 500 },
     );
-
-    return data({
-      success: true,
-      consecutiveDays,
-      pointsAwarded: pointsToAward,
-    });
-  } catch (error) {
-    console.error("Attendance check error:", error);
-    return data({ error: "Failed to check attendance" }, { status: 500 });
   }
+
+  return data({
+    success: true,
+    consecutiveDays: result.consecutiveDays,
+    pointsAwarded: result.pointsAwarded,
+  });
 }
 
 export default function Home({ loaderData, actionData }: Route.ComponentProps) {

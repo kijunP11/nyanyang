@@ -218,6 +218,7 @@ export type Database = {
       characters: {
         Row: {
           age_rating: string
+          appearance: string | null
           avatar_url: string | null
           banner_url: string | null
           category: string | null
@@ -238,14 +239,20 @@ export type Database = {
           moderation_note: string | null
           name: string
           personality: string
+          relationship: string | null
+          role: string | null
+          speech_style: string | null
           status: string
           system_prompt: string
+          tagline: string | null
           tags: Json
           updated_at: string
           view_count: number
+          world_setting: string | null
         }
         Insert: {
           age_rating?: string
+          appearance?: string | null
           avatar_url?: string | null
           banner_url?: string | null
           category?: string | null
@@ -266,14 +273,20 @@ export type Database = {
           moderation_note?: string | null
           name: string
           personality: string
+          relationship?: string | null
+          role?: string | null
+          speech_style?: string | null
           status?: string
           system_prompt: string
+          tagline?: string | null
           tags?: Json
           updated_at?: string
           view_count?: number
+          world_setting?: string | null
         }
         Update: {
           age_rating?: string
+          appearance?: string | null
           avatar_url?: string | null
           banner_url?: string | null
           category?: string | null
@@ -294,11 +307,16 @@ export type Database = {
           moderation_note?: string | null
           name?: string
           personality?: string
+          relationship?: string | null
+          role?: string | null
+          speech_style?: string | null
           status?: string
           system_prompt?: string
+          tagline?: string | null
           tags?: Json
           updated_at?: string
           view_count?: number
+          world_setting?: string | null
         }
         Relationships: []
       }

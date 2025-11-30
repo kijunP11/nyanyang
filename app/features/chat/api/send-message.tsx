@@ -21,6 +21,7 @@ const sendMessageSchema = z.object({
     "claude-sonnet",
     "opus",
     "gpt-4o",
+    "novelai-kayra",
     "custom",
   ]),
   conversation_history: z
@@ -64,7 +65,9 @@ async function callOpenAI(
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(`OpenAI API error: ${error.error?.message || "Unknown error"}`);
+    throw new Error(
+      `OpenAI API error: ${error.error?.message || "Unknown error"}`,
+    );
   }
 
   const result = await response.json();
@@ -126,6 +129,65 @@ async function callGemini(
     result.candidates?.[0]?.content?.parts?.[0]?.text ||
     "응답을 생성할 수 없습니다."
   );
+}
+
+/**
+ * Call NovelAI API
+ */
+async function callNovelAI(
+  messages: Array<{ role: string; content: string }>,
+  model: string,
+) {
+  const apiKey = process.env.NOVELAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "NOVELAI_API_KEY가 설정되지 않았습니다. .env 파일에 추가해주세요.",
+    );
+  }
+
+  // 메시지를 NovelAI 형식으로 변환
+  const prompt = messages
+    .map((m) => {
+      if (m.role === "system") return m.content + "\n\n";
+      if (m.role === "user") return `User: ${m.content}\n`;
+      return `Assistant: ${m.content}\n`;
+    })
+    .join("");
+
+  const response = await fetch("https://api.novelai.net/ai/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "kayra-v1",
+      input: prompt + "Assistant:",
+      parameters: {
+        temperature: 0.9,
+        max_length: 500,
+        min_length: 1,
+        use_string: true,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("NovelAI API Error Response:", errorText);
+    let errorMessage = "Unknown error";
+    try {
+      const errorJson = JSON.parse(errorText);
+      errorMessage = errorJson.message || errorJson.error || errorMessage;
+    } catch (e) {
+      errorMessage = errorText;
+    }
+    throw new Error(`NovelAI API error: ${errorMessage}`);
+  }
+
+  const result = await response.json();
+  return result.output || "응답을 생성할 수 없습니다.";
 }
 
 /**
@@ -332,6 +394,8 @@ export async function action({ request }: Route.ActionArgs) {
         aiResponse = await callGemini(messages, model);
       } else if (model === "claude-sonnet" || model === "opus") {
         aiResponse = await callClaude(messages, model);
+      } else if (model === "novelai-kayra") {
+        aiResponse = await callNovelAI(messages, model);
       } else if (model === "gpt-4o" || model === "custom") {
         aiResponse = await callOpenAI(messages, model);
       } else {

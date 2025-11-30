@@ -118,6 +118,7 @@ export default [
     // Points and Guide top-level routes under main navigation
     route("/points", "features/points/screens/points.tsx"),
     route("/guide", "features/guide/screens/guide.tsx"),
+    route("/attendance", "features/attendance/screens/attendance.tsx"),
     // Blog routes moved under the main navigation layout so the NavigationBar persists
     ...prefix("/blog", [
       index("features/blog/screens/posts.tsx"),

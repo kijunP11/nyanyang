@@ -6,6 +6,7 @@
 import type { Route } from "./+types/character-create";
 
 import { Form, redirect, useActionData, useNavigation } from "react-router";
+import { useState } from "react";
 
 import makeServerClient from "~/core/lib/supa-client.server";
 import { Button } from "~/core/components/ui/button";
@@ -19,6 +20,13 @@ import {
   CardTitle,
 } from "~/core/components/ui/card";
 import { Alert, AlertDescription } from "~/core/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/core/components/ui/select";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -55,10 +63,16 @@ export async function action({ request }: Route.ActionArgs) {
 
   const name = formData.get("name") as string;
   const display_name = formData.get("display_name") as string || name;
+  const tagline = formData.get("tagline") as string || null;
   const description = formData.get("description") as string;
+  const role = formData.get("role") as string || null;
+  const appearance = formData.get("appearance") as string || null;
   const personality = formData.get("personality") as string;
+  const speech_style = formData.get("speech_style") as string || null;
   const system_prompt = formData.get("system_prompt") as string;
   const greeting_message = formData.get("greeting_message") as string;
+  const relationship = formData.get("relationship") as string || null;
+  const world_setting = formData.get("world_setting") as string || null;
   const tags = (formData.get("tags") as string)
     .split(",")
     .map((t) => t.trim())
@@ -78,10 +92,16 @@ export async function action({ request }: Route.ActionArgs) {
         body: JSON.stringify({
           name,
           display_name,
+          tagline,
           description,
+          role,
+          appearance,
           personality,
+          speech_style,
           system_prompt,
           greeting_message,
+          relationship,
+          world_setting,
           tags,
           is_public,
           is_nsfw,
@@ -106,6 +126,7 @@ export default function CharacterCreate() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+  const [role, setRole] = useState<string>("");
 
   return (
     <div className="container mx-auto py-8 max-w-3xl">
@@ -152,6 +173,19 @@ export default function CharacterCreate() {
               </div>
 
               <div>
+                <Label htmlFor="tagline">한 줄 소개</Label>
+                <Input
+                  id="tagline"
+                  name="tagline"
+                  maxLength={50}
+                  placeholder="예: 친근한 대학 선배"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  캐릭터를 한 문장으로 표현해주세요
+                </p>
+              </div>
+
+              <div>
                 <Label htmlFor="description">설명 *</Label>
                 <Textarea
                   id="description"
@@ -163,13 +197,32 @@ export default function CharacterCreate() {
               </div>
 
               <div>
-                <Label htmlFor="greeting_message">인사말 *</Label>
+                <Label htmlFor="greeting_message">첫 인사말 *</Label>
                 <Textarea
                   id="greeting_message"
                   name="greeting_message"
                   required
                   rows={2}
                   placeholder="예: 안녕! 만나서 반가워!"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="relationship">나와의 관계 (선택)</Label>
+                <Input
+                  id="relationship"
+                  name="relationship"
+                  placeholder="예: 10년지기 친구, 처음 만난 선배"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="world_setting">세계관 (선택)</Label>
+                <Textarea
+                  id="world_setting"
+                  name="world_setting"
+                  rows={2}
+                  placeholder="예: 현대 도시, 대학 캠퍼스"
                 />
               </div>
             </CardContent>
@@ -182,6 +235,34 @@ export default function CharacterCreate() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
+                <Label htmlFor="role">역할</Label>
+                <Select value={role} onValueChange={setRole}>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">선택 안 함</SelectItem>
+                    <SelectItem value="friend">친구</SelectItem>
+                    <SelectItem value="teacher">선생님</SelectItem>
+                    <SelectItem value="lover">연인</SelectItem>
+                    <SelectItem value="mentor">멘토</SelectItem>
+                    <SelectItem value="companion">동반자</SelectItem>
+                  </SelectContent>
+                </Select>
+                <input type="hidden" name="role" value={role} />
+              </div>
+
+              <div>
+                <Label htmlFor="appearance">외모 (선택)</Label>
+                <Textarea
+                  id="appearance"
+                  name="appearance"
+                  rows={2}
+                  placeholder="예: 짧은 머리, 안경, 캐주얼한 복장"
+                />
+              </div>
+
+              <div>
                 <Label htmlFor="personality">성격 *</Label>
                 <Textarea
                   id="personality"
@@ -189,6 +270,15 @@ export default function CharacterCreate() {
                   required
                   rows={3}
                   placeholder="캐릭터의 성격을 자세히 설명해주세요"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="speech_style">말투 (선택)</Label>
+                <Input
+                  id="speech_style"
+                  name="speech_style"
+                  placeholder="예: 반말, 친근한 톤"
                 />
               </div>
 

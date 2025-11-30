@@ -20,6 +20,7 @@ export type AIModel =
   | "gemini-2.5-pro"
   | "claude-sonnet"
   | "opus"
+  | "novelai-kayra"
   | "custom";
 
 export interface ModelOption {
@@ -40,6 +41,7 @@ const defaultModels: ModelOption[] = [
   { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro" },
   { id: "claude-sonnet", name: "Claude Sonnet", recommended: true },
   { id: "opus", name: "Opus" },
+  { id: "novelai-kayra", name: "NovelAI Kayra" },
 ];
 
 export function ModelSelector({
