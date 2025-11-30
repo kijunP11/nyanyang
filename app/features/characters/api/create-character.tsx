@@ -88,7 +88,7 @@ export async function action({ request }: Route.ActionArgs) {
         tags: validData.tags,
         category: validData.category,
         age_rating: validData.age_rating,
-        is_public: true,
+        is_public: validData.is_public,
         is_nsfw: validData.is_nsfw,
         enable_memory: validData.enable_memory,
         example_dialogues: validData.example_dialogues,

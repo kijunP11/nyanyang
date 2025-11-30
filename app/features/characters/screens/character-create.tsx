@@ -5,21 +5,19 @@
  */
 import type { Route } from "./+types/character-create";
 
-import { Form, redirect, useActionData, useNavigation } from "react-router";
 import { useState } from "react";
+import { Form, redirect, useActionData, useNavigation } from "react-router";
 
-import makeServerClient from "~/core/lib/supa-client.server";
+import { Alert, AlertDescription } from "~/core/components/ui/alert";
 import { Button } from "~/core/components/ui/button";
-import { Input } from "~/core/components/ui/input";
-import { Label } from "~/core/components/ui/label";
-import { Textarea } from "~/core/components/ui/textarea";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "~/core/components/ui/card";
-import { Alert, AlertDescription } from "~/core/components/ui/alert";
+import { Input } from "~/core/components/ui/input";
+import { Label } from "~/core/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -27,6 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/core/components/ui/select";
+import { Textarea } from "~/core/components/ui/textarea";
+import makeServerClient from "~/core/lib/supa-client.server";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -62,17 +62,17 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
 
   const name = formData.get("name") as string;
-  const display_name = formData.get("display_name") as string || name;
-  const tagline = formData.get("tagline") as string || null;
+  const display_name = (formData.get("display_name") as string) || name;
+  const tagline = (formData.get("tagline") as string) || null;
   const description = formData.get("description") as string;
-  const role = formData.get("role") as string || null;
-  const appearance = formData.get("appearance") as string || null;
+  const role = (formData.get("role") as string) || null;
+  const appearance = (formData.get("appearance") as string) || null;
   const personality = formData.get("personality") as string;
-  const speech_style = formData.get("speech_style") as string || null;
+  const speech_style = (formData.get("speech_style") as string) || null;
   const system_prompt = formData.get("system_prompt") as string;
   const greeting_message = formData.get("greeting_message") as string;
-  const relationship = formData.get("relationship") as string || null;
-  const world_setting = formData.get("world_setting") as string || null;
+  const relationship = (formData.get("relationship") as string) || null;
+  const world_setting = (formData.get("world_setting") as string) || null;
   const tags = (formData.get("tags") as string)
     .split(",")
     .map((t) => t.trim())
@@ -105,6 +105,12 @@ export async function action({ request }: Route.ActionArgs) {
           tags,
           is_public,
           is_nsfw,
+          category: null,
+          age_rating: "everyone",
+          enable_memory: true,
+          example_dialogues: null,
+          avatar_url: null,
+          banner_url: null,
         }),
       },
     );
@@ -129,7 +135,7 @@ export default function CharacterCreate() {
   const [role, setRole] = useState<string>("");
 
   return (
-    <div className="container mx-auto py-8 max-w-3xl">
+    <div className="container mx-auto max-w-3xl py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">캐릭터 만들기</h1>
         <p className="text-muted-foreground mt-2">
@@ -180,7 +186,7 @@ export default function CharacterCreate() {
                   maxLength={50}
                   placeholder="예: 친근한 대학 선배"
                 />
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-sm">
                   캐릭터를 한 문장으로 표현해주세요
                 </p>
               </div>
@@ -241,7 +247,6 @@ export default function CharacterCreate() {
                     <SelectValue placeholder="선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">선택 안 함</SelectItem>
                     <SelectItem value="friend">친구</SelectItem>
                     <SelectItem value="teacher">선생님</SelectItem>
                     <SelectItem value="lover">연인</SelectItem>
@@ -291,7 +296,7 @@ export default function CharacterCreate() {
                   rows={5}
                   placeholder="AI가 이 캐릭터를 연기할 때 따를 지침을 작성해주세요"
                 />
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-sm">
                   캐릭터의 말투, 행동 방식, 배경 설정 등을 상세히 작성해주세요
                 </p>
               </div>
@@ -311,7 +316,7 @@ export default function CharacterCreate() {
                   name="tags"
                   placeholder="예: 고양이, 귀여움, 판타지 (쉼표로 구분)"
                 />
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-sm">
                   쉼표(,)로 구분하여 여러 개 입력
                 </p>
               </div>
