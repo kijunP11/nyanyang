@@ -82,7 +82,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   try {
     const response = await fetch(
-      `${process.env.SITE_URL || "http://localhost:5173"}/api/characters/create`,
+      `${process.env.SITE_URL}/api/characters/create`,
       {
         method: "POST",
         headers: {
