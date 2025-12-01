@@ -45,7 +45,6 @@ export default [
       ),
     ]),
     ...prefix("/characters", [
-      route("/create", "features/characters/api/create-character.tsx"),
       route("/update", "features/characters/api/update-character.tsx"),
       route("/delete", "features/characters/api/delete-character.tsx"),
       route("/keywords", "features/characters/api/manage-keywords.tsx"),
