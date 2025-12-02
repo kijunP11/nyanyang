@@ -95,141 +95,162 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
-  const [client] = makeServerClient(request);
+  const [client, headers] = makeServerClient(request);
   const {
     data: { user },
   } = await client.auth.getUser();
 
   if (!user) {
-    return redirect("/login");
+    return redirect("/login", { headers });
   }
 
   const characterId = params.characterId;
+  if (!characterId) {
+    return { error: "Character ID required" };
+  }
+
   const formData = await request.formData();
   const actionType = formData.get("_action") as string;
 
   try {
     // Update basic info
     if (actionType === "update_basic") {
-      const response = await fetch(
-        `${process.env.SITE_URL || "http://localhost:5173"}/api/characters/update`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: request.headers.get("Cookie") || "",
-          },
-          body: JSON.stringify({
-            character_id: Number(characterId),
-            name: formData.get("name"),
-            display_name: formData.get("display_name"),
-            description: formData.get("description"),
-            personality: formData.get("personality"),
-            system_prompt: formData.get("system_prompt"),
-            greeting_message: formData.get("greeting_message"),
-            tags: (formData.get("tags") as string)
-              .split(",")
-              .map((t) => t.trim())
-              .filter(Boolean),
-            is_public: formData.get("is_public") === "on",
-            is_nsfw: formData.get("is_nsfw") === "on",
-          }),
-        },
-      );
+      const name = formData.get("name") as string;
+      const description = formData.get("description") as string;
+      const display_name = formData.get("display_name") as string;
+      const personality = formData.get("personality") as string;
+      const system_prompt = formData.get("system_prompt") as string;
+      const greeting_message = formData.get("greeting_message") as string;
+      const is_public = formData.get("is_public") === "on";
+      const is_nsfw = formData.get("is_nsfw") === "on";
 
-      const result = await response.json();
-      return result.success
-        ? { success: "캐릭터 정보가 업데이트되었습니다" }
-        : { error: result.error };
+      const tags = (formData.get("tags") as string)
+        ? (formData.get("tags") as string)
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : [];
+
+      const { error } = await client
+        .from("characters")
+        .update({
+          name,
+          display_name: display_name || name,
+          description,
+          personality,
+          system_prompt,
+          greeting_message,
+          tags,
+          is_public,
+          is_nsfw,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("character_id", Number(characterId))
+        .eq("creator_id", user.id);
+
+      if (error) throw error;
+
+      return { success: "캐릭터 정보가 업데이트되었습니다" };
     }
 
     // Add keyword
     if (actionType === "add_keyword") {
-      const response = await fetch(
-        `${process.env.SITE_URL || "http://localhost:5173"}/api/characters/keywords`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: request.headers.get("Cookie") || "",
-          },
-          body: JSON.stringify({
-            action: "add",
-            character_id: Number(characterId),
-            keyword: formData.get("keyword"),
-            description: formData.get("keyword_description"),
-            response_template: formData.get("response_template"),
-            priority: parseInt(formData.get("priority") as string) || 0,
-          }),
-        },
-      );
+      const keyword = formData.get("keyword") as string;
+      const description = formData.get("keyword_description") as string;
+      const response_template = formData.get("response_template") as string;
+      const priority = parseInt(formData.get("priority") as string) || 0;
 
-      const result = await response.json();
-      return result.success
-        ? { success: "키워드가 추가되었습니다" }
-        : { error: result.error };
+      const { error } = await client.from("character_keywords").insert({
+        character_id: Number(characterId),
+        keyword,
+        description: description || null,
+        response_template: response_template || null,
+        priority,
+      });
+
+      if (error) throw error;
+
+      return { success: "키워드가 추가되었습니다" };
     }
 
     // Delete keyword
     if (actionType === "delete_keyword") {
       const keywordId = formData.get("keyword_id");
-      const response = await fetch(
-        `${process.env.SITE_URL || "http://localhost:5173"}/api/characters/keywords`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: request.headers.get("Cookie") || "",
-          },
-          body: JSON.stringify({
-            action: "delete",
-            keyword_id: Number(keywordId),
-          }),
-        },
-      );
 
-      const result = await response.json();
-      return result.success
-        ? { success: "키워드가 삭제되었습니다" }
-        : { error: result.error };
+      const { error } = await client
+        .from("character_keywords")
+        .delete()
+        .eq("keyword_id", Number(keywordId))
+        .eq("character_id", Number(characterId)); // Safety check
+
+      if (error) throw error;
+
+      return { success: "키워드가 삭제되었습니다" };
     }
 
     // Update safety filter
     if (actionType === "update_safety") {
-      const response = await fetch(
-        `${process.env.SITE_URL || "http://localhost:5173"}/api/characters/safety-filter`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: request.headers.get("Cookie") || "",
-          },
-          body: JSON.stringify({
-            character_id: Number(characterId),
-            block_nsfw: formData.get("block_nsfw") === "on",
-            block_violence: formData.get("block_violence") === "on",
-            block_hate_speech: formData.get("block_hate_speech") === "on",
-            block_personal_info: formData.get("block_personal_info") === "on",
-            blocked_words: (formData.get("blocked_words") as string)
-              .split(",")
-              .map((w) => w.trim())
-              .filter(Boolean),
-            sensitivity_level:
-              parseInt(formData.get("sensitivity_level") as string) || 5,
-          }),
-        },
-      );
+      const block_nsfw = formData.get("block_nsfw") === "on";
+      const block_violence = formData.get("block_violence") === "on";
+      const block_hate_speech = formData.get("block_hate_speech") === "on";
+      const block_personal_info = formData.get("block_personal_info") === "on";
+      const sensitivity_level =
+        parseInt(formData.get("sensitivity_level") as string) || 5;
 
-      const result = await response.json();
-      return result.success
-        ? { success: "안전 필터가 업데이트되었습니다" }
-        : { error: result.error };
+      const blocked_words = (formData.get("blocked_words") as string)
+        ? (formData.get("blocked_words") as string)
+            .split(",")
+            .map((w) => w.trim())
+            .filter(Boolean)
+        : [];
+
+      // Check if exists
+      const { data: existing } = await client
+        .from("character_safety_filters")
+        .select("filter_id")
+        .eq("character_id", Number(characterId))
+        .single();
+
+      let error;
+      if (existing) {
+        const { error: updateError } = await client
+          .from("character_safety_filters")
+          .update({
+            block_nsfw,
+            block_violence,
+            block_hate_speech,
+            block_personal_info,
+            blocked_words,
+            sensitivity_level,
+          })
+          .eq("character_id", Number(characterId));
+        error = updateError;
+      } else {
+        const { error: insertError } = await client
+          .from("character_safety_filters")
+          .insert({
+            character_id: Number(characterId),
+            block_nsfw,
+            block_violence,
+            block_hate_speech,
+            block_personal_info,
+            blocked_words,
+            sensitivity_level,
+          });
+        error = insertError;
+      }
+
+      if (error) throw error;
+
+      return { success: "안전 필터가 업데이트되었습니다" };
     }
 
     return { error: "알 수 없는 작업입니다" };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Character edit error:", error);
-    return { error: "작업 중 오류가 발생했습니다" };
+    return {
+      error: `작업 중 오류가 발생했습니다: ${error.message || String(error)}`,
+    };
   }
 }
 

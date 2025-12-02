@@ -45,13 +45,7 @@ export default [
       ),
     ]),
     ...prefix("/characters", [
-      route("/update", "features/characters/api/update-character.tsx"),
       route("/delete", "features/characters/api/delete-character.tsx"),
-      route("/keywords", "features/characters/api/manage-keywords.tsx"),
-      route(
-        "/safety-filter",
-        "features/characters/api/manage-safety-filter.tsx",
-      ),
       route("/upload-media", "features/characters/api/upload-media.tsx"),
     ]),
     ...prefix("/chat", [
