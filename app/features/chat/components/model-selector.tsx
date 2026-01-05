@@ -17,7 +17,13 @@ import {
 
 export type AIModel =
   | "gpt-4o"
-  | "gemini-2.5-pro"
+  | "gemini-3-flash"
+  | "gemini-3-pro"
+  | "gemini-2.5-flash"
+  | "gemini-2.5-flash-lite"
+  | "gemini-2.0-flash"
+  | "gemini-1.5-pro"
+  | "gemini-1.5-flash"
   | "claude-sonnet"
   | "opus"
   | "novelai-kayra"
@@ -38,7 +44,22 @@ interface ModelSelectorProps {
 
 const defaultModels: ModelOption[] = [
   { id: "gpt-4o", name: "GPT-4o", recommended: true },
-  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro" },
+  
+  // Gemini 3
+  { id: "gemini-3-flash", name: "Gemini 3 Flash (Preview)", recommended: true },
+  { id: "gemini-3-pro", name: "Gemini 3 Pro (Preview)" },
+  
+  // Gemini 2.5
+  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash (Preview)" },
+  { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite (Preview)" },
+  
+  // Gemini 2.0
+  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash" },
+  
+  // Gemini 1.5
+  { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
+  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash" },
+
   { id: "claude-sonnet", name: "Claude Sonnet", recommended: true },
   { id: "opus", name: "Opus" },
   { id: "novelai-kayra", name: "NovelAI Kayra" },

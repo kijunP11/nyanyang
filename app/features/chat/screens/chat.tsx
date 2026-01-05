@@ -36,31 +36,62 @@ export const meta: Route.MetaFunction = ({ params }) => {
   ];
 };
 
+import { data } from "react-router";
+import makeServerClient from "~/core/lib/supa-client.server";
+
 /**
  * Loader function for the chat page
  */
-export async function loader({ params }: Route.LoaderArgs) {
-  // TODO: Fetch character data from API
+export async function loader({ request, params }: Route.LoaderArgs) {
+  const [client] = makeServerClient(request);
+  const characterId = params.characterId;
+
+  if (!characterId) {
+    throw new Error("Character ID is required");
+  }
+
+  // Fetch character data
+  const { data: character } = await client
+    .from("characters")
+    .select("*")
+    .eq("character_id", Number(characterId))
+    .single();
+
+  if (!character) {
+    throw new Error("Character not found");
+  }
+
   return {
-    characterId: params.characterId || "1",
+    character,
   };
 }
 
-export default function Chat({ loaderData, params }: Route.ComponentProps) {
+export default function Chat({ loaderData }: Route.ComponentProps) {
+  const { character } = loaderData;
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Convert DB character to CharacterInfo for UI components
+  const characterInfo: CharacterInfo = {
+    id: String(character.character_id),
+    name: character.name,
+    avatarUrl: character.avatar_url || undefined,
+    status: character.status,
+    description: character.description || undefined,
+  };
+
   const [messages, setMessages] = useState<ChatMessageType[]>([
     {
       id: "1",
       role: "character",
-      content: "안녕!",
+      content: character.greeting_message || "안녕!",
       timestamp: new Date(),
-      characterName: "캐릭터",
-      action: "*손을 흔들며 밝게 인사한다*",
+      characterName: character.name,
+      action: "*인사를 건넨다*",
     },
   ]);
 
   // State for AI model and settings
-  const [selectedModel, setSelectedModel] = useState<AIModel>("gpt-4o");
+  const [selectedModel, setSelectedModel] = useState<AIModel>("gemini-3-flash");
   const [modelStatus, setModelStatus] = useState<ModelStatus>("stable");
   const [settings, setSettings] = useState<ChatSettings>({
     fontSize: 14,
@@ -70,12 +101,12 @@ export default function Chat({ loaderData, params }: Route.ComponentProps) {
   });
 
   // Mock character data
-  const character: CharacterInfo = {
-    id: loaderData.characterId,
-    name: "캐릭터",
-    status: "알수없음",
-    description: "세부 내용 설명",
-  };
+  // const character: CharacterInfo = {
+  //   id: loaderData.characterId,
+  //   name: "캐릭터",
+  //   status: "알수없음",
+  //   description: "세부 내용 설명",
+  // };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -103,7 +134,7 @@ export default function Chat({ loaderData, params }: Route.ComponentProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          character_id: Number(loaderData.characterId),
+          character_id: character.character_id,
           message: content,
           message_type: type,
           model: selectedModel,
@@ -181,7 +212,7 @@ export default function Chat({ loaderData, params }: Route.ComponentProps) {
     >
       {/* Header */}
       <div className="bg-background/95 flex items-center justify-between border-b backdrop-blur">
-        <ChatHeader character={character} />
+        <ChatHeader character={characterInfo} />
         <div className="flex items-center gap-2 px-4">
           <ModelSelector
             selectedModel={selectedModel}
@@ -205,7 +236,7 @@ export default function Chat({ loaderData, params }: Route.ComponentProps) {
       {/* Character Profile */}
       <CharacterProfile
         name={character.name}
-        description={character.description}
+        description={character.description || ""}
       />
 
       {/* Messages Area */}

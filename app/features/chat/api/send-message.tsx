@@ -16,8 +16,13 @@ const sendMessageSchema = z.object({
   message: z.string().min(1).max(2000),
   message_type: z.enum(["dialogue", "action"]),
   model: z.enum([
-    "gemini-2.5-pro",
+    "gemini-3-flash",
+    "gemini-3-pro",
     "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+    "gemini-1.5-pro",
+    "gemini-1.5-flash",
     "claude-sonnet",
     "opus",
     "gpt-4o",
@@ -59,7 +64,7 @@ async function callOpenAI(
       model: model === "gpt-4o" ? "gpt-4o" : "gpt-4o-mini",
       messages,
       temperature: 0.9,
-      max_tokens: 500,
+      max_tokens: 1500,
     }),
   });
 
@@ -72,6 +77,32 @@ async function callOpenAI(
 
   const result = await response.json();
   return result.choices[0]?.message?.content || "응답을 생성할 수 없습니다.";
+}
+
+/**
+ * Get accurate Google API model name from internal ID
+ */
+function getGeminiModelName(model: string): string {
+  // 2026.1 기준 사용 가능한 최신 모델로 매핑
+  // 3.0 및 2.5 라인업은 아직 API 미공개 상태일 수 있으므로 2.0 Experimental로 안전하게 폴백
+  const modelMap: Record<string, string> = {
+    // Gemini 3 (API 미공개 -> 2.0 Flash Exp로 매핑)
+    "gemini-3-flash": "gemini-2.0-flash-exp",
+    "gemini-3-pro": "gemini-2.0-flash-exp",
+
+    // Gemini 2.5 (API 미공개 -> 2.0 Flash Exp로 매핑)
+    "gemini-2.5-flash": "gemini-2.0-flash-exp",
+    "gemini-2.5-flash-lite": "gemini-2.0-flash-exp",
+
+    // Gemini 2.0 (실제 모델 존재)
+    "gemini-2.0-flash": "gemini-2.0-flash-exp",
+
+    // Gemini 1.5 (안정 버전)
+    "gemini-1.5-pro": "gemini-1.5-pro",
+    "gemini-1.5-flash": "gemini-1.5-flash",
+  };
+
+  return modelMap[model] || "gemini-2.0-flash-exp";
 }
 
 /**
@@ -97,8 +128,7 @@ async function callGemini(
       parts: [{ text: msg.content }],
     }));
 
-  const modelName =
-    model === "gemini-2.5-pro" ? "gemini-2.0-flash-exp" : "gemini-1.5-flash";
+  const modelName = getGeminiModelName(model);
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
@@ -111,7 +141,7 @@ async function callGemini(
         contents,
         generationConfig: {
           temperature: 0.9,
-          maxOutputTokens: 500,
+          maxOutputTokens: 1500,
         },
       }),
     },
@@ -166,7 +196,7 @@ async function callNovelAI(
       input: prompt + "Assistant:",
       parameters: {
         temperature: 0.9,
-        max_length: 500,
+        max_length: 1500,
         min_length: 1,
         use_string: true,
       },
@@ -232,7 +262,7 @@ async function callClaude(
       model: modelName,
       system: systemMessage?.content,
       messages: claudeMessages,
-      max_tokens: 500,
+      max_tokens: 1500,
       temperature: 0.9,
     }),
   });
@@ -251,30 +281,51 @@ async function callClaude(
 /**
  * Build system prompt from character data
  */
-function buildSystemPrompt(character: {
-  name: string;
-  description: string;
-  personality: string;
-  system_prompt: string;
-  greeting_message: string;
-}): string {
+function buildSystemPrompt(character: any): string {
   let prompt = `당신은 ${character.name}입니다.\n\n`;
 
-  if (character.description) {
-    prompt += `설명: ${character.description}\n\n`;
-  }
+  // 기본 정보
+  if (character.appearance) prompt += `[외모]\n${character.appearance}\n\n`;
+  if (character.description) prompt += `[설명]\n${character.description}\n\n`;
+  if (character.personality) prompt += `[성격]\n${character.personality}\n\n`;
+  if (character.role) prompt += `[역할]\n${character.role}\n\n`;
+  if (character.world_setting) prompt += `[세계관]\n${character.world_setting}\n\n`;
+  if (character.relationship) prompt += `[관계]\n${character.relationship}\n\n`;
 
-  if (character.personality) {
-    prompt += `성격: ${character.personality}\n\n`;
-  }
+  // 말투 및 톤 (핵심)
+  if (character.speech_style) prompt += `[말투]\n${character.speech_style}\n\n`;
+  if (character.tone) prompt += `[톤]\n${character.tone}\n\n`;
 
+  // 추가 시스템 프롬프트
   if (character.system_prompt) {
-    prompt += `${character.system_prompt}\n\n`;
+    prompt += `[추가 설정]\n${character.system_prompt}\n\n`;
   }
 
-  prompt += `사용자와 자연스럽고 매력적인 대화를 나누세요. 캐릭터의 성격과 말투를 유지하세요.\n`;
-  prompt += `대화 형식:\n`;
-  prompt += `- *행동*: 행동이나 지문은 별표로 감쌉니다\n`;
+  // 예시 대화 (Few-shot)
+  if (
+    character.example_dialogues &&
+    Array.isArray(character.example_dialogues) &&
+    character.example_dialogues.length > 0
+  ) {
+    prompt += `[대화 예시]\n`;
+    character.example_dialogues.forEach((dialogue: any) => {
+      if (dialogue.user && dialogue.character) {
+        prompt += `User: ${dialogue.user}\n`;
+        prompt += `Character: ${dialogue.character}\n`;
+      }
+    });
+    prompt += `\n`;
+  }
+
+  // 행동 지침 (Instruction)
+  prompt += `[행동 지침]\n`;
+  prompt += `1. 당신은 AI가 아니라 ${character.name} 그 자체입니다. AI라는 것을 절대 드러내지 마세요.\n`;
+  prompt += `2. 설정된 말투(${character.speech_style || "캐릭터 고유 말투"})와 톤(${character.tone || "캐릭터 고유 톤"})을 반드시 유지하세요.\n`;
+  prompt += `3. 상황 묘사나 행동 지문은 *별표*로 감싸서 표현하세요. (예: *살며시 웃으며*, *고개를 끄덕이며*)\n`;
+  prompt += `4. "무엇을 도와드릴까요?" 같은 전형적인 챗봇 멘트는 절대 사용하지 마세요.\n`;
+  prompt += `5. 사용자의 말을 단순히 받아주기만 하지 말고, 먼저 질문하거나 새로운 주제를 꺼내며 대화를 주도하세요.\n`;
+  prompt += `6. 답변의 길이는 상황에 맞게 조절하되, 너무 짧게 끝내지 말고 풍부하게 묘사하세요.\n`;
+  prompt += `7. ${character.world_setting ? `현재 세계관(${character.world_setting})의 설정과 규칙을 철저히 따르세요.` : "현실적인 상황에 맞게 반응하세요."}\n`;
 
   return prompt;
 }
@@ -390,7 +441,7 @@ export async function action({ request }: Route.ActionArgs) {
     let aiResponse: string;
 
     try {
-      if (model === "gemini-2.5-pro" || model === "gemini-2.5-flash") {
+      if (model.startsWith("gemini")) {
         aiResponse = await callGemini(messages, model);
       } else if (model === "claude-sonnet" || model === "opus") {
         aiResponse = await callClaude(messages, model);
