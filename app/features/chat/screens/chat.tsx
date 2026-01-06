@@ -61,13 +61,44 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw new Error("Character not found");
   }
 
+  // Fetch initial messages
+  let initialMessages: any[] = [];
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (user) {
+    // 1. Get Room ID
+    const { data: room } = await client
+      .from("chat_rooms")
+      .select("room_id")
+      .eq("character_id", Number(characterId))
+      .eq("user_id", user.id)
+      .single();
+
+    if (room) {
+      // 2. Get Messages
+      const { data: messages } = await client
+        .from("messages")
+        .select("*")
+        .eq("room_id", room.room_id)
+        .eq("is_deleted", 0) // 삭제되지 않은 메시지만
+        .order("sequence_number", { ascending: true });
+
+      if (messages) {
+        initialMessages = messages;
+      }
+    }
+  }
+
   return {
     character,
+    initialMessages,
   };
 }
 
 export default function Chat({ loaderData }: Route.ComponentProps) {
-  const { character } = loaderData;
+  const { character, initialMessages } = loaderData;
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Convert DB character to CharacterInfo for UI components
@@ -79,16 +110,61 @@ export default function Chat({ loaderData }: Route.ComponentProps) {
     description: character.description || undefined,
   };
 
-  const [messages, setMessages] = useState<ChatMessageType[]>([
-    {
-      id: "1",
-      role: "character",
-      content: character.greeting_message || "안녕!",
-      timestamp: new Date(),
-      characterName: character.name,
-      action: "*인사를 건넨다*",
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessageType[]>(() => {
+    // Load messages from DB if available
+    if (initialMessages && initialMessages.length > 0) {
+      return initialMessages.map((msg: any) => ({
+        id: String(msg.message_id),
+        role: msg.role === "assistant" ? "character" : "user",
+        content: msg.content,
+        timestamp: new Date(msg.created_at),
+        characterName: msg.role === "assistant" ? character.name : undefined,
+        // Action parsing logic (if stored as *action*)
+        // Simple check: if content starts and ends with *, treat as action for UI visual if needed
+        // but currently UI uses `action` field separately.
+        // If we strictly follow current UI, we might need to parse *...* out.
+        // For now, let's keep content as is.
+      }));
+    }
+
+    // Default greeting if no history
+    return [
+      {
+        id: "1",
+        role: "character",
+        content: character.greeting_message || "안녕!",
+        timestamp: new Date(),
+        characterName: character.name,
+        action: "*인사를 건넨다*",
+      },
+    ];
+  });
+
+  // 캐릭터가 변경되면 메시지 상태 초기화
+  useEffect(() => {
+    if (initialMessages && initialMessages.length > 0) {
+      setMessages(
+        initialMessages.map((msg: any) => ({
+          id: String(msg.message_id),
+          role: msg.role === "assistant" ? "character" : "user",
+          content: msg.content,
+          timestamp: new Date(msg.created_at),
+          characterName: msg.role === "assistant" ? character.name : undefined,
+        })),
+      );
+    } else {
+      setMessages([
+        {
+          id: "1",
+          role: "character",
+          content: character.greeting_message || "안녕!",
+          timestamp: new Date(),
+          characterName: character.name,
+          action: "*인사를 건넨다*",
+        },
+      ]);
+    }
+  }, [character.character_id, initialMessages]);
 
   // State for AI model and settings
   const [selectedModel, setSelectedModel] = useState<AIModel>("gemini-3-flash");
