@@ -125,7 +125,10 @@ async function callGemini(
     );
   }
 
-  // Convert messages to Gemini format
+  // Extract system message for Gemini's systemInstruction parameter
+  const systemMessage = messages.find((m) => m.role === "system");
+
+  // Convert messages to Gemini format (exclude system message)
   const contents = messages
     .filter((msg) => msg.role !== "system")
     .map((msg) => ({
@@ -135,6 +138,22 @@ async function callGemini(
 
   const modelName = getGeminiModelName(model);
 
+  const requestBody: any = {
+    contents,
+    generationConfig: {
+      temperature: 0.9,
+      maxOutputTokens: 1500,
+    },
+  };
+
+  // Add systemInstruction if system message exists
+  // This is critical for character persona to work!
+  if (systemMessage) {
+    requestBody.systemInstruction = {
+      parts: [{ text: systemMessage.content }],
+    };
+  }
+
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
     {
@@ -142,13 +161,7 @@ async function callGemini(
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          temperature: 0.9,
-          maxOutputTokens: 1500,
-        },
-      }),
+      body: JSON.stringify(requestBody),
     },
   );
 
@@ -384,6 +397,14 @@ export async function action({ request }: Route.ActionArgs) {
       return data({ error: "캐릭터를 찾을 수 없습니다" }, { status: 404 });
     }
 
+    // [DEBUG] Character Data Check
+    console.log("=== [DEBUG] Character Data ===");
+    console.log(`ID: ${character.character_id}, Name: ${character.name}`);
+    console.log("Speech Style:", character.speech_style ? "Exists" : "NULL");
+    console.log("Tone:", character.tone ? "Exists" : "NULL");
+    console.log("Personality:", character.personality ? "Exists" : "NULL");
+    console.log("===============================");
+
     // 채팅방 확인/생성
     let { data: room } = await client
       .from("chat_rooms")
@@ -433,6 +454,20 @@ export async function action({ request }: Route.ActionArgs) {
         // Continue without memory on error
       }
     }
+
+    // [Reinforce] Add instruction reinforcement at the end (Sandwich structure)
+    // This counters Recency Bias where AI focuses too much on memory and forgets persona
+    systemPrompt += `\n━━━━━━━━━━━━━━━━━━\n`;
+    systemPrompt += `[절대 잊지 말 것 - 최우선 원칙]\n`;
+    systemPrompt += `1. 당신은 ${character.name}입니다. AI 어시스턴트가 아닙니다.\n`;
+    systemPrompt += `2. 반드시 설정된 말투로만 말하세요: ${character.speech_style || "캐릭터 고유 말투"}\n`;
+    systemPrompt += `3. 위의 기억 정보는 대화의 맥락을 위해 참고만 하고, 캐릭터의 정체성과 말투를 절대 잃지 마세요.\n`;
+    systemPrompt += `━━━━━━━━━━━━━━━━━━\n`;
+
+    // [DEBUG] System Prompt Check
+    console.log("=== [DEBUG] System Prompt ===");
+    console.log(systemPrompt);
+    console.log("=============================");
 
     // Format user message
     const formattedMessage =
