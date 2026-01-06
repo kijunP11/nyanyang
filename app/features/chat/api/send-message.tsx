@@ -10,6 +10,11 @@ import { data } from "react-router";
 import { z } from "zod";
 
 import makeServerClient from "~/core/lib/supa-client.server";
+import {
+  extractImportantFacts,
+  saveMemory,
+  searchMemories,
+} from "../lib/memory.server";
 
 const sendMessageSchema = z.object({
   character_id: z.number(),
@@ -412,7 +417,22 @@ export async function action({ request }: Route.ActionArgs) {
     const nextSeq = (lastMessage?.sequence_number || 0) + 1;
 
     // Build system prompt
-    const systemPrompt = buildSystemPrompt(character);
+    let systemPrompt = buildSystemPrompt(character);
+
+    // [Memory] Retrieve relevant memories
+    if (character.enable_memory) {
+      try {
+        const memories = await searchMemories(client, room!.room_id, message);
+        if (memories.length > 0) {
+          systemPrompt += `\n[사용자에 대한 기억 (참고용)]\n다음은 사용자와의 과거 대화에서 기억한 내용입니다. 필요하다면 자연스럽게 언급하거나 참고하세요:\n${memories
+            .map((m) => `- ${m.content}`)
+            .join("\n")}\n`;
+        }
+      } catch (e) {
+        console.error("Failed to search memories:", e);
+        // Continue without memory on error
+      }
+    }
 
     // Format user message
     const formattedMessage =
@@ -490,6 +510,24 @@ export async function action({ request }: Route.ActionArgs) {
         message_count: (room!.message_count || 0) + 2,
       })
       .eq("room_id", room!.room_id);
+
+    // [Memory] Extract and save important facts (Async, Fire-and-forget)
+    if (character.enable_memory) {
+      Promise.resolve()
+        .then(async () => {
+          try {
+            const facts = await extractImportantFacts(message, aiResponse);
+            for (const fact of facts) {
+              await saveMemory(client, room!.room_id, fact);
+            }
+          } catch (e) {
+            console.error("Background memory processing failed:", e);
+          }
+        })
+        .catch((e) => {
+          console.error("Unhandled promise rejection in memory processing:", e);
+        });
+    }
 
     return data({
       success: true,

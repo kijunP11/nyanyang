@@ -4,6 +4,7 @@
  * This file configures Drizzle ORM, a TypeScript ORM for SQL databases.
  * It defines how database migrations are generated and where schema definitions are located.
  */
+import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
