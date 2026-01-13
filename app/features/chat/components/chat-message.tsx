@@ -1,9 +1,18 @@
 /**
  * Chat Message Component
- * 
+ *
  * Displays individual chat messages (user or character)
+ * Supports markdown image syntax: ![alt](url)
  */
-import { Avatar, AvatarFallback, AvatarImage } from "~/core/components/ui/avatar";
+import { useEffect, useRef, useState } from "react";
+
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "~/core/components/ui/avatar";
+
+import { parseMessageContent, type MessagePart } from "../lib/message-parser";
 
 export interface ChatMessage {
   id: string;
@@ -20,6 +29,100 @@ interface ChatMessageProps {
   userBubbleColor?: string;
   characterBubbleColor?: string;
   fontSize?: number;
+}
+
+/**
+ * 이미지 컴포넌트 - 로드 실패 시 대체 텍스트 표시
+ * 캐시된 이미지의 onLoad 타이밍 이슈 해결을 위해 img.complete 체크
+ */
+function MessageImage({
+  src,
+  alt,
+  fontSize,
+}: {
+  src: string;
+  alt?: string;
+  fontSize: number;
+}) {
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // 캐시된 이미지 처리: 이미 로드된 이미지인지 확인
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      // 이미지가 이미 로드됨 (캐시에서 불러온 경우)
+      setIsLoading(false);
+    }
+  }, [src]);
+
+  if (hasError) {
+    return (
+      <span
+        className="text-muted-foreground italic"
+        style={{ fontSize: `${fontSize}px` }}
+      >
+        [이미지를 불러올 수 없습니다]
+      </span>
+    );
+  }
+
+  return (
+    <a href={src} target="_blank" rel="noopener noreferrer" className="block">
+      {isLoading && (
+        <div className="bg-muted my-2 h-32 w-48 animate-pulse rounded-lg" />
+      )}
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt || "이미지"}
+        className={`my-2 max-w-[300px] cursor-pointer rounded-lg transition-opacity hover:opacity-90 ${isLoading ? "h-0 opacity-0" : "opacity-100"}`}
+        loading="lazy"
+        onLoad={() => setIsLoading(false)}
+        onError={() => {
+          setHasError(true);
+          setIsLoading(false);
+        }}
+      />
+    </a>
+  );
+}
+
+/**
+ * 메시지 콘텐츠 렌더러 - 텍스트와 이미지를 분리하여 렌더링
+ */
+function MessageContent({
+  content,
+  fontSize,
+}: {
+  content: string;
+  fontSize: number;
+}) {
+  const parts = parseMessageContent(content);
+
+  return (
+    <>
+      {parts.map((part: MessagePart, index: number) =>
+        part.type === "text" ? (
+          <p
+            key={index}
+            className="whitespace-pre-wrap break-words"
+            style={{ fontSize: `${fontSize}px` }}
+          >
+            {part.content}
+          </p>
+        ) : (
+          <MessageImage
+            key={index}
+            src={part.content}
+            alt={part.alt}
+            fontSize={fontSize}
+          />
+        ),
+      )}
+    </>
+  );
 }
 
 export function ChatMessage({
@@ -53,7 +156,7 @@ export function ChatMessage({
         )}
 
         {message.action && (
-          <p className="text-muted-foreground text-xs italic mb-1">
+          <p className="text-muted-foreground mb-1 text-xs italic">
             {message.action}
           </p>
         )}
@@ -65,12 +168,7 @@ export function ChatMessage({
             color: isUser ? "white" : undefined,
           }}
         >
-          <p
-            className="whitespace-pre-wrap break-words"
-            style={{ fontSize: `${fontSize}px` }}
-          >
-            {message.content}
-          </p>
+          <MessageContent content={message.content} fontSize={fontSize} />
         </div>
 
         <span className="text-muted-foreground text-xs">
@@ -89,4 +187,3 @@ export function ChatMessage({
     </div>
   );
 }
-
