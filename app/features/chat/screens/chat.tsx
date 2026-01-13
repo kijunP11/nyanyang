@@ -176,6 +176,9 @@ export default function Chat({ loaderData }: Route.ComponentProps) {
     theme: "dark",
   });
 
+  // State for conversation reset
+  const [isResetting, setIsResetting] = useState(false);
+
   // Mock character data
   // const character: CharacterInfo = {
   //   id: loaderData.characterId,
@@ -275,6 +278,37 @@ export default function Chat({ loaderData }: Route.ComponentProps) {
     console.log("Creating branch from message:", messageId);
   };
 
+  // 대화 초기화 핸들러
+  const handleResetConversation = async () => {
+    setIsResetting(true);
+    try {
+      const response = await fetch("/api/chat/reset-conversation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          character_id: character.character_id,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // 페이지 새로고침으로 상태 완전 초기화
+        window.location.reload();
+      } else {
+        console.error("Failed to reset conversation:", result.error);
+        alert(result.error || "대화 초기화에 실패했습니다. 다시 시도해주세요.");
+      }
+    } catch (error) {
+      console.error("Reset conversation error:", error);
+      alert("네트워크 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return (
     <div
       className="flex h-screen flex-col"
@@ -288,7 +322,12 @@ export default function Chat({ loaderData }: Route.ComponentProps) {
     >
       {/* Header */}
       <div className="bg-background/95 flex items-center justify-between border-b backdrop-blur">
-        <ChatHeader character={characterInfo} />
+        <ChatHeader
+          character={characterInfo}
+          onResetConversation={handleResetConversation}
+          hasMessages={messages.length > 1}
+          isResetting={isResetting}
+        />
         <div className="flex items-center gap-2 px-4">
           <ModelSelector
             selectedModel={selectedModel}

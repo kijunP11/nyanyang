@@ -50,6 +50,7 @@ export default [
     ]),
     ...prefix("/chat", [
       route("/send-message", "features/chat/api/send-message.tsx"),
+      route("/reset-conversation", "features/chat/api/reset-conversation.tsx"),
     ]),
     ...prefix("/cron", [route("/mailer", "features/cron/api/mailer.tsx")]),
     ...prefix("/blog", [route("/og", "features/blog/api/og.tsx")]),
