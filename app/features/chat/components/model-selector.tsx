@@ -19,6 +19,7 @@ export type AIModel =
   | "gpt-4o"
   | "gemini-3-flash"
   | "gemini-3-pro"
+  | "gemini-2.5-pro"
   | "gemini-2.5-flash"
   | "gemini-2.5-flash-lite"
   | "gemini-2.0-flash"
@@ -50,6 +51,7 @@ const defaultModels: ModelOption[] = [
   { id: "gemini-3-pro", name: "Gemini 3 Pro (Preview)" },
   
   // Gemini 2.5
+  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro (Preview)", recommended: true },
   { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash (Preview)" },
   { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite (Preview)" },
   

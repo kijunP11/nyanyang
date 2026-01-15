@@ -15,6 +15,11 @@ import {
   saveMemory,
   searchMemories,
 } from "../lib/memory.server";
+import {
+  replaceCharacterPlaceholders,
+  type PlaceholderVariables,
+} from "../lib/placeholder";
+import { sanitizeResponse } from "../lib/response-sanitizer";
 
 const sendMessageSchema = z.object({
   character_id: z.number(),
@@ -23,6 +28,7 @@ const sendMessageSchema = z.object({
   model: z.enum([
     "gemini-3-flash",
     "gemini-3-pro",
+    "gemini-2.5-pro",
     "gemini-2.5-flash",
     "gemini-2.5-flash-lite",
     "gemini-2.0-flash",
@@ -95,9 +101,10 @@ function getGeminiModelName(model: string): string {
     "gemini-3-flash": "gemini-2.0-flash-exp",
     "gemini-3-pro": "gemini-2.0-flash-exp",
 
-    // Gemini 2.5 (API 미공개 -> 2.0 Flash Exp로 매핑)
-    "gemini-2.5-flash": "gemini-2.0-flash-exp",
-    "gemini-2.5-flash-lite": "gemini-2.0-flash-exp",
+    // Gemini 2.5 (실제 모델)
+    "gemini-2.5-pro": "gemini-2.5-pro",
+    "gemini-2.5-flash": "gemini-2.5-flash",
+    "gemini-2.5-flash-lite": "gemini-2.5-flash-lite",
 
     // Gemini 2.0 (실제 모델 존재)
     "gemini-2.0-flash": "gemini-2.0-flash-exp",
@@ -297,7 +304,26 @@ async function callClaude(
 }
 
 /**
+ * system_prompt에서 INFO 블록 관련 지침을 추출하여 제거
+ * (INFO는 크리에이터가 설정한 것이지만, AI가 본문에 출력하면 안 됨)
+ */
+function extractAndRemoveInfoFromPrompt(systemPrompt: string): string {
+  if (!systemPrompt) return "";
+
+  let result = systemPrompt;
+
+  // ```INFO ... ``` 블록 제거
+  result = result.replace(/```INFO[\s\S]*?```/gi, "");
+
+  // INFO 출력 관련 지침 제거 (예: "매 응답 끝에 INFO를 출력해주세요")
+  result = result.replace(/INFO.*출력.*\n?/gi, "");
+
+  return result.trim();
+}
+
+/**
  * Build system prompt from character data
+ * (플레이스홀더는 이미 치환된 상태로 전달됨)
  */
 function buildSystemPrompt(character: any): string {
   let prompt = `당신은 ${character.name}입니다.\n\n`;
@@ -314,9 +340,14 @@ function buildSystemPrompt(character: any): string {
   if (character.speech_style) prompt += `[말투]\n${character.speech_style}\n\n`;
   if (character.tone) prompt += `[톤]\n${character.tone}\n\n`;
 
-  // 추가 시스템 프롬프트
+  // 추가 시스템 프롬프트 (INFO 블록 제거 후)
   if (character.system_prompt) {
-    prompt += `[추가 설정]\n${character.system_prompt}\n\n`;
+    const cleanedSystemPrompt = extractAndRemoveInfoFromPrompt(
+      character.system_prompt,
+    );
+    if (cleanedSystemPrompt) {
+      prompt += `[추가 설정]\n${cleanedSystemPrompt}\n\n`;
+    }
   }
 
   // 예시 대화 (Few-shot)
@@ -325,7 +356,7 @@ function buildSystemPrompt(character: any): string {
     Array.isArray(character.example_dialogues) &&
     character.example_dialogues.length > 0
   ) {
-    prompt += `[대화 예시]\n`;
+    prompt += `[대화 예시 - 이 문체를 반드시 따라하세요]\n`;
     character.example_dialogues.forEach((dialogue: any) => {
       if (dialogue.user && dialogue.character) {
         prompt += `User: ${dialogue.user}\n`;
@@ -343,7 +374,34 @@ function buildSystemPrompt(character: any): string {
   prompt += `4. "무엇을 도와드릴까요?" 같은 전형적인 챗봇 멘트는 절대 사용하지 마세요.\n`;
   prompt += `5. 사용자의 말을 단순히 받아주기만 하지 말고, 먼저 질문하거나 새로운 주제를 꺼내며 대화를 주도하세요.\n`;
   prompt += `6. 답변의 길이는 상황에 맞게 조절하되, 너무 짧게 끝내지 말고 풍부하게 묘사하세요.\n`;
-  prompt += `7. ${character.world_setting ? `현재 세계관(${character.world_setting})의 설정과 규칙을 철저히 따르세요.` : "현실적인 상황에 맞게 반응하세요."}\n`;
+  prompt += `7. ${character.world_setting ? `현재 세계관의 설정과 규칙을 철저히 따르세요.` : "현실적인 상황에 맞게 반응하세요."}\n`;
+
+  // 사칭 방지 지침 (매우 중요)
+  prompt += `\n[사용자 사칭 금지 - 매우 중요]\n`;
+  prompt += `8. 절대로 사용자의 대사를 대신 작성하지 마세요.\n`;
+  prompt += `9. 절대로 사용자의 행동을 대신 묘사하지 마세요. (예: "당신은 고개를 끄덕인다" ← 금지)\n`;
+  prompt += `10. 사용자가 무엇을 말하거나 할지 가정하지 마세요.\n`;
+  prompt += `11. 오직 ${character.name}의 시점에서만 응답하세요.\n`;
+
+  // 응답 형식 지침
+  prompt += `\n[응답 형식]\n`;
+  prompt += `12. "캐릭터명|대사" 형식으로 절대 답변하지 마세요. 그냥 자연스럽게 말하세요.\n`;
+  prompt += `13. 대화 요약이나 메타 정보를 끝에 추가하지 마세요.\n`;
+  prompt += `14. INFO, 시간, 장소 등의 메타데이터를 본문에 출력하지 마세요.\n`;
+  prompt += `15. 이미지를 출력할 때는 ![설명](URL) 형식만 사용하세요.\n`;
+
+  // 캐릭터 성격 강화
+  if (character.personality || character.tone) {
+    prompt += `\n[캐릭터 성격 유지]\n`;
+    if (character.personality) {
+      prompt += `16. 당신의 성격: ${character.personality}\n`;
+      prompt += `    이 성격에 맞지 않는 반응은 하지 마세요.\n`;
+    }
+    if (character.tone) {
+      prompt += `17. 당신의 톤: ${character.tone}\n`;
+      prompt += `    차갑다면 따뜻하게, 냉소적이라면 지나치게 긍정적이지 마세요.\n`;
+    }
+  }
 
   return prompt;
 }
@@ -386,20 +444,44 @@ export async function action({ request }: Route.ActionArgs) {
       conversation_history = [],
     } = result.data;
 
+    // 사용자 프로필 조회 ({{user}} 치환용)
+    const { data: profile } = await client
+      .from("profiles")
+      .select("name")
+      .eq("profile_id", user.id)
+      .single();
+
+    // 사용자 이름 결정 (우선순위: profiles.name > user_metadata.name > email > 'User')
+    const userName =
+      profile?.name ||
+      user.user_metadata?.name ||
+      user.email?.split("@")[0] ||
+      "User";
+
     // 캐릭터 정보 조회
-    const { data: character } = await client
+    const { data: characterRaw } = await client
       .from("characters")
       .select("*")
       .eq("character_id", character_id)
       .single();
 
-    if (!character) {
+    if (!characterRaw) {
       return data({ error: "캐릭터를 찾을 수 없습니다" }, { status: 404 });
     }
+
+    // 플레이스홀더 치환 변수
+    const placeholderVars: PlaceholderVariables = {
+      user: userName,
+      char: characterRaw.name,
+    };
+
+    // {{user}}, {{char}} 플레이스홀더 치환
+    const character = replaceCharacterPlaceholders(characterRaw, placeholderVars);
 
     // [DEBUG] Character Data Check
     console.log("=== [DEBUG] Character Data ===");
     console.log(`ID: ${character.character_id}, Name: ${character.name}`);
+    console.log(`User Name: ${userName}`);
     console.log("Speech Style:", character.speech_style ? "Exists" : "NULL");
     console.log("Tone:", character.tone ? "Exists" : "NULL");
     console.log("Personality:", character.personality ? "Exists" : "NULL");
@@ -526,6 +608,24 @@ export async function action({ request }: Route.ActionArgs) {
         },
       });
     }
+
+    // AI 응답 정제 (INFO 블록, 대사 중복, 잘못된 형식 제거)
+    const sanitizedResponse = sanitizeResponse(
+      aiResponse,
+      userName,
+      character.name,
+    );
+
+    // [DEBUG] Sanitizer Check
+    if (aiResponse !== sanitizedResponse) {
+      console.log("=== [DEBUG] Response Sanitized ===");
+      console.log("Original length:", aiResponse.length);
+      console.log("Sanitized length:", sanitizedResponse.length);
+      console.log("==================================");
+    }
+
+    // 정제된 응답 사용
+    aiResponse = sanitizedResponse;
 
     // AI 응답 저장
     await client.from("messages").insert({
