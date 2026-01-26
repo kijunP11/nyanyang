@@ -98,8 +98,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     i18next.getLocale(request),
   ]);
 
+  // Get theme from session, default to "dark" if not set
+  const theme = getTheme() ?? "dark";
+
   return {
-    theme: getTheme(),
+    theme,
     locale,
   };
 }
@@ -256,8 +259,8 @@ export default function App() {
         // Redirect to error page if authentication failed
         navigate(`/error?${searchParams.toString()}`);
       } else if (code) {
-        // Redirect to dashboard if authentication succeeded
-        navigate(`/dashboard/account`);
+        // Redirect to home page if authentication succeeded
+        navigate(`/`);
       }
     }
   }, [searchParams]);

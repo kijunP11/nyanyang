@@ -1,14 +1,17 @@
 /**
- * Characters Schema
+ * Character System Schema
  *
- * This file defines the database schema for AI characters in the Nyanyang platform.
- * Characters can be created by users (creators) and used in chat conversations.
+ * This file defines the database schema for characters and related tables.
+ * It includes configurations for Row Level Security (RLS) policies to ensure
+ * proper access control for character data.
  */
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   integer,
   jsonb,
+  pgEnum,
   pgPolicy,
   pgTable,
   text,
@@ -19,104 +22,194 @@ import { authUid, authUsers, authenticatedRole } from "drizzle-orm/supabase";
 import { makeIdentityColumn, timestamps } from "~/core/db/helpers.server";
 
 /**
+ * Character Status Enum
+ */
+export const characterStatusEnum = pgEnum("character_status", [
+  "draft",
+  "pending_review",
+  "approved",
+  "rejected",
+  "archived",
+]);
+
+/**
  * Characters Table
  *
- * Stores AI character information including personality, appearance, and behavior settings.
- * Each character can be used to create chat rooms where users interact with the AI.
- *
- * Features:
- * - Public/Private visibility control
- * - Creator attribution and management
- * - Rich metadata (tags, personality traits, example dialogues)
- * - Safety filtering and content moderation
- * - Usage statistics tracking
+ * Stores character profiles, settings, and metadata.
+ * Linked to the creator (auth.users) via creator_id.
  */
 export const characters = pgTable(
   "characters",
   {
-    // Auto-incrementing primary key
+    // Primary Key
     ...makeIdentityColumn("character_id"),
 
     // Basic Info
     name: text().notNull(),
-    display_name: text().notNull(), // 표시용 이름 (닉네임)
-    description: text().notNull(), // 캐릭터 설명
-    greeting_message: text().notNull(), // 첫 인사말
+    display_name: text(),
+    description: text(),
+    greeting_message: text(),
+    tagline: text(), // Added in 0004
 
-    // Visual
-    avatar_url: text(), // 프로필 이미지 URL (Supabase Storage)
-    banner_url: text(), // 배너 이미지 URL
+    // Media
+    avatar_url: text(),
+    banner_url: text(),
+    gallery_urls: jsonb().default([]),
 
-    // AI Configuration
-    personality: text().notNull(), // 성격 설정 (상세)
-    system_prompt: text().notNull(), // AI 시스템 프롬프트
-    example_dialogues: jsonb(), // 예시 대화 (JSON array)
-
-    // Categorization
-    tags: jsonb().notNull().default(sql`'[]'::jsonb`), // 태그 배열 (로맨스, 츤데레 등)
-    category: text(), // 카테고리 (남성, 여성, 기타)
-    age_rating: text().notNull().default("general"), // general, teen, mature, adult
+    // Character Details
+    personality_traits: text()
+      .array()
+      .default(sql`ARRAY[]::text[]`),
+    personality: text(), // Added in 0005
+    tone: text(),
+    age: integer(),
+    gender: text(),
+    role: text(), // Added in 0004
+    appearance: text(), // Added in 0004
+    speech_style: text(), // Added in 0004
+    system_prompt: text(), // Added in 0005
+    example_dialogues: jsonb().default([]), // Added in 0005
 
     // Settings
-    is_public: boolean().notNull().default(false), // 공개 여부
-    is_featured: boolean().notNull().default(false), // 추천 캐릭터 여부
-    is_nsfw: boolean().notNull().default(false), // 성인 콘텐츠 여부
-    enable_memory: boolean().notNull().default(true), // 메모리 기능 활성화
+    relationship: text(), // Added in 0004
+    world_setting: text(), // Added in 0004
+    category: text(), // Added in 0005
+    age_rating: text().default("everyone"), // Added in 0005
+    enable_memory: boolean().default(true), // Added in 0005
 
-    // Creator & Ownership
+    is_public: boolean().notNull().default(false),
+    is_nsfw: boolean().notNull().default(false),
+    status: characterStatusEnum().notNull().default("draft"),
+
+    // Metadata
+    tags: text()
+      .array()
+      .default(sql`ARRAY[]::text[]`),
+    view_count: integer().notNull().default(0),
+    like_count: integer().notNull().default(0),
+    chat_count: integer().notNull().default(0),
+
+    // Ownership
     creator_id: uuid()
       .notNull()
       .references(() => authUsers.id, { onDelete: "cascade" }),
-
-    // Moderation
-    status: text().notNull().default("pending"), // pending, approved, rejected
-    moderation_note: text(), // 관리자 검토 노트
-
-    // Statistics
-    chat_count: integer().notNull().default(0), // 생성된 채팅방 수
-    message_count: integer().notNull().default(0), // 총 메시지 수
-    view_count: integer().notNull().default(0), // 조회수
-    like_count: integer().notNull().default(0), // 좋아요 수
 
     // Timestamps
     ...timestamps,
   },
   (table) => [
-    // RLS Policy: 모든 인증된 사용자가 승인된 공개 캐릭터를 볼 수 있음
-    pgPolicy("select-public-characters-policy", {
+    // RLS Policies
+    pgPolicy("select_public_characters_policy", {
       for: "select",
-      to: authenticatedRole,
-      as: "permissive",
+      to: "public",
       using: sql`${table.is_public} = true AND ${table.status} = 'approved'`,
     }),
-    // RLS Policy: 제작자는 자신의 캐릭터를 볼 수 있음
-    pgPolicy("select-own-characters-policy", {
+    pgPolicy("select_own_characters_policy", {
       for: "select",
       to: authenticatedRole,
-      as: "permissive",
       using: sql`${authUid} = ${table.creator_id}`,
     }),
-    // RLS Policy: 제작자는 자신의 캐릭터를 수정할 수 있음
-    pgPolicy("update-own-characters-policy", {
-      for: "update",
-      to: authenticatedRole,
-      as: "permissive",
-      using: sql`${authUid} = ${table.creator_id}`,
-      withCheck: sql`${authUid} = ${table.creator_id}`,
-    }),
-    // RLS Policy: 인증된 사용자는 캐릭터를 생성할 수 있음
-    pgPolicy("insert-characters-policy", {
+    pgPolicy("insert_characters_policy", {
       for: "insert",
       to: authenticatedRole,
-      as: "permissive",
       withCheck: sql`${authUid} = ${table.creator_id}`,
     }),
-    // RLS Policy: 제작자는 자신의 캐릭터를 삭제할 수 있음
-    pgPolicy("delete-own-characters-policy", {
+    pgPolicy("update_characters_policy", {
+      for: "update",
+      to: authenticatedRole,
+      using: sql`${authUid} = ${table.creator_id}`,
+      withCheck: sql`${authUid} = ${table.creator_id}`,
+    }),
+    pgPolicy("delete_characters_policy", {
       for: "delete",
       to: authenticatedRole,
-      as: "permissive",
       using: sql`${authUid} = ${table.creator_id}`,
+    }),
+  ],
+);
+
+/**
+ * Character Keywords Table
+ *
+ * Stores custom keywords and responses for characters.
+ */
+export const characterKeywords = pgTable(
+  "character_keywords",
+  {
+    ...makeIdentityColumn("keyword_id"),
+    character_id: bigint({ mode: "number" })
+      .notNull()
+      .references(() => characters.character_id, { onDelete: "cascade" }),
+
+    keyword: text().notNull(),
+    description: text(),
+    response_template: text(),
+    priority: integer().notNull().default(0),
+    is_active: boolean().notNull().default(true),
+
+    ...timestamps,
+  },
+  (table) => [
+    pgPolicy("manage_own_character_keywords_policy", {
+      for: "all",
+      to: authenticatedRole,
+      using: sql`EXISTS (
+        SELECT 1 FROM ${characters}
+        WHERE ${characters.character_id} = ${table.character_id}
+        AND ${characters.creator_id} = ${authUid}
+      )`,
+      withCheck: sql`EXISTS (
+        SELECT 1 FROM ${characters}
+        WHERE ${characters.character_id} = ${table.character_id}
+        AND ${characters.creator_id} = ${authUid}
+      )`,
+    }),
+  ],
+);
+
+/**
+ * Character Safety Filters Table
+ *
+ * Stores content moderation settings for characters.
+ */
+export const characterSafetyFilters = pgTable(
+  "character_safety_filters",
+  {
+    ...makeIdentityColumn("filter_id"),
+    character_id: bigint({ mode: "number" })
+      .notNull()
+      .references(() => characters.character_id, { onDelete: "cascade" }), // Unique constraint handled by index if needed, or app logic
+
+    block_nsfw: boolean().notNull().default(true),
+    block_violence: boolean().notNull().default(true),
+    block_hate_speech: boolean().notNull().default(true),
+    block_personal_info: boolean().notNull().default(true),
+
+    blocked_words: text()
+      .array()
+      .default(sql`ARRAY[]::text[]`),
+    blocked_phrases: text()
+      .array()
+      .default(sql`ARRAY[]::text[]`),
+
+    sensitivity_level: integer().notNull().default(5),
+
+    ...timestamps,
+  },
+  (table) => [
+    pgPolicy("manage_own_character_filters_policy", {
+      for: "all",
+      to: authenticatedRole,
+      using: sql`EXISTS (
+        SELECT 1 FROM ${characters}
+        WHERE ${characters.character_id} = ${table.character_id}
+        AND ${characters.creator_id} = ${authUid}
+      )`,
+      withCheck: sql`EXISTS (
+        SELECT 1 FROM ${characters}
+        WHERE ${characters.character_id} = ${table.character_id}
+        AND ${characters.creator_id} = ${authUid}
+      )`,
     }),
   ],
 );
@@ -124,41 +217,28 @@ export const characters = pgTable(
 /**
  * Character Likes Table
  *
- * Tracks which users have liked which characters.
- * Used for recommendation and popularity ranking.
+ * Tracks user likes for characters.
  */
 export const characterLikes = pgTable(
   "character_likes",
   {
+    like_id: uuid().primaryKey().defaultRandom(),
+    character_id: bigint({ mode: "number" })
+      .notNull()
+      .references(() => characters.character_id, { onDelete: "cascade" }),
     user_id: uuid()
       .notNull()
       .references(() => authUsers.id, { onDelete: "cascade" }),
-    character_id: integer()
-      .notNull()
-      .references(() => characters.character_id, { onDelete: "cascade" }),
+
     ...timestamps,
   },
   (table) => [
-    // RLS Policy: 사용자는 자신의 좋아요만 볼 수 있음
-    pgPolicy("select-own-likes-policy", {
-      for: "select",
+    pgPolicy("manage_own_likes_policy", {
+      for: "all",
       to: authenticatedRole,
-      as: "permissive",
       using: sql`${authUid} = ${table.user_id}`,
-    }),
-    // RLS Policy: 사용자는 좋아요를 추가할 수 있음
-    pgPolicy("insert-likes-policy", {
-      for: "insert",
-      to: authenticatedRole,
-      as: "permissive",
       withCheck: sql`${authUid} = ${table.user_id}`,
-    }),
-    // RLS Policy: 사용자는 자신의 좋아요를 삭제할 수 있음
-    pgPolicy("delete-own-likes-policy", {
-      for: "delete",
-      to: authenticatedRole,
-      as: "permissive",
-      using: sql`${authUid} = ${table.user_id}`,
     }),
   ],
 );
+

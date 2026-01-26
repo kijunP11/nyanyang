@@ -34,11 +34,23 @@ export default [
       route("/password", "features/users/api/change-password.tsx"),
       route("/email", "features/users/api/change-email.tsx"),
       route("/profile", "features/users/api/edit-profile.tsx"),
+      route(
+        "/referral-code/validate",
+        "features/users/api/validate-referral-code.tsx",
+      ),
       route("/providers", "features/users/api/connect-provider.tsx"),
       route(
         "/providers/:provider",
         "features/users/api/disconnect-provider.tsx",
       ),
+    ]),
+    ...prefix("/characters", [
+      route("/delete", "features/characters/api/delete-character.tsx"),
+      route("/upload-media", "features/characters/api/upload-media.tsx"),
+    ]),
+    ...prefix("/chat", [
+      route("/send-message", "features/chat/api/send-message.tsx"),
+      route("/reset-conversation", "features/chat/api/reset-conversation.tsx"),
     ]),
     ...prefix("/cron", [route("/mailer", "features/cron/api/mailer.tsx")]),
     ...prefix("/blog", [route("/og", "features/blog/api/og.tsx")]),
@@ -132,28 +144,26 @@ export default [
     // Points and Guide top-level routes under main navigation
     route("/points", "features/points/screens/points.tsx"),
     route("/guide", "features/guide/screens/guide.tsx"),
+    route("/attendance", "features/attendance/screens/attendance.tsx"),
     // Blog routes moved under the main navigation layout so the NavigationBar persists
     ...prefix("/blog", [
       index("features/blog/screens/posts.tsx"),
       route(":slug", "features/blog/screens/post.tsx"),
     ]),
-    // Chat routes (requires authentication via private.layout)
-    layout("core/layouts/private.layout.tsx", { id: "private-chat" }, [
-      route("/rooms", "features/chat/screens/rooms.tsx"),
-      route("/chat/:roomId", "features/chat/screens/chat.tsx"),
+    // Chat routes
+    ...prefix("/chat", [
+      route("/:characterId", "features/chat/screens/chat.tsx"),
     ]),
-    // Character routes (requires authentication)
-    layout("core/layouts/private.layout.tsx", { id: "private-characters" }, [
-      route("/characters", "features/characters/screens/list.tsx"),
-      route("/characters/create", "features/characters/screens/create.tsx"),
-      route(
-        "/characters/:characterId",
-        "features/characters/screens/detail.tsx",
-      ),
-    ]),
-    // Attendance route (requires authentication)
-    layout("core/layouts/private.layout.tsx", { id: "private-attendance" }, [
-      route("/attendance", "features/attendance/screens/attendance.tsx"),
+    // Character routes
+    ...prefix("/characters", [
+      index("features/characters/screens/character-list.tsx"),
+      layout("core/layouts/private.layout.tsx", { id: "private-characters" }, [
+        route("/create", "features/characters/screens/character-create.tsx"),
+        route(
+          "/:characterId/edit",
+          "features/characters/screens/character-edit.tsx",
+        ),
+      ]),
     ]),
     // Admin routes (requires admin authentication)
     layout("core/layouts/private.layout.tsx", { id: "private-admin" }, [

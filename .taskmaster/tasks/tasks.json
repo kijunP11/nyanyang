@@ -2,224 +2,143 @@
   "master": {
     "tasks": [
       {
-        "id": "1",
-        "title": "Create Characters database schema",
-        "description": "Implement the Characters table with all required fields for AI character management",
-        "details": "Create app/features/characters/schema.ts with Characters table including: character_id (bigint PK), name, display_name, description, greeting_message, avatar_url, banner_url, personality, system_prompt, example_dialogues (jsonb), tags (jsonb), category, age_rating, is_public, is_featured, is_nsfw, enable_memory, creator_id (FK), status, moderation_note, chat_count, message_count, view_count, like_count, timestamps. Include RLS policies for SELECT (public+approved OR own), INSERT/UPDATE/DELETE (own only). Use makeIdentityColumn helper and timestamps from core/db/helpers.server.",
-        "testStrategy": "Run db:generate to create migration, then db:migrate to apply. Verify table creation and RLS policies in Supabase dashboard.",
+        "id": 11,
+        "title": "Set Up Home Route and Component Structure",
+        "description": "Create the main dashboard route and component structure for the home page.",
+        "details": "Create a new route in `app/routes/home.tsx` and a main component in `app/features/home/screens/home-dashboard.tsx`. Ensure the route is correctly integrated into the existing routing strategy.",
+        "testStrategy": "Verify the route loads without errors and the component renders a basic layout.",
         "priority": "high",
         "dependencies": [],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-09T05:04:54.429Z"
-      },
-      {
-        "id": "2",
-        "title": "Create Character Likes schema",
-        "description": "Implement character_likes junction table for user likes functionality",
-        "details": "Add character_likes table to app/features/characters/schema.ts with user_id (FK to auth.users), character_id (FK to characters), created_at timestamp, composite PRIMARY KEY (user_id, character_id). Include RLS policies for SELECT/INSERT/DELETE own records only.",
-        "testStrategy": "Generate and run migration, test like/unlike operations don't conflict with primary key constraint.",
-        "priority": "medium",
-        "dependencies": [
-          "1"
-        ],
-        "status": "done",
+        "status": "pending",
         "subtasks": []
       },
       {
-        "id": "3",
-        "title": "Create Points system schema",
-        "description": "Implement user_points and point_transactions tables for the point economy",
-        "details": "Create app/features/points/schema.ts with user_points table (user_id PK FK, current_balance int, total_earned int, total_spent int, updated_at) and point_transactions table (transaction_id bigint PK, user_id FK, amount int +/-, balance_after int, type enum 'charge'/'usage'/'reward', reason text, reference_id text, created_at). Include RLS policies for own records only. Use service role for INSERT on transactions.",
-        "testStrategy": "Generate migration and test point balance calculations, verify transaction history integrity.",
-        "priority": "high",
-        "dependencies": [],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-09T05:53:29.749Z"
-      },
-      {
-        "id": "4",
-        "title": "Create Chat Rooms schema",
-        "description": "Implement chat_rooms table for managing user-character conversations",
-        "details": "Create app/features/chat/schema.ts with chat_rooms table: room_id (bigint PK), user_id (FK), character_id (FK), title text, last_message text, last_message_at timestamp, message_count int, timestamps. Include RLS policies for SELECT/INSERT/UPDATE/DELETE own rooms only.",
-        "testStrategy": "Generate migration and test room creation, verify foreign key constraints to characters and users.",
+        "id": 12,
+        "title": "Implement Navigation Bar Integration",
+        "description": "Ensure the existing navigation bar integrates seamlessly with the new home structure.",
+        "details": "Maintain the current navigation bar layout and links (Home, Create, Explore, Profile). Ensure it is compatible with the new home page structure.",
+        "testStrategy": "Check that the navigation bar displays correctly and links navigate to the correct pages.",
         "priority": "medium",
         "dependencies": [
-          "1"
+          11
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-09T06:13:00.973Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "5",
-        "title": "Create Messages and Memory schemas",
-        "description": "Implement messages table with branching support and room_memories for conversation summaries",
-        "details": "Add to app/features/chat/schema.ts: messages table (message_id bigint PK, room_id FK, parent_message_id FK nullable for branching, branch_name text nullable, role enum 'user'/'assistant', content text, tokens_used int, model text, created_at) and room_memories table (memory_id bigint PK, room_id FK, summary text, start_message_id FK, end_message_id FK, created_at). Include RLS policies for own room messages only.",
-        "testStrategy": "Generate migration and test message tree structure, verify parent-child relationships work correctly.",
+        "id": 13,
+        "title": "Develop Hero Section",
+        "description": "Create a static hero section as a placeholder for future dynamic content.",
+        "details": "Implement a simple banner with a title, subtitle, and CTA button using a gray box or gradient as a placeholder.",
+        "testStrategy": "Ensure the hero section displays correctly with placeholder content.",
         "priority": "medium",
         "dependencies": [
-          "4"
+          11
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-10T02:03:21.495Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "6",
-        "title": "Create Attendance schema",
-        "description": "Implement attendance_records table for daily check-in rewards",
-        "details": "Create app/features/attendance/schema.ts with attendance_records table: user_id (FK), attendance_date (date), points_awarded int, consecutive_days int, created_at, composite PRIMARY KEY (user_id, attendance_date). Include RLS policies for own records only.",
-        "testStrategy": "Generate migration and test unique constraint prevents duplicate daily check-ins.",
-        "priority": "medium",
-        "dependencies": [
-          "3"
-        ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-09T21:25:45.263Z"
-      },
-      {
-        "id": "7",
-        "title": "Implement Character CRUD APIs",
-        "description": "Create API routes for character management with proper authentication and validation",
-        "details": "Create app/features/characters/api/ with: list.tsx (GET with search/filter/sort), detail.tsx (GET single character), create.tsx (POST for creators), update.tsx (PUT own characters), delete.tsx (DELETE own), like.tsx (POST/DELETE like/unlike). Use Zod validation schemas and requireAuthentication from core guards. Implement search by name/tags, filter by category/age_rating, sort by popularity/recent.",
-        "testStrategy": "Test all CRUD operations, verify authentication guards, test search and filtering functionality.",
+        "id": 14,
+        "title": "Create 'My Characters' and 'Recent Chats' Sections",
+        "description": "Develop sections for displaying user's characters and recent chats with data fetching.",
+        "details": "Fetch user's characters and recent chat rooms using `creator_id = user.id` and sort chats by `last_message_at`. Implement horizontal scroll or grid layout for displaying items.",
+        "testStrategy": "Validate that the correct data is fetched and displayed in the specified layout.",
         "priority": "high",
         "dependencies": [
-          "1",
-          "2"
+          11
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-10T01:42:16.704Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "8",
-        "title": "Implement Points system APIs",
-        "description": "Create API routes for point management and transaction handling",
-        "details": "Create app/features/points/api/ with: balance.tsx (GET user balance), history.tsx (GET transaction history), charge.tsx (POST Stripe payment webhook), usage.tsx (POST deduct points for messages). Implement atomic transactions for point operations. Use server-side service role for point modifications to prevent client manipulation.",
-        "testStrategy": "Test point deduction, charging, and balance accuracy. Verify transaction atomicity and prevent race conditions.",
-        "priority": "high",
-        "dependencies": [
-          "3"
-        ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-10T01:49:49.994Z"
-      },
-      {
-        "id": "9",
-        "title": "Integrate Stripe payment system",
-        "description": "Set up Stripe integration for point purchasing with secure webhook handling",
-        "details": "Extend existing Toss payment system to include Stripe. Create Stripe checkout session API, implement webhook handler for payment.succeeded events, create point packages (100, 500, 1000, 5000 points), update payments schema if needed. Use Stripe SDK and ensure webhook signature validation for security.",
-        "testStrategy": "Test payment flow end-to-end, verify webhook security, test point crediting after successful payment.",
-        "priority": "high",
-        "dependencies": [
-          "8"
-        ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-10T02:44:29.373Z"
-      },
-      {
-        "id": "10",
-        "title": "Implement AI chat integration",
-        "description": "Set up OpenAI and Anthropic API integration with streaming responses using Vercel AI SDK",
-        "details": "Create app/features/chat/api/chat.tsx using Vercel AI SDK. Implement streaming responses with openai and anthropic providers, handle system prompts from character personality, manage conversation context with message history, implement token counting and point deduction per message. Use environment variables for API keys and implement fallback between providers.",
-        "testStrategy": "Test AI responses with both providers, verify streaming works, test context management and point deduction.",
-        "priority": "high",
-        "dependencies": [
-          "5",
-          "8"
-        ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-10T02:16:32.057Z"
-      },
-      {
-        "id": "11",
-        "title": "Create Character Explorer UI",
-        "description": "Build the main character discovery interface with search, filtering and character cards",
-        "details": "Create app/features/characters/screens/ with: list.tsx (main explorer page), detail.tsx (character profile page). Implement character cards using shadcn/ui Card component, search input with real-time filtering, category/tag filters using Select component, sort options (popular/recent/alphabetical). Add infinite scroll or pagination for performance. Include character statistics display and like functionality.",
-        "testStrategy": "Test responsive design, search performance, filter combinations, and like/unlike functionality.",
+        "id": 15,
+        "title": "Implement Discovery/Popular Section",
+        "description": "Develop a section for exploring public characters based on popularity and recency.",
+        "details": "Fetch popular characters sorted by `like_count` or `chat_count` and new characters by `created_at`. Use a responsive grid layout for display.",
+        "testStrategy": "Check that the section displays characters correctly and updates based on sorting criteria.",
         "priority": "medium",
         "dependencies": [
-          "7"
+          11
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-10T02:59:18.125Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "12",
-        "title": "Build Chat Room UI with branching",
-        "description": "Create the core chat interface with message branching and rollback functionality",
-        "details": "Create app/features/chat/screens/ with: rooms.tsx (chat room list), chat.tsx (main chat interface). Implement message thread UI with bubble layout (user right, AI left), typing indicators, message timestamps. Add rollback functionality: click previous message to create new branch, branch visualization as collapsible tree, branch switching dropdown. Use React state for optimistic updates and real-time message streaming.",
-        "testStrategy": "Test message threading, branch creation/switching, responsive design, and real-time updates.",
+        "id": 16,
+        "title": "Add Category Filter Functionality",
+        "description": "Implement category filtering for characters using pill-shaped buttons.",
+        "details": "Create filter buttons for categories like 'All', 'Romance', 'Fantasy'. Implement filtering logic to update displayed characters based on selected category.",
+        "testStrategy": "Ensure that selecting a category updates the displayed characters accordingly.",
+        "priority": "medium",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Optimize Data Fetching with Parallel Requests",
+        "description": "Enhance data fetching performance using parallel requests.",
+        "details": "Use `Promise.all` in the `loader` function to fetch user's characters, recent chats, and popular characters simultaneously. Limit results to improve performance.",
+        "testStrategy": "Monitor network requests to ensure they are executed in parallel and verify data integrity.",
         "priority": "high",
         "dependencies": [
-          "10",
-          "4"
+          14,
+          15
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-10T02:29:49.308Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "13",
-        "title": "Implement Memory System",
-        "description": "Create automatic conversation summarization and context management",
-        "details": "Create memory management system in app/features/chat/lib/. Implement auto-summarization every N messages (configurable, default 20), use AI API to generate conversation summaries, store summaries in room_memories table. Create context builder that includes recent messages + relevant summaries to maintain conversation continuity while optimizing token usage. Add memory management UI for viewing/editing summaries.",
-        "testStrategy": "Test summarization triggers, context building accuracy, and token optimization effectiveness.",
+        "id": 18,
+        "title": "Refactor and Reuse UI Components",
+        "description": "Refactor existing components for reuse in the new dashboard.",
+        "details": "Refactor `CharacterCard` for reuse if necessary. Create a `SectionLayout` component for consistent section headers with a title and 'See All' link.",
+        "testStrategy": "Check that components are reused correctly and maintain consistent styling across sections.",
         "priority": "medium",
         "dependencies": [
-          "12",
-          "5"
+          11
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-10T07:24:46.174Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "14",
-        "title": "Create Attendance Check-in System",
-        "description": "Implement daily attendance rewards with consecutive day bonuses",
-        "details": "Create app/features/attendance/screens/attendance.tsx with check-in UI showing calendar view, current streak, and point rewards. Implement app/features/attendance/api/checkin.tsx for processing daily check-ins. Add consecutive day bonus logic (day 1: 10 points, day 7: 50 points, day 30: 200 points). Create attendance status component for dashboard. Use timezone handling for accurate daily resets.",
-        "testStrategy": "Test daily check-in logic, consecutive day calculations, timezone handling, and point rewards.",
-        "priority": "medium",
+        "id": 19,
+        "title": "Ensure Layout Matches Figma Design",
+        "description": "Align the dashboard layout with the Figma design specifications.",
+        "details": "Adjust CSS and component structure to ensure the layout closely matches the Figma design (Node 27:3404).",
+        "testStrategy": "Compare the rendered layout with the Figma design to ensure alignment.",
+        "priority": "high",
         "dependencies": [
-          "6",
-          "8"
+          13,
+          14,
+          15,
+          16
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-10T07:11:20.353Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "15",
-        "title": "Build Character Creation Interface",
-        "description": "Create comprehensive character creation tool for creators",
-        "details": "Create app/features/characters/screens/create.tsx with multi-step form: basic info (name, description), personality setup (detailed traits, speaking style), system prompt editor with examples, sample conversation input, image upload via Supabase Storage, tag selection, visibility settings. Include character preview functionality and validation. Add submission workflow with pending status for admin review.",
-        "testStrategy": "Test form validation, image upload, character preview accuracy, and submission workflow.",
-        "priority": "medium",
+        "id": 20,
+        "title": "Conduct Error Handling and Success Metrics Validation",
+        "description": "Implement error handling and validate success metrics for the dashboard.",
+        "details": "Ensure no '400 Bad Request' or '500' errors occur during data fetching. Validate that logged-in users see their content at the top.",
+        "testStrategy": "Perform tests to trigger potential errors and verify that success metrics are met.",
+        "priority": "high",
         "dependencies": [
-          "7"
+          17,
+          19
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2025-11-10T07:17:40.117Z"
+        "status": "pending",
+        "subtasks": []
       }
     ],
     "metadata": {
-      "version": "1.0.0",
-      "lastModified": "2025-11-10T07:24:46.175Z",
-      "taskCount": 15,
-      "completedCount": 15,
-      "tags": [
-        "master"
-      ]
+      "created": "2025-11-20T23:58:08.864Z",
+      "updated": "2025-11-25T06:09:40.548Z",
+      "description": "Tasks for master context"
     }
   }
 }

@@ -1,0 +1,60 @@
+# Project: Main Page Revamp (Figma Implementation)
+
+## 1. Overview
+Implement the main home dashboard based on the Figma design (Node 27:3404).
+This page serves as the landing page for logged-in users, providing quick access to their characters, recent conversations, and discovering new content.
+
+**Key Concept:** "Personalized Dashboard" (not just a list).
+**Design Strategy:** Lo-Fi implementation (focus on layout & data binding, use placeholders for images).
+
+## 2. Core Features & Layout
+
+### 2.1. Navigation Bar (GNB)
+- Keep existing layout but ensure it integrates well with the new home structure.
+- Links: Home, Create, Explore, Profile.
+
+### 2.2. Hero Section (Top Banner)
+- **Purpose:** Highlight feature or announcement.
+- **Content:** Simple banner with title, subtitle, and CTA button.
+- **Implementation:** Static placeholder for now (gray box or gradient).
+
+### 2.3. "My Characters" & "Recent Chats" (Personalized)
+- **Purpose:** Quick access for returning users.
+- **Data:**
+  - Fetch characters created by the logged-in user (`creator_id = user.id`).
+  - Fetch recent chat rooms (`chat_rooms` sorted by `last_message_at`).
+- **Layout:** Horizontal scroll or Grid (limit to 4-5 items).
+
+### 2.4. Discovery / Popular Section
+- **Purpose:** Explore public characters.
+- **Data:**
+  - Popular: Sorted by `like_count` or `chat_count`.
+  - New: Sorted by `created_at`.
+- **Layout:** Grid system (responsive).
+
+### 2.5. Category Filter
+- **Purpose:** Filter characters by tags/categories.
+- **Implementation:** Simple pill-shaped buttons (e.g., "All", "Romance", "Fantasy").
+
+## 3. Technical Requirements
+
+### 3.1. File Structure
+- **New Route:** Create/Update `app/routes/home.tsx` (or modify `_index.tsx` / `root.tsx` depending on routing strategy) to serve as the main dashboard.
+- **Component:** Create `app/features/home/screens/home-dashboard.tsx`.
+
+### 3.2. Data Fetching (Performance)
+- **Parallel Fetching:** Use `Promise.all` in the `loader` function to fetch:
+  1. User's Characters
+  2. Recent Chats
+  3. Popular/Public Characters
+- **Efficiency:** Limit query results (e.g., `.limit(5)`) for dashboard view.
+
+### 3.3. UI Components
+- Reuse existing `CharacterCard` if available, or refactor it to be reusable.
+- Create `SectionLayout` component for consistent section headers (Title + "See All" link).
+
+## 4. Success Metrics
+- Logged-in users see their own content at the top.
+- No "400 Bad Request" or "500" errors during data fetching.
+- Layout matches Figma structure (roughly).
+

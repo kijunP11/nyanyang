@@ -92,6 +92,50 @@ export type Database = {
         }
         Relationships: []
       }
+      character_keywords: {
+        Row: {
+          character_id: number
+          created_at: string
+          description: string | null
+          is_active: boolean
+          keyword: string
+          keyword_id: number
+          priority: number
+          response_template: string | null
+          updated_at: string
+        }
+        Insert: {
+          character_id: number
+          created_at?: string
+          description?: string | null
+          is_active?: boolean
+          keyword: string
+          keyword_id?: never
+          priority?: number
+          response_template?: string | null
+          updated_at?: string
+        }
+        Update: {
+          character_id?: number
+          created_at?: string
+          description?: string | null
+          is_active?: boolean
+          keyword?: string
+          keyword_id?: never
+          priority?: number
+          response_template?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_keywords_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["character_id"]
+          },
+        ]
+      }
       character_likes: {
         Row: {
           character_id: number
@@ -121,9 +165,60 @@ export type Database = {
           },
         ]
       }
+      character_safety_filters: {
+        Row: {
+          block_hate_speech: boolean
+          block_nsfw: boolean
+          block_personal_info: boolean
+          block_violence: boolean
+          blocked_phrases: string[] | null
+          blocked_words: string[] | null
+          character_id: number
+          created_at: string
+          filter_id: number
+          sensitivity_level: number
+          updated_at: string
+        }
+        Insert: {
+          block_hate_speech?: boolean
+          block_nsfw?: boolean
+          block_personal_info?: boolean
+          block_violence?: boolean
+          blocked_phrases?: string[] | null
+          blocked_words?: string[] | null
+          character_id: number
+          created_at?: string
+          filter_id?: never
+          sensitivity_level?: number
+          updated_at?: string
+        }
+        Update: {
+          block_hate_speech?: boolean
+          block_nsfw?: boolean
+          block_personal_info?: boolean
+          block_violence?: boolean
+          blocked_phrases?: string[] | null
+          blocked_words?: string[] | null
+          character_id?: number
+          created_at?: string
+          filter_id?: never
+          sensitivity_level?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_safety_filters_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: true
+            referencedRelation: "characters"
+            referencedColumns: ["character_id"]
+          },
+        ]
+      }
       characters: {
         Row: {
           age_rating: string
+          appearance: string | null
           avatar_url: string | null
           banner_url: string | null
           category: string | null
@@ -144,14 +239,20 @@ export type Database = {
           moderation_note: string | null
           name: string
           personality: string
+          relationship: string | null
+          role: string | null
+          speech_style: string | null
           status: string
           system_prompt: string
+          tagline: string | null
           tags: Json
           updated_at: string
           view_count: number
+          world_setting: string | null
         }
         Insert: {
           age_rating?: string
+          appearance?: string | null
           avatar_url?: string | null
           banner_url?: string | null
           category?: string | null
@@ -172,14 +273,20 @@ export type Database = {
           moderation_note?: string | null
           name: string
           personality: string
+          relationship?: string | null
+          role?: string | null
+          speech_style?: string | null
           status?: string
           system_prompt: string
+          tagline?: string | null
           tags?: Json
           updated_at?: string
           view_count?: number
+          world_setting?: string | null
         }
         Update: {
           age_rating?: string
+          appearance?: string | null
           avatar_url?: string | null
           banner_url?: string | null
           category?: string | null
@@ -200,11 +307,16 @@ export type Database = {
           moderation_note?: string | null
           name?: string
           personality?: string
+          relationship?: string | null
+          role?: string | null
+          speech_style?: string | null
           status?: string
           system_prompt?: string
+          tagline?: string | null
           tags?: Json
           updated_at?: string
           view_count?: number
+          world_setting?: string | null
         }
         Relationships: []
       }
@@ -402,7 +514,9 @@ export type Database = {
           marketing_consent: boolean
           name: string
           profile_id: string
+          referral_code: string | null
           updated_at: string
+          verified_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -410,7 +524,9 @@ export type Database = {
           marketing_consent?: boolean
           name: string
           profile_id: string
+          referral_code?: string | null
           updated_at?: string
+          verified_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -418,7 +534,36 @@ export type Database = {
           marketing_consent?: boolean
           name?: string
           profile_id?: string
+          referral_code?: string | null
           updated_at?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          referee_id: string
+          referral_code: string
+          referral_id: string
+          referrer_id: string
+          reward_status: string
+        }
+        Insert: {
+          created_at?: string
+          referee_id: string
+          referral_code: string
+          referral_id?: string
+          referrer_id: string
+          reward_status?: string
+        }
+        Update: {
+          created_at?: string
+          referee_id?: string
+          referral_code?: string
+          referral_id?: string
+          referrer_id?: string
+          reward_status?: string
         }
         Relationships: []
       }
@@ -501,7 +646,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      character_status:
+        | "draft"
+        | "pending_review"
+        | "approved"
+        | "rejected"
+        | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -628,6 +778,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      character_status: [
+        "draft",
+        "pending_review",
+        "approved",
+        "rejected",
+        "archived",
+      ],
+    },
   },
 } as const

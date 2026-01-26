@@ -1,0 +1,108 @@
+/**
+ * AI Model Selector Component
+ *
+ * Allows users to select AI model (Gemini, Claude, Opus, etc.)
+ */
+import { Check } from "lucide-react";
+
+import { Button } from "~/core/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/core/components/ui/dropdown-menu";
+
+export type AIModel =
+  | "gpt-4o"
+  | "gemini-3-flash"
+  | "gemini-3-pro"
+  | "gemini-2.5-pro"
+  | "gemini-2.5-flash"
+  | "gemini-2.5-flash-lite"
+  | "gemini-2.0-flash"
+  | "gemini-1.5-pro"
+  | "gemini-1.5-flash"
+  | "claude-sonnet"
+  | "opus"
+  | "novelai-kayra"
+  | "custom";
+
+export interface ModelOption {
+  id: AIModel;
+  name: string;
+  recommended?: boolean;
+  available?: boolean;
+}
+
+interface ModelSelectorProps {
+  selectedModel: AIModel;
+  onModelChange: (model: AIModel) => void;
+  availableModels?: ModelOption[];
+}
+
+const defaultModels: ModelOption[] = [
+  { id: "gpt-4o", name: "GPT-4o", recommended: true },
+  
+  // Gemini 3
+  { id: "gemini-3-flash", name: "Gemini 3 Flash (Preview)", recommended: true },
+  { id: "gemini-3-pro", name: "Gemini 3 Pro (Preview)" },
+  
+  // Gemini 2.5
+  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro (Preview)", recommended: true },
+  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash (Preview)" },
+  { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite (Preview)" },
+  
+  // Gemini 2.0
+  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash" },
+  
+  // Gemini 1.5
+  { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
+  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash" },
+
+  { id: "claude-sonnet", name: "Claude Sonnet", recommended: true },
+  { id: "opus", name: "Opus" },
+  { id: "novelai-kayra", name: "NovelAI Kayra" },
+];
+
+export function ModelSelector({
+  selectedModel,
+  onModelChange,
+  availableModels = defaultModels,
+}: ModelSelectorProps) {
+  const selectedModelName =
+    availableModels.find((m) => m.id === selectedModel)?.name || selectedModel;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm">
+          {selectedModelName}
+          {availableModels.find((m) => m.id === selectedModel)?.recommended && (
+            <span className="ml-2 text-xs text-[#41C7BD]">권장</span>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>AI 모델 선택</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {availableModels.map((model) => (
+          <DropdownMenuItem
+            key={model.id}
+            onClick={() => onModelChange(model.id)}
+            disabled={model.available === false}
+            className="flex items-center justify-between"
+          >
+            <span>{model.name}</span>
+            {selectedModel === model.id && <Check className="ml-2 h-4 w-4" />}
+            {model.recommended && (
+              <span className="ml-2 text-xs text-[#41C7BD]">권장</span>
+            )}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

@@ -1,53 +1,68 @@
----
-description: Guidelines for creating and maintaining Cursor rules to ensure consistency and effectiveness.
-globs: .cursor/rules/*.mdc
-alwaysApply: true
----
+# === Project Context ===
+This project is built with:
+- Supaplate template
+- React (client-side routing)
+- React Router v7
+- Supabase (auth, DB, storage)
+- TailwindCSS + shadcn/ui
+- Drizzle ORM
+- Vite + TypeScript
 
-- **Required Rule Structure:**
-  ```markdown
-  ---
-  description: Clear, one-line description of what the rule enforces
-  globs: path/to/files/*.ext, other/path/**/*
-  alwaysApply: boolean
-  ---
+Use ONLY the technologies above.
 
-  - **Main Points in Bold**
-    - Sub-points with details
-    - Examples and explanations
-  ```
+# === File/Directory Structure ===
+Follow the structure below:
+- src/app/ → main App, routing setup
+- src/routes/** → route-level components
+- src/components/** → UI components
+- src/lib/supabase.ts → Supabase client
+- src/db/schema.ts → Drizzle ORM schema
+- src/db/index.ts → drizzle client
+- src/actions/** → server actions with "use server"
+- src/utils/** → utility functions
 
-- **File References:**
-  - Use `[filename](mdc:path/to/file)` ([filename](mdc:filename)) to reference files
-  - Example: [prisma.mdc](mdc:.cursor/rules/prisma.mdc) for rule references
-  - Example: [schema.prisma](mdc:prisma/schema.prisma) for code references
+NEVER generate Next.js-specific folders like app/, pages/, api/.
 
-- **Code Examples:**
-  - Use language-specific code blocks
-  ```typescript
-  // ✅ DO: Show good examples
-  const goodExample = true;
-  
-  // ❌ DON'T: Show anti-patterns
-  const badExample = false;
-  ```
+# === Coding Style Guide ===
+- Use functional components with TypeScript.
+- Use React Router loader/action patterns.
+- For form submissions, use actions (server-side).
+- For Supabase queries, use Drizzle ORM.
+- Avoid using Prisma, Express, Next.js, or server frameworks.
+- Do not generate database functions without using Drizzle conventions.
+- Use Tailwind for styling; avoid inline CSS.
+- Use shadcn/ui components when possible.
 
-- **Rule Content Guidelines:**
-  - Start with high-level overview
-  - Include specific, actionable requirements
-  - Show examples of correct implementation
-  - Reference existing code when possible
-  - Keep rules DRY by referencing other rules
+# === Supabase Usage ===
+- All auth should use Supabase Auth.
+- Profiles table: id, email, name, created_at.
+- Use supabase.auth.getUser(), supabase.auth.signInWithPassword, etc.
+- Use RLS-safe patterns only.
 
-- **Rule Maintenance:**
-  - Update rules when new patterns emerge
-  - Add examples from actual codebase
-  - Remove outdated patterns
-  - Cross-reference related rules
+# === Drizzle ORM Conventions ===
+- Schema is defined in src/db/schema.ts
+- Queries must use the drizzle client from src/db/index.ts
+- Avoid raw SQL unless necessary.
 
-- **Best Practices:**
-  - Use bullet points for clarity
-  - Keep descriptions concise
-  - Include both DO and DON'T examples
-  - Reference actual code over theoretical examples
-  - Use consistent formatting across rules 
+# === Safety / Compliance ===
+- Never output illegal, harmful, or unethical code.
+- Never leak API keys or secret env variables.
+- Never produce data that could compromise the client.
+
+# === Things to Avoid ===
+Do NOT use:
+- Next.js "use client"/"use server" in pages
+- getServerSideProps, getStaticProps
+- Prisma
+- Express
+- Firebase
+- Server components (Next.js style)
+- Random alternative libraries that are not part of this project
+
+# === Your Role ===
+Your job is to:
+1) Modify code strictly within this project's structure.
+2) Use React Router v7 routing patterns.
+3) Use Drizzle ORM for all DB interactions.
+4) Maintain clean TypeScript patterns.
+5) Avoid over-engineering; keep code simple and consistent.
