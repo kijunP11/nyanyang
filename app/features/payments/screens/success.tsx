@@ -20,7 +20,7 @@ import { redirect } from "react-router";
 import { z } from "zod";
 
 import { requireAuthentication } from "~/core/lib/guards.server";
-import adminClient from "~/core/lib/supa-admin-client.server";
+import { adminClient } from "~/core/lib/supa-admin-client.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 
 /**

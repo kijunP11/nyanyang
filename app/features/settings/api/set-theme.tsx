@@ -32,5 +32,14 @@ import { themeSessionResolver } from "~/core/lib/theme-session.server";
  *
  * The themeSessionResolver provides the session handling mechanism,
  * ensuring that the theme preference persists across requests.
+ *
+ * @param request - The incoming HTTP request with theme parameter
+ * @returns Response with session cookie containing the theme preference
+ * @throws Will throw an error if the theme parameter is invalid
+ *
+ * @example
+ * // Request with theme=dark parameter
+ * // Response will set session cookie with theme preference
+ * // The theme will be applied across the application via the ThemeProvider
  */
 export const action = createThemeAction(themeSessionResolver);

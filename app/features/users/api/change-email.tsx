@@ -29,6 +29,8 @@ import makeServerClient from "~/core/lib/supa-client.server";
  *
  * The schema is used with Zod's safeParse method to validate form submissions
  * before processing them further.
+ *
+ * @type {z.ZodObject<{email: z.ZodString}>}
  */
 const schema = z.object({
   email: z.string().email(),
@@ -50,11 +52,30 @@ const schema = z.object({
  * - Validates email format before submission
  * - Handles errors gracefully with appropriate status codes
  *
- * Note: When the email is changed, Supabase will send a confirmation email
- * to the new address. The user must confirm this email before the change takes effect.
+ * @param {Route.ActionArgs} args - The action arguments
+ * @param {Request} args.request - The incoming HTTP request with form data
+ * @returns {Promise<{success: boolean} | TypedResponse<{error: string}>>} Success object or error response with status 400
+ * @throws {Response} Throws 401 if user is not authenticated
+ * @throws {Response} Throws 405 if request method is not POST
  *
- * @param request - The incoming HTTP request with form data
- * @returns Response indicating success or error with appropriate details
+ * @example
+ * // Client-side usage with form submission
+ * <form method="post" action="/api/users/change-email">
+ *   <input type="email" name="email" required />
+ *   <button type="submit">Change Email</button>
+ * </form>
+ *
+ * @example
+ * // Example successful response
+ * { success: true }
+ *
+ * @example
+ * // Example error response (status 400)
+ * { error: "Invalid email" }
+ *
+ * @remarks
+ * When the email is changed, Supabase will send a confirmation email
+ * to the new address. The user must confirm this email before the change takes effect.
  */
 export async function action({ request }: Route.ActionArgs) {
   // Validate request method (only allow POST)

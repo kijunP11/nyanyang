@@ -40,8 +40,14 @@ const localeSchema = z.enum(i18n.supportedLngs);
  * the user's language preference for future requests, enabling a consistent
  * localized experience across the application.
  *
- * @param request - The incoming HTTP request with locale parameter
+ * @param request - The incoming HTTP request with locale parameter in query string
  * @returns Response with Set-Cookie header for the new locale
+ * @throws {ZodError} When the locale parameter is invalid or not in supported languages
+ *
+ * @example
+ * // Request URL: /api/settings/locale?locale=ko
+ * // Response headers will include:
+ * // Set-Cookie: locale=ko; Path=/; ...
  */
 export async function action({ request }: LoaderFunctionArgs) {
   // Extract locale from URL parameters

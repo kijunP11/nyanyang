@@ -73,7 +73,7 @@ export async function action({ request }: Route.ActionArgs) {
     email: validData.email,
     options: {
       // Set the redirect URL for the verification link
-      emailRedirectTo: `${process.env.SITE_URL}/auth/verify`,
+      emailRedirectTo: `${import.meta.env.VITE_SITE_URL}/auth/confirm?type=email&next=/`,
     },
   });
 

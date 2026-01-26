@@ -30,6 +30,8 @@ import makeServerClient from "~/core/lib/supa-client.server";
  *
  * The schema ensures that only supported providers can be used for account linking,
  * preventing potential security issues with unsupported providers.
+ *
+ * @type {z.ZodObject<{provider: z.ZodEnum<["github", "kakao"]>}>}
  */
 const schema = z.object({
   provider: z.enum(["github", "kakao"]),
@@ -51,11 +53,28 @@ const schema = z.object({
  * - Validates provider type against an allowed list
  * - Handles errors gracefully with appropriate status codes
  *
- * Note: There is a known issue with the redirectTo option in Supabase Auth
- * (https://github.com/supabase/auth/issues/1927), which is commented in the code.
+ * @param {Route.ActionArgs} args - The action arguments
+ * @param {Request} args.request - The incoming HTTP request with form data
+ * @returns {Promise<Response | TypedResponse<{error: string}>>} Redirect to provider OAuth flow or error response with status 400
+ * @throws {Response} Throws 401 if user is not authenticated
+ * @throws {Response} Throws 405 if request method is not POST
  *
- * @param request - The incoming HTTP request with form data
- * @returns Redirect to provider OAuth flow or error response
+ * @example
+ * // Client-side usage with form submission
+ * <form method="post" action="/api/users/connect-provider">
+ *   <input type="hidden" name="provider" value="github" />
+ *   <button type="submit">Connect GitHub</button>
+ * </form>
+ *
+ * @example
+ * // Example error response (status 400)
+ * { error: "Invalid provider" }
+ *
+ * @remarks
+ * There is a known issue with the redirectTo option in Supabase Auth.
+ * See: https://github.com/supabase/auth/issues/1927
+ * After successful OAuth authentication, the user will be redirected back to
+ * the URL specified in the redirectTo option.
  */
 export async function action({ request }: Route.ActionArgs) {
   // Validate request method (only allow POST)

@@ -15,7 +15,7 @@ import type { Route } from "./+types/join";
 
 import { CheckCircle2Icon } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { Form, Link, data } from "react-router";
+import { Form, Link, data, redirect } from "react-router";
 import { z } from "zod";
 
 import FormButton from "~/core/components/form-button";
@@ -132,8 +132,8 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   // Create Supabase client and attempt to sign up the user
-  const [client] = makeServerClient(request);
-  const { error: signInError } = await client.auth.signUp({
+  const [client, headers] = makeServerClient(request);
+  const { data: signUpData, error: signInError } = await client.auth.signUp({
     ...validData,
     options: {
       // Store additional user metadata in Supabase auth
@@ -142,6 +142,8 @@ export async function action({ request }: Route.ActionArgs) {
         display_name: validData.name,
         marketing_consent: validData.marketing,
       },
+      // Set the redirect URL for email verification
+      emailRedirectTo: `${import.meta.env.VITE_SITE_URL}/auth/confirm?type=email&next=/`,
     },
   });
 
@@ -150,10 +152,33 @@ export async function action({ request }: Route.ActionArgs) {
     return data({ error: signInError.message }, { status: 400 });
   }
 
-  // Return success response
-  return {
+  // Check if we have a session (this happens when email confirmation is disabled in development)
+  // If we have a session, the user is automatically logged in
+  if (signUpData?.session) {
+    // User is logged in, redirect to home with auth cookies
+    return redirect("/", { headers });
+  }
+
+  // Check if email confirmation is required
+  // If user is already confirmed but no session was created, try to sign them in
+  if (signUpData?.user && signUpData.user.email_confirmed_at) {
+    // Try to sign in the user since they're already confirmed
+    const { data: signInData, error: signInErrorAfterSignUp } = await client.auth.signInWithPassword({
+      email: validData.email,
+      password: validData.password,
+    });
+
+    if (!signInErrorAfterSignUp && signInData?.session) {
+      // Successfully signed in, redirect to home
+      return redirect("/", { headers });
+    }
+  }
+
+  // Return success response (user needs to verify email)
+  return data({
     success: true,
-  };
+    requiresEmailVerification: true,
+  }, { headers });
 }
 
 /**

@@ -95,13 +95,28 @@ export async function action({ request }: Route.ActionArgs) {
   const [client, headers] = makeServerClient(request);
 
   // Attempt to sign in with email and password
-  const { error: signInError } = await client.auth.signInWithPassword({
+  const { data: signInData, error: signInError } = await client.auth.signInWithPassword({
     ...validData,
   });
 
   // Return error if authentication fails
   if (signInError) {
+    // Check for specific error types
+    if (signInError.message.includes("Email not confirmed") || 
+        signInError.message.includes("email_not_confirmed")) {
+      return data({ 
+        error: "Email not confirmed",
+        email: validData.email,
+      }, { status: 400 });
+    }
     return data({ error: signInError.message }, { status: 400 });
+  }
+
+  // Verify that we have a valid session
+  if (!signInData?.session) {
+    return data({ 
+      error: "Failed to create session. Please try again." 
+    }, { status: 500 });
   }
 
   // Redirect to home page with authentication cookies in headers

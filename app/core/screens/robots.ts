@@ -8,7 +8,7 @@ Disallow: /payments
 Disallow: /api
 Allow: /
 
-Sitemap: ${process.env.SITE_URL}/sitemap.xml`,
+  Sitemap: ${import.meta.env.VITE_SITE_URL}/sitemap.xml`,
     {
       headers: {
         "Content-Type": "text/plain",

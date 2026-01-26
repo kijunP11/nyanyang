@@ -33,7 +33,7 @@ export default function SidebarMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>메뉴</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible

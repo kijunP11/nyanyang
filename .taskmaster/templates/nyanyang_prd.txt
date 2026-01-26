@@ -1,0 +1,735 @@
+<context>
+# Overview
+냐냥(Nyanyang)은 사용자가 AI 캐릭터와 대화하고 관계를 형성할 수 있는 AI 채팅 플랫폼입니다.
+사용자는 다양한 성격과 배경을 가진 AI 캐릭터를 선택하거나 직접 만들어 자연스러운 대화를 나눌 수 있습니다.
+
+## 문제 정의
+- 기존 AI 챗봇은 일반적이고 개성이 없음
+- 사용자가 원하는 특정 성격/배경의 캐릭터와 대화하고 싶어함
+- 긴 대화에서 맥락이 유실되는 문제
+- 대화를 여러 방향으로 분기하고 싶은 니즈
+
+## 타겟 사용자
+- 성인 사용자 (본인인증 필수)
+- AI 대화에 관심 있는 얼리어답터
+- 창작자(크리에이터): 자신만의 캐릭터를 만들고 공유하는 사용자
+
+## 핵심 가치 제안
+- 개성 있는 AI 캐릭터와의 몰입형 대화
+- 대화 분기/롤백으로 다양한 스토리 탐험
+- 장기 메모리로 지속적인 관계 형성
+- 크리에이터 경제: 인기 캐릭터 제작자 보상
+
+# Core Features
+
+## 1. 회원가입 및 인증
+- 이메일/비밀번호 회원가입
+- 소셜 로그인 (구글, 애플, 네이버)
+- 본인(성인) 인증 (Pass, KG이니시스 등)
+- 추천인 코드 시스템 (가입 시 입력)
+
+## 2. 캐릭터 시스템
+### 캐릭터 탐색
+- 공개 캐릭터 목록 (카드 형태)
+- 검색: 이름, 설명, 태그로 검색
+- 필터링: 성별, 카테고리, 연령등급, 태그
+- 정렬: 인기순, 최신순, 대화수, 좋아요수
+- 추천 캐릭터 섹션
+
+### 캐릭터 프로필
+- 기본 정보: 이름, 프로필 이미지, 설명, 첫인사
+- 성격 설정: 상세한 성격 정의
+- 태그: 로맨스, 츤데레, 친구, 멘토 등
+- 통계: 대화수, 조회수, 좋아요
+- 제작자 정보
+
+### 캐릭터 제작 (크리에이터 모드)
+- 프로필 설정: 이름, 이미지, 설명
+- 성격 정의: 자세한 성격 및 말투
+- 시스템 프롬프트 작성
+- 예시 대화 입력
+- 태그 및 카테고리 설정
+- 공개/비공개 설정
+- 세이프티 필터 설정 (NSFW 여부, 연령등급)
+- 관리자 승인 프로세스
+
+## 3. 채팅 시스템
+### 채팅방 생성
+- 캐릭터 선택
+- 새 채팅방 생성
+- 채팅방 목록 관리
+
+### 대화 기능
+- 실시간 AI 응답
+- 메시지 저장 (영구 저장)
+- 긴 대화 지원
+- 타이핑 인디케이터
+- 이미지 첨부 (확장 단계)
+
+### 롤백 및 분기 (핵심!)
+- 특정 메시지로 롤백: 과거 메시지 선택 후 새로운 대화 시작
+- 분기 시각화: 트리 구조로 여러 분기 표시
+- 분기 전환: 저장된 분기 간 이동
+- 분기 이름 지정: 사용자가 분기에 이름 부여
+
+### 요약 메모리 (핵심!)
+- 자동 요약: 일정 메시지마다 AI가 대화 요약
+- 메모리 저장: 캐릭터가 과거 대화 기억
+- 컨텍스트 최적화: 토큰 절약하면서 맥락 유지
+- 사용자 정보 추출: 이름, 선호도 등 자동 저장
+
+### 대화 커스터마이징
+- AI 모델 선택 (GPT-4, Claude 등)
+- 응답 길이 조절
+- 창의성(Temperature) 조절
+- 테마/배경 변경
+
+## 4. 포인트 시스템
+- 포인트 충전: 결제를 통한 포인트 구매
+- 포인트 사용: 메시지당 포인트 차감
+- 무료 포인트: 출석체크, 이벤트 참여
+- 포인트 내역: 충전/사용 내역 조회
+- 잔액 표시: 실시간 포인트 잔액
+
+## 5. 출석체크
+- 매일 출석 시 포인트 지급
+- 연속 출석 보너스
+- 출석 현황 표시
+
+## 6. 마이페이지
+- 프로필 정보 수정
+- 아바타 변경
+- 포인트 잔액 및 내역
+- 내 채팅방 목록
+- 좋아요한 캐릭터
+- 내가 만든 캐릭터 (크리에이터)
+- 결제 내역
+
+## 7. 결제 시스템
+- Stripe 카드 결제 (MVP)
+- 토스페이먼츠 (확장)
+- 포인트 패키지 구매
+- 결제 내역 조회
+- 영수증 발급
+
+## 8. 관리자 페이지
+- 유저 관리: 목록, 검색, 정지, 탈퇴
+- 캐릭터 관리: 승인/거부/삭제
+- 결제 조회: 거래 내역, 환불
+- 공지사항 등록
+- 신고 처리: 부적절한 콘텐츠 검토
+- 통계 대시보드
+
+# User Experience
+
+## User Personas
+
+### 1. 일반 사용자 (민지, 27세)
+- AI와 대화하며 스트레스 해소
+- 다양한 캐릭터와 대화하고 싶음
+- 긴 대화에서도 맥락 유지 원함
+- 특정 상황을 여러 방향으로 탐험하고 싶음
+
+### 2. 크리에이터 (준호, 32세)
+- 자신만의 독창적인 캐릭터 제작
+- 다른 사용자들과 캐릭터 공유
+- 인기 캐릭터로 수익 창출 희망
+- 캐릭터 통계 및 피드백 확인
+
+### 3. 관리자 (운영팀)
+- 부적절한 콘텐츠 모니터링
+- 사용자 신고 처리
+- 캐릭터 승인/거부
+- 플랫폼 통계 모니터링
+
+## Key User Flows
+
+### Flow 1: 신규 사용자 온보딩
+1. 회원가입 (이메일 또는 소셜)
+2. 본인인증 (성인 확인)
+3. 추천인 코드 입력 (선택)
+4. 웰컴 보너스 포인트 지급
+5. 추천 캐릭터 탐색
+6. 첫 채팅 시작
+
+### Flow 2: 캐릭터와 대화하기
+1. 홈에서 캐릭터 탐색 또는 검색
+2. 캐릭터 프로필 확인
+3. "대화 시작" 버튼 클릭
+4. 새 채팅방 생성
+5. 캐릭터의 첫인사 표시
+6. 사용자 메시지 입력
+7. AI 응답 (포인트 차감)
+8. 대화 계속
+
+### Flow 3: 대화 분기 만들기
+1. 기존 채팅방 열기
+2. 과거 메시지 선택 (롤백 지점)
+3. "여기서 다시 시작" 버튼
+4. 새로운 분기 생성
+5. 분기 이름 입력 (선택)
+6. 다른 내용으로 대화 진행
+7. 분기 목록에서 전환 가능
+
+### Flow 4: 캐릭터 제작하기
+1. 마이페이지 → "캐릭터 만들기"
+2. 기본 정보 입력 (이름, 이미지, 설명)
+3. 성격 및 말투 상세 작성
+4. 시스템 프롬프트 작성
+5. 예시 대화 입력
+6. 태그 및 카테고리 설정
+7. 공개 설정 (비공개/공개)
+8. 제출 → 관리자 승인 대기
+9. 승인 후 공개
+
+## UI/UX Considerations
+
+### 디자인 원칙
+- **단순함**: 복잡하지 않은 직관적 인터페이스
+- **몰입감**: 채팅에 집중할 수 있는 깔끔한 디자인
+- **반응성**: 빠른 응답과 피드백
+- **접근성**: 모바일 최적화
+
+### 주요 UI 컴포넌트
+- 캐릭터 카드: 이미지, 이름, 간단한 설명, 태그
+- 채팅 UI: 메신저 스타일 (사용자 오른쪽, AI 왼쪽)
+- 분기 트리: 시각적 트리 구조로 분기 표시
+- 포인트 잔액: 상단에 항상 표시
+- 검색바: 홈 상단 고정
+
+### 색상 및 브랜딩
+- 메인 컬러: #41C7BD (청록색)
+- 밝은 테마 기본, 다크 테마 지원
+- 친근하고 현대적인 느낌
+
+</context>
+
+<PRD>
+# Technical Architecture
+
+## System Components
+
+### Frontend
+- **Framework**: React Router v7 (SSR)
+- **Styling**: Tailwind CSS v4
+- **UI Components**: shadcn/ui (Radix UI 기반)
+- **State Management**: React hooks, URL state
+- **Theme**: next-themes (라이트/다크 모드)
+- **i18n**: i18next (한국어, 영어, 스페인어)
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: React Router v7 (Server-side)
+- **Authentication**: Supabase Auth
+- **Database**: Supabase (PostgreSQL)
+- **ORM**: Drizzle ORM
+- **Storage**: Supabase Storage (이미지/파일)
+
+### AI Integration
+- **Primary**: OpenAI GPT-4, Anthropic Claude
+- **Fallback**: 여러 AI 모델 지원
+- **SDK**: Vercel AI SDK
+
+### Payment
+- **MVP**: Stripe
+- **확장**: 토스페이먼츠 (국내 PG)
+
+### Infrastructure
+- **Hosting**: Vercel
+- **Database**: Supabase Cloud
+- **CDN**: Vercel Edge Network
+- **Monitoring**: Sentry
+
+## Data Models
+
+### 1. Supabase Auth (기존)
+```
+auth.users
+- id (uuid, PK)
+- email
+- created_at
+```
+
+### 2. Profiles (기존)
+```
+profiles
+- profile_id (uuid, PK, FK to auth.users)
+- name
+- avatar_url
+- marketing_consent
+- created_at, updated_at
+```
+
+### 3. Characters (신규)
+```
+characters
+- character_id (bigint, PK, auto-increment)
+- name (text, 캐릭터 고유 이름)
+- display_name (text, 표시용 이름)
+- description (text, 캐릭터 설명)
+- greeting_message (text, 첫 인사)
+- avatar_url (text, 프로필 이미지)
+- banner_url (text, 배너 이미지)
+- personality (text, 성격 설정)
+- system_prompt (text, AI 프롬프트)
+- example_dialogues (jsonb, 예시 대화들)
+- tags (jsonb, 태그 배열)
+- category (text, 카테고리)
+- age_rating (text, 연령등급)
+- is_public (boolean, 공개 여부)
+- is_featured (boolean, 추천 여부)
+- is_nsfw (boolean, 성인 콘텐츠)
+- enable_memory (boolean, 메모리 활성화)
+- creator_id (uuid, FK to auth.users)
+- status (text, pending/approved/rejected)
+- moderation_note (text, 검토 노트)
+- chat_count (int, 채팅방 수)
+- message_count (int, 메시지 수)
+- view_count (int, 조회수)
+- like_count (int, 좋아요 수)
+- created_at, updated_at
+```
+
+### 4. Character Likes (신규)
+```
+character_likes
+- user_id (uuid, FK to auth.users)
+- character_id (bigint, FK to characters)
+- created_at
+- PRIMARY KEY (user_id, character_id)
+```
+
+### 5. Chat Rooms (신규)
+```
+chat_rooms
+- room_id (bigint, PK, auto-increment)
+- user_id (uuid, FK to auth.users)
+- character_id (bigint, FK to characters)
+- title (text, 채팅방 제목)
+- last_message (text, 마지막 메시지 미리보기)
+- last_message_at (timestamp)
+- message_count (int)
+- created_at, updated_at
+```
+
+### 6. Messages (신규)
+```
+messages
+- message_id (bigint, PK, auto-increment)
+- room_id (bigint, FK to chat_rooms)
+- parent_message_id (bigint, FK to messages, nullable)
+- branch_name (text, nullable, 분기 이름)
+- role (text, 'user' or 'assistant')
+- content (text, 메시지 내용)
+- tokens_used (int, 사용된 토큰)
+- model (text, 사용된 AI 모델)
+- created_at
+```
+
+### 7. Room Memories (신규)
+```
+room_memories
+- memory_id (bigint, PK, auto-increment)
+- room_id (bigint, FK to chat_rooms)
+- summary (text, 요약 내용)
+- start_message_id (bigint, FK to messages)
+- end_message_id (bigint, FK to messages)
+- created_at
+```
+
+### 8. User Points (신규)
+```
+user_points
+- user_id (uuid, PK, FK to auth.users)
+- current_balance (int, 현재 포인트)
+- total_earned (int, 총 획득)
+- total_spent (int, 총 사용)
+- updated_at
+```
+
+### 9. Point Transactions (신규)
+```
+point_transactions
+- transaction_id (bigint, PK, auto-increment)
+- user_id (uuid, FK to auth.users)
+- amount (int, 포인트 양, +/-)
+- balance_after (int, 거래 후 잔액)
+- type (text, 'charge'/'usage'/'reward')
+- reason (text, 사유)
+- reference_id (text, 결제ID 또는 채팅방ID 등)
+- created_at
+```
+
+### 10. Attendance (신규)
+```
+attendance_records
+- user_id (uuid, FK to auth.users)
+- attendance_date (date)
+- points_awarded (int)
+- consecutive_days (int, 연속 출석일)
+- created_at
+- PRIMARY KEY (user_id, attendance_date)
+```
+
+### 11. Payments (기존, 수정 필요 없음)
+```
+payments
+- payment_id (bigint, PK)
+- payment_key, order_id, order_name
+- total_amount
+- user_id (uuid, FK to auth.users)
+- status, receipt_url
+- approved_at, requested_at
+- created_at, updated_at
+```
+
+## APIs and Integrations
+
+### AI APIs
+- OpenAI API: GPT-4 모델
+- Anthropic API: Claude 모델
+- Vercel AI SDK: 스트리밍 응답
+
+### Payment APIs
+- Stripe API: 카드 결제
+- Toss Payments: 국내 결제 (확장)
+
+### Authentication APIs
+- Supabase Auth: 이메일/소셜 로그인
+- Pass API: 본인인증 (확장)
+- KG이니시스: 본인인증 (확장)
+
+### File Storage
+- Supabase Storage: 이미지 업로드
+
+## Row Level Security (RLS) Policies
+
+### Characters
+- SELECT: 공개(public) + 승인(approved) 또는 본인이 만든 것
+- INSERT: 본인이 creator_id인 경우만
+- UPDATE: 본인이 creator_id인 경우만
+- DELETE: 본인이 creator_id인 경우만
+
+### Chat Rooms
+- SELECT: 본인의 채팅방만
+- INSERT: 본인 user_id로만
+- UPDATE: 본인 채팅방만
+- DELETE: 본인 채팅방만
+
+### Messages
+- SELECT: 본인의 채팅방에 속한 메시지만
+- INSERT: 본인의 채팅방에만
+- UPDATE: 없음 (메시지는 수정 불가)
+- DELETE: 본인의 메시지만
+
+### User Points
+- SELECT: 본인 것만
+- UPDATE: 서버에서만 (service role)
+
+### Point Transactions
+- SELECT: 본인 거래만
+- INSERT: 서버에서만 (service role)
+
+# Development Roadmap
+
+## Phase 1: Foundation (1주차)
+- 기본 프로젝트 세팅 ✅ (완료)
+- Supabase 연동 ✅
+- Drizzle ORM 설정 ✅
+- 기본 인증 (이메일 로그인) ✅
+- 프로필 관리 ✅
+
+## Phase 2: 인증 확장 및 기본 UI (2주차)
+- 소셜 로그인 (구글, 네이버) ✅
+- OTP, Magic Link ✅
+- 홈 페이지 UI
+- 네비게이션 구조
+- 본인인증 연동 (확장)
+
+## Phase 3: 캐릭터 시스템 (3-4주차)
+- Characters DB 스키마 생성
+- 캐릭터 탐색 페이지
+  - 검색 기능
+  - 필터/정렬
+  - 캐릭터 카드 UI
+- 캐릭터 상세 페이지
+- 캐릭터 좋아요 기능
+- 관리자: 캐릭터 임시 등록 (DB 직접)
+
+## Phase 4: 포인트 시스템 (4-5주차)
+- User Points, Point Transactions 스키마
+- 포인트 조회 API
+- 포인트 사용 로직 (메시지당 차감)
+- 포인트 충전 (Stripe 연동)
+- 포인트 내역 페이지
+- 출석체크 기능
+  - 출석 UI
+  - 포인트 지급 로직
+  - 연속 출석 보너스
+
+## Phase 5: 기본 채팅 시스템 (5-7주차)
+- Chat Rooms, Messages 스키마
+- 채팅방 생성 API
+- 채팅방 목록 페이지
+- 채팅 UI 구현
+  - 메시지 입력/전송
+  - 메시지 목록 표시
+  - 실시간 응답
+- AI API 연동
+  - OpenAI GPT-4
+  - Vercel AI SDK 스트리밍
+- 메시지 저장 로직
+- 포인트 차감 연동
+
+## Phase 6: 롤백/분기 기능 (8-9주차) ⭐ 핵심
+- 메시지 트리 구조 구현
+  - parent_message_id 활용
+  - 분기 생성 로직
+- 롤백 UI
+  - 과거 메시지 선택
+  - "여기서 다시 시작" 버튼
+- 분기 관리 UI
+  - 분기 목록 표시
+  - 분기 전환
+  - 분기 이름 지정
+- 분기 시각화 (트리 뷰)
+
+## Phase 7: 요약 메모리 (9-10주차) ⭐ 핵심
+- Room Memories 스키마
+- 자동 요약 로직
+  - N개 메시지마다 요약
+  - AI 요약 API 호출
+- 메모리 저장/조회
+- AI 컨텍스트에 요약 포함
+  - 긴 대화 시 토큰 절약
+  - 맥락 유지
+- 메모리 관리 UI (선택)
+
+## Phase 8: 마이페이지 개선 (10주차)
+- 내 정보 수정
+- 포인트 잔액 표시
+- 포인트 내역 목록
+- 내 채팅방 목록
+  - 최근 대화 미리보기
+  - 삭제 기능
+- 좋아요한 캐릭터
+- 결제 내역
+
+## Phase 9: 캐릭터 제작 기능 (11주차)
+- 캐릭터 제작 UI
+  - 프로필 정보 입력
+  - 성격/말투 설정
+  - 시스템 프롬프트
+  - 예시 대화
+  - 이미지 업로드 (Supabase Storage)
+- 캐릭터 제출 로직
+- 관리자 승인 대기 상태
+- 내가 만든 캐릭터 목록
+
+## Phase 10: 관리자 페이지 (12주차)
+- 관리자 인증/권한
+- 유저 관리
+  - 목록, 검색
+  - 정지/탈퇴
+- 캐릭터 관리
+  - 승인 대기 목록
+  - 승인/거부
+  - 삭제
+- 결제 조회
+- 공지사항 등록
+- 신고 처리
+- 통계 대시보드
+
+## Phase 11: 코드프리즈 및 QA (12주차)
+- 전체 기능 테스트
+- 버그 수정
+- 성능 최적화
+- 문서 정리
+- 배포 준비
+
+## 확장 단계 (13주차~)
+- 추천인 시스템 고도화
+- 크리에이터 정산 시스템
+- 대화 공유/갤러리
+- 국내 PG 연동 (토스페이먼츠)
+- Admin 고도화
+- 보안 강화 (2FA)
+
+# Logical Dependency Chain
+
+## Layer 1: 기반 (Foundation) - 가장 먼저
+1. 인증 시스템 (이미 완료)
+2. 프로필 관리 (이미 완료)
+3. Drizzle ORM 설정 (이미 완료)
+
+## Layer 2: 핵심 데이터 - 다음 우선순위
+4. **Characters 스키마 및 CRUD**
+   - 채팅의 전제조건
+   - 캐릭터 없으면 채팅 불가
+5. **Points 시스템**
+   - 채팅 시 포인트 필요
+   - 포인트 없으면 채팅 불가
+6. **결제 연동 (Stripe)**
+   - 포인트 충전 수단
+
+## Layer 3: 채팅 기본 - 핵심 기능
+7. **Chat Rooms + Messages 스키마**
+8. **기본 채팅 UI**
+9. **AI API 연동**
+10. **메시지 저장 및 포인트 차감**
+
+이 단계까지 완료하면 **기본 동작하는 MVP** 완성
+
+## Layer 4: 고급 기능 - 차별화
+11. **롤백/분기 기능**
+    - Layer 3 위에 추가
+    - 메시지 트리 구조 활용
+12. **요약 메모리**
+    - Layer 3 위에 추가
+    - 긴 대화 지원
+
+## Layer 5: UX 개선 - 완성도
+13. **출석체크**
+14. **마이페이지 개선**
+15. **캐릭터 제작 UI**
+
+## Layer 6: 운영 - 지속 가능성
+16. **관리자 페이지**
+17. **캐릭터 승인 프로세스**
+
+## Atomic Feature 원칙
+각 기능은 독립적으로 개발/테스트 가능하도록:
+- DB 스키마는 마이그레이션으로 관리
+- 각 feature는 자체 schema.ts 보유
+- API는 loader/action으로 명확히 분리
+- UI 컴포넌트는 재사용 가능하게
+
+# Risks and Mitigations
+
+## Technical Challenges
+
+### 1. AI API 비용 관리
+**Risk**: AI API 호출 비용이 예상보다 높을 수 있음
+**Mitigation**:
+- 포인트 시스템으로 사용량 제어
+- 응답 길이 제한
+- 캐싱 활용
+- 요약 메모리로 토큰 절약
+
+### 2. 메시지 트리 구조 복잡도
+**Risk**: 분기/롤백 기능이 복잡해질 수 있음
+**Mitigation**:
+- parent_message_id로 단순한 트리 구조
+- 분기는 최대 depth 제한 (예: 10레벨)
+- UI는 간단하게 유지
+
+### 3. 실시간 성능
+**Risk**: 채팅 응답이 느릴 수 있음
+**Mitigation**:
+- AI SDK 스트리밍으로 빠른 첫 응답
+- 로딩 인디케이터
+- 타이핑 애니메이션
+- 적절한 타임아웃 설정
+
+### 4. RLS 정책 복잡도
+**Risk**: Supabase RLS 정책이 복잡해질 수 있음
+**Mitigation**:
+- Drizzle에서 pgPolicy로 명확히 정의
+- 각 테이블마다 단순한 정책 유지
+- 테스트로 검증
+
+## MVP Scope Management
+
+### MVP에 포함 (꼭 필요)
+- 이메일 로그인
+- 기본 캐릭터 탐색
+- 채팅 (AI 연동)
+- 롤백/분기
+- 요약 메모리
+- 포인트 시스템
+- Stripe 결제
+- 기본 마이페이지
+
+### MVP 이후로 미루기 (확장)
+- 소셜 로그인 (있으면 좋음)
+- 본인인증
+- 캐릭터 제작 (처음엔 관리자만)
+- 크리에이터 정산
+- 국내 PG
+- 대화 공유
+- 고급 Admin
+
+## Resource Constraints
+
+### 개발 기간: 12주 (MVP)
+- 주당 약 1-2개 주요 기능
+- 버퍼 포함하여 여유 있게 계획
+
+### 우선순위
+1. 채팅이 동작하는 것 (핵심)
+2. 포인트/결제 (수익화)
+3. 롤백/분기 (차별화)
+4. 메모리 (차별화)
+5. 기타 (개선)
+
+# Appendix
+
+## Tech Stack Justification
+
+### React Router v7
+- SSR 지원으로 SEO 최적화
+- 파일 기반 라우팅으로 구조 명확
+- Vercel 배포 최적화
+
+### Supabase
+- 빠른 개발 (Auth, DB, Storage 통합)
+- PostgreSQL 기반으로 안정성
+- RLS로 보안 강화
+- 실시간 기능 (확장 시 활용)
+
+### Drizzle ORM
+- TypeScript 네이티브
+- 타입 안정성
+- 마이그레이션 관리 용이
+
+### Vercel AI SDK
+- 여러 AI 제공자 통합
+- 스트리밍 응답 지원
+- React hooks 제공
+
+## Performance Targets
+
+- 페이지 로드: < 2초
+- AI 첫 응답: < 3초
+- 메시지 저장: < 500ms
+- 포인트 차감: < 1초
+
+## Security Considerations
+
+- 모든 API는 인증 필수
+- RLS로 데이터 접근 제어
+- API Key는 서버에서만 사용
+- HTTPS only
+- XSS/CSRF 방어
+- Rate limiting (향후)
+
+## Monitoring & Analytics
+
+- Sentry: 에러 추적
+- Vercel Analytics: 성능 모니터링
+- Custom events: 사용자 행동 분석
+  - 채팅 시작
+  - 캐릭터 좋아요
+  - 포인트 충전
+  - 분기 생성
+
+## Future Enhancements (확장 단계)
+
+- 이미지 생성: 캐릭터 이미지 AI 생성
+- 음성: TTS/STT
+- 그룹 채팅: 여러 캐릭터와 동시 대화
+- 모바일 앱: React Native
+- 소셜 기능: 친구 추가, 대화 공유
+- 크리에이터 마켓플레이스
+
+</PRD>

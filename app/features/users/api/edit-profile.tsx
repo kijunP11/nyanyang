@@ -31,6 +31,8 @@ import { getUserProfile } from "../queries";
  *
  * The schema is used with Zod's safeParse method to validate form submissions
  * before processing them further.
+ *
+ * @type {z.ZodObject<{name: z.ZodString, avatar: z.ZodType<File>, marketingConsent: z.ZodBoolean}>}
  */
 const schema = z.object({
   name: z.string().min(1),
@@ -50,12 +52,41 @@ const schema = z.object({
  *
  * Security considerations:
  * - Validates authentication status before processing
- * - Validates file size and type for avatar uploads
+ * - Validates file size and type for avatar uploads (max 1MB, images only)
  * - Uses user ID from authenticated session for database operations
  * - Handles errors gracefully with appropriate status codes
  *
- * @param request - The incoming HTTP request with form data
- * @returns Response indicating success or error with appropriate details
+ * @param {Route.ActionArgs} args - The action arguments
+ * @param {Request} args.request - The incoming HTTP request with multipart form data
+ * @returns {Promise<{success: boolean} | TypedResponse<{fieldErrors?: object, error?: string} | null>>} Success object or error response
+ * @throws {Response} Returns 405 if request method is not POST
+ * @throws {Response} Returns 401 if user is not authenticated
+ *
+ * @example
+ * // Client-side usage with form submission
+ * <form method="post" action="/api/users/edit-profile" encType="multipart/form-data">
+ *   <input type="text" name="name" required />
+ *   <input type="file" name="avatar" accept="image/*" />
+ *   <input type="checkbox" name="marketingConsent" />
+ *   <button type="submit">Update Profile</button>
+ * </form>
+ *
+ * @example
+ * // Example successful response
+ * { success: true }
+ *
+ * @example
+ * // Example validation error response (status 400)
+ * {
+ *   fieldErrors: {
+ *     name: ["String must contain at least 1 character(s)"]
+ *   }
+ * }
+ *
+ * @remarks
+ * - Avatar images must be less than 1MB and have an image MIME type
+ * - Existing avatars are replaced when a new one is uploaded (upsert: true)
+ * - Profile is updated in both the profiles table and auth user metadata
  */
 export async function action({ request }: Route.ActionArgs) {
   // Create a server-side Supabase client with the user's session

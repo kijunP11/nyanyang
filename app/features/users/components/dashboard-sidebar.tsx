@@ -1,23 +1,11 @@
 import {
-  AudioWaveformIcon,
-  BookOpenIcon,
-  BotIcon,
-  BriefcaseIcon,
-  BuildingIcon,
-  CommandIcon,
-  FrameIcon,
-  GalleryVerticalEndIcon,
-  HeartHandshakeIcon,
-  LayoutDashboardIcon,
-  LineChartIcon,
-  MapIcon,
-  MegaphoneIcon,
-  PieChartIcon,
-  RocketIcon,
-  Settings2Icon,
-  SquareTerminalIcon,
-  Target,
-  UsersIcon,
+  Bot,
+  LayoutDashboard,
+  MessageSquare,
+  Calendar,
+  Coins,
+  User,
+  Settings,
 } from "lucide-react";
 
 import {
@@ -29,126 +17,87 @@ import {
 } from "~/core/components/ui/sidebar";
 
 import SidebarMain from "./sidebar-main";
-import SidebarProjects from "./sidebar-projects";
-import TeamSwitcher from "./sidebar-team-switcher";
 import SidebarUser from "./sidebar-user";
 
 const data = {
-  teams: [
-    {
-      name: "SalesForge",
-      logo: BuildingIcon,
-      plan: "Enterprise",
-    },
-    {
-      name: "TechCo Solutions",
-      logo: BriefcaseIcon,
-      plan: "Startup",
-    },
-    {
-      name: "GrowthMate",
-      logo: RocketIcon,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
-      title: "Dashboard",
+      title: "대시보드",
       url: "#",
-      icon: LayoutDashboardIcon,
+      icon: LayoutDashboard,
       isActive: true,
       items: [
         {
-          title: "Overview",
+          title: "개요",
           url: "/dashboard",
         },
         {
-          title: "Analytics",
-          url: "#",
-        },
-        {
-          title: "Reports",
-          url: "#",
+          title: "내 콘텐츠",
+          url: "/dashboard/my-content",
         },
       ],
     },
     {
-      title: "Customers",
+      title: "캐릭터",
       url: "#",
-      icon: UsersIcon,
+      icon: Bot,
       items: [
         {
-          title: "Contacts",
-          url: "#",
+          title: "캐릭터 탐색",
+          url: "/characters",
         },
         {
-          title: "Companies",
-          url: "#",
-        },
-        {
-          title: "Deals",
-          url: "#",
+          title: "캐릭터 만들기",
+          url: "/characters/create",
         },
       ],
     },
     {
-      title: "Sales",
+      title: "채팅",
       url: "#",
-      icon: LineChartIcon,
+      icon: MessageSquare,
       items: [
         {
-          title: "Pipeline",
-          url: "#",
-        },
-        {
-          title: "Opportunities",
-          url: "#",
-        },
-        {
-          title: "Quotes",
-          url: "#",
-        },
-        {
-          title: "Invoices",
-          url: "#",
+          title: "채팅방 목록",
+          url: "/rooms",
         },
       ],
     },
     {
-      title: "Settings",
+      title: "포인트",
       url: "#",
-      icon: Settings2Icon,
+      icon: Coins,
       items: [
         {
-          title: "Workspace",
-          url: "#",
+          title: "포인트 충전",
+          url: "/points",
         },
         {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Integrations",
-          url: "#",
+          title: "결제 내역",
+          url: "/dashboard/payments",
         },
       ],
     },
-  ],
-  projects: [
     {
-      name: "Sales Team",
-      url: "#",
-      icon: Target,
+      title: "출석체크",
+      url: "/attendance",
+      icon: Calendar,
+      items: [],
     },
     {
-      name: "Customer Success",
+      title: "계정",
       url: "#",
-      icon: HeartHandshakeIcon,
-    },
-    {
-      name: "Marketing",
-      url: "#",
-      icon: MegaphoneIcon,
+      icon: User,
+      items: [
+        {
+          title: "프로필 수정",
+          url: "/account/edit",
+        },
+        {
+          title: "설정",
+          url: "#",
+        },
+      ],
     },
   ],
 };
@@ -166,11 +115,13 @@ export default function DashboardSidebar({
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <div className="flex items-center gap-2 px-4 py-2">
+          <img src="/logo3.png" alt="NYANYANG" className="h-6" />
+          <span className="font-semibold text-lg">NYANYANG</span>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMain items={data.navMain} />
-        <SidebarProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarUser

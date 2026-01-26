@@ -35,7 +35,7 @@ import path from "node:path";
  */
 export async function loader() {
   // Get the site domain from environment variables
-  const DOMAIN = process.env.SITE_URL;
+  const DOMAIN = import.meta.env.VITE_SITE_URL;
 
   // Scan the blog directory for MDX files and convert to URLs
   const blogUrls = (

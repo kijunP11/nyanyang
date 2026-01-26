@@ -21,11 +21,11 @@ import { createClient } from "@supabase/supabase-js";
 
 /**
  * Supabase admin client with service role privileges
- * 
+ *
  * This client uses the SUPABASE_SERVICE_ROLE_KEY which gives it admin privileges,
  * allowing it to bypass Row Level Security (RLS) policies and perform administrative
  * operations on the database.
- * 
+ *
  * IMPORTANT: This client should only be used in server-side code and for operations
  * that specifically require admin privileges. For regular operations, use the
  * makeServerClient function instead.
@@ -35,4 +35,14 @@ const adminClient = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-export default adminClient;
+/**
+ * Creates a Supabase admin client with service role privileges
+ *
+ * @returns Supabase client with admin privileges
+ */
+export default function makeServerAdminClient() {
+  return adminClient;
+}
+
+// Also export the default adminClient for backward compatibility
+export { adminClient };

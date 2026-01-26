@@ -34,6 +34,8 @@ import makeServerClient from "~/core/lib/supa-client.server";
  *
  * The schema is used with Zod's safeParse method to validate form submissions
  * before processing them further.
+ *
+ * @type {z.ZodEffects<z.ZodObject<{password: z.ZodString, confirmPassword: z.ZodString}>>}
  */
 const changePasswordSchema = z
   .object({
@@ -62,8 +64,31 @@ const changePasswordSchema = z
  * - Returns field-specific validation errors
  * - Handles API errors gracefully with appropriate status codes
  *
- * @param request - The incoming HTTP request with form data
- * @returns Response indicating success or error with appropriate details
+ * @param {Route.ActionArgs} args - The action arguments
+ * @param {Request} args.request - The incoming HTTP request with form data
+ * @returns {Promise<{success: boolean} | TypedResponse<{fieldErrors?: object, error?: string}>>} Success object or error response
+ * @throws {Response} Throws 401 if user is not authenticated
+ * @throws {Response} Throws 405 if request method is not POST
+ *
+ * @example
+ * // Client-side usage with form submission
+ * <form method="post" action="/api/users/change-password">
+ *   <input type="password" name="password" minLength={8} required />
+ *   <input type="password" name="confirmPassword" minLength={8} required />
+ *   <button type="submit">Change Password</button>
+ * </form>
+ *
+ * @example
+ * // Example successful response
+ * { success: true }
+ *
+ * @example
+ * // Example validation error response (status 400)
+ * {
+ *   fieldErrors: {
+ *     confirmPassword: ["Passwords must match"]
+ *   }
+ * }
  */
 export async function action({ request }: Route.ActionArgs) {
   // Validate request method (only allow POST)

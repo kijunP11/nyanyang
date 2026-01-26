@@ -36,7 +36,7 @@ const paramsSchema = z.object({
 
 /**
  * Loader function for generating Open Graph images
- * 
+ *
  * This function handles requests for dynamically generated OG images for blog posts.
  * It follows these steps:
  * 1. Extracts and validates the blog post slug from the request URL
@@ -44,14 +44,24 @@ const paramsSchema = z.object({
  * 3. Loads and parses the MDX file to extract frontmatter metadata
  * 4. Generates a visually appealing image using the post's title, description, and featured image
  * 5. Returns the image with dimensions optimized for social media platforms
- * 
+ *
+ * The generated image has a 1200x630 dimension, which is the recommended size
+ * for Open Graph images on most social media platforms (Twitter, Facebook, LinkedIn).
+ *
  * Error handling:
  * - Returns 400 Bad Request for invalid parameters
  * - Returns 404 Not Found if the MDX file doesn't exist
  * - Returns 500 Internal Server Error for other errors
- * 
- * @param request - The incoming HTTP request with query parameters
- * @returns An ImageResponse containing the generated OG image
+ *
+ * @param request - The incoming HTTP request with slug query parameter
+ * @returns An ImageResponse containing the generated OG image (1200x630 PNG)
+ * @throws {400} When the slug parameter is missing or invalid
+ * @throws {404} When the blog post MDX file doesn't exist
+ * @throws {500} For unexpected errors during image generation
+ *
+ * @example
+ * // Request URL: /api/blog/og?slug=my-blog-post
+ * // Returns: PNG image with the blog post's title and description overlaid on featured image
  */
 export async function loader({ request }: Route.LoaderArgs) {
   // Extract and parse URL search parameters
@@ -89,7 +99,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         <div tw="relative flex h-full w-full " style={{ fontFamily: "Inter" }}>
           {/* Background image from the blog post */}
           <img
-            src={`${process.env.SITE_URL}/blog/${params.slug}.jpg`}
+              src={`${import.meta.env.VITE_SITE_URL}/blog/${params.slug}.jpg`}
             tw="absolute inset-0 h-full w-full object-cover object-center"
           />
           {/* Overlay with title and description */}

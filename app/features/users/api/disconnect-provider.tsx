@@ -31,6 +31,8 @@ import makeServerClient from "~/core/lib/supa-client.server";
  *
  * The schema ensures that only supported providers can be disconnected,
  * preventing potential security issues with unsupported providers.
+ *
+ * @type {z.ZodObject<{provider: z.ZodEnum<["github", "kakao"]>}>}
  */
 const schema = z.object({
   provider: z.enum(["github", "kakao"]),
@@ -54,12 +56,32 @@ const schema = z.object({
  * - Verifies identity existence before attempting to unlink
  * - Handles errors gracefully with appropriate status codes
  *
- * Note: This endpoint ensures users cannot accidentally disconnect
- * identities they don't have, providing better error messages.
+ * @param {Route.ActionArgs} args - The action arguments
+ * @param {Request} args.request - The incoming HTTP request
+ * @param {object} args.params - The route parameters containing the provider to disconnect
+ * @param {string} args.params.provider - The OAuth provider to disconnect (github or kakao)
+ * @returns {Promise<{success: boolean} | TypedResponse<{error: string}>>} Success object or error response with status 400
+ * @throws {Response} Throws 401 if user is not authenticated
+ * @throws {Response} Throws 405 if request method is not DELETE
  *
- * @param request - The incoming HTTP request
- * @param params - The route parameters containing the provider to disconnect
- * @returns Response indicating success or error with appropriate details
+ * @example
+ * // Client-side usage with form submission
+ * <form method="post" action="/api/users/disconnect-provider/github">
+ *   <input type="hidden" name="_method" value="DELETE" />
+ *   <button type="submit">Disconnect GitHub</button>
+ * </form>
+ *
+ * @example
+ * // Example successful response
+ * { success: true }
+ *
+ * @example
+ * // Example error response (status 400)
+ * { error: "Identity not found" }
+ *
+ * @remarks
+ * This endpoint ensures users cannot accidentally disconnect
+ * identities they don't have, providing better error messages.
  */
 export async function action({ request, params }: Route.ActionArgs) {
   // Validate request method (only allow DELETE)

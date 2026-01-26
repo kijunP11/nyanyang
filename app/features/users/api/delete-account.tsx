@@ -18,7 +18,7 @@ import type { Route } from "./+types/delete-account";
 import { data, redirect } from "react-router";
 
 import { requireAuthentication, requireMethod } from "~/core/lib/guards.server";
-import adminClient from "~/core/lib/supa-admin-client.server";
+import { adminClient } from "~/core/lib/supa-admin-client.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 
 /**
@@ -38,11 +38,22 @@ import makeServerClient from "~/core/lib/supa-client.server";
  * - Handles errors gracefully with appropriate status codes
  * - Performs cleanup of associated resources
  *
- * Note: This is a destructive operation that permanently removes the user's
- * account and associated data. It cannot be undone.
+ * @param {Route.ActionArgs} args - The action arguments
+ * @param {Request} args.request - The incoming HTTP request
+ * @returns {Promise<Response | TypedResponse<{error: string}>>} Redirect to home page on success, or error response with status 500 on failure
+ * @throws {Response} Throws 401 if user is not authenticated
+ * @throws {Response} Throws 405 if request method is not DELETE
  *
- * @param request - The incoming HTTP request
- * @returns Redirect to home page or error response
+ * @example
+ * // Client-side usage with form submission
+ * <form method="post" action="/api/users/delete-account">
+ *   <input type="hidden" name="_method" value="DELETE" />
+ *   <button type="submit">Delete Account</button>
+ * </form>
+ *
+ * @remarks
+ * This is a destructive operation that permanently removes the user's
+ * account and associated data. It cannot be undone.
  */
 export async function action({ request }: Route.ActionArgs) {
   // Validate request method (only allow DELETE)

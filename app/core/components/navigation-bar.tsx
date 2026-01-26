@@ -92,7 +92,17 @@ function UserMenu({
           <SheetClose asChild>
             <Link to="/dashboard" viewTransition>
               <HomeIcon className="size-4" />
-              Dashboard
+              대시보드
+            </Link>
+          </SheetClose>
+        </DropdownMenuItem>
+        
+        {/* Character Creation link */}
+        <DropdownMenuItem asChild>
+          <SheetClose asChild>
+            <Link to="/characters/create" viewTransition>
+              <CogIcon className="size-4" />
+              캐릭터 만들기
             </Link>
           </SheetClose>
         </DropdownMenuItem>
@@ -255,6 +265,43 @@ export function NavigationBar({
           >
             포인트
           </NavLink>
+          {name && (
+            <>
+              <NavLink
+                to="/characters"
+                viewTransition
+                className={({ isActive }) =>
+                  isActive
+                    ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                    : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
+                }
+              >
+                캐릭터
+              </NavLink>
+              <NavLink
+                to="/rooms"
+                viewTransition
+                className={({ isActive }) =>
+                  isActive
+                    ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                    : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
+                }
+              >
+                채팅
+              </NavLink>
+              <NavLink
+                to="/attendance"
+                viewTransition
+                className={({ isActive }) =>
+                  isActive
+                    ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                    : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
+                }
+              >
+                출석체크
+              </NavLink>
+            </>
+          )}
           <NavLink
             to="/guide"
             viewTransition
@@ -328,7 +375,7 @@ export function NavigationBar({
             </SheetClose>
             <SheetClose asChild>
               <NavLink
-                to="/payments/checkout"
+                to="/points"
                 className={({ isActive }) =>
                   isActive
                     ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
@@ -338,9 +385,49 @@ export function NavigationBar({
                 포인트
               </NavLink>
             </SheetClose>
+            {name && (
+              <>
+                <SheetClose asChild>
+                  <NavLink
+                    to="/characters"
+                    className={({ isActive }) =>
+                      isActive
+                        ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                        : "text-muted-foreground hover:text-foreground relative"
+                    }
+                  >
+                    캐릭터
+                  </NavLink>
+                </SheetClose>
+                <SheetClose asChild>
+                  <NavLink
+                    to="/rooms"
+                    className={({ isActive }) =>
+                      isActive
+                        ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                        : "text-muted-foreground hover:text-foreground relative"
+                    }
+                  >
+                    채팅
+                  </NavLink>
+                </SheetClose>
+                <SheetClose asChild>
+                  <NavLink
+                    to="/attendance"
+                    className={({ isActive }) =>
+                      isActive
+                        ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
+                        : "text-muted-foreground hover:text-foreground relative"
+                    }
+                  >
+                    출석체크
+                  </NavLink>
+                </SheetClose>
+              </>
+            )}
             <SheetClose asChild>
               <NavLink
-                to="/blog"
+                to="/guide"
                 className={({ isActive }) =>
                   isActive
                     ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"

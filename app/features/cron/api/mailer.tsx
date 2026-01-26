@@ -21,7 +21,7 @@ import { data } from "react-router";
 import WelcomeEmail from "transactional-emails/emails/welcome";
 
 import resendClient from "~/core/lib/resend-client.server";
-import adminClient from "~/core/lib/supa-admin-client.server";
+import { adminClient } from "~/core/lib/supa-admin-client.server";
 
 /**
  * Interface representing an email message in the queue
@@ -38,7 +38,7 @@ interface EmailMessage {
 
 /**
  * API endpoint action handler for processing the email queue
- * 
+ *
  * This function is triggered by a cron job and processes one email from the queue at a time.
  * The workflow is:
  * 1. Authenticate the request using CRON_SECRET
@@ -46,14 +46,31 @@ interface EmailMessage {
  * 3. Process the message based on the template type
  * 4. Send the email using Resend
  * 5. Track any errors with Sentry
- * 
+ *
+ * Currently supported email templates:
+ * - "welcome": Sends a welcome email with user profile data
+ *
  * Security considerations:
  * - Requires a valid CRON_SECRET for authentication
  * - Only accepts POST requests
  * - Uses admin client with elevated permissions (safely contained in this endpoint)
- * 
- * @param request - The incoming HTTP request from the cron job
- * @returns A response with appropriate status code (200 for success, 401 for unauthorized)
+ *
+ * Note: This function returns 200 even if email sending fails. Errors are tracked
+ * in Sentry for monitoring, which prevents the cron job from repeatedly failing
+ * on transient issues.
+ *
+ * @param request - The incoming HTTP POST request from the cron job with CRON_SECRET in Authorization header
+ * @returns A response with status 200 for success or 401 for unauthorized
+ * @throws {401} When Authorization header doesn't match CRON_SECRET or method is not POST
+ *
+ * @example
+ * // Cron job request
+ * fetch('/api/cron/mailer', {
+ *   method: 'POST',
+ *   headers: {
+ *     'Authorization': process.env.CRON_SECRET
+ *   }
+ * });
  */
 export async function action({ request }: Route.LoaderArgs) {
   // Security check: Verify this is a POST request with the correct secret

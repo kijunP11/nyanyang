@@ -26,7 +26,7 @@ import {
 } from "e2e/utils/test-helpers";
 
 import db from "~/core/db/drizzle-client.server";
-import adminClient from "~/core/lib/supa-admin-client.server";
+import { adminClient } from "~/core/lib/supa-admin-client.server";
 import { profiles } from "~/features/users/schema";
 
 /**
