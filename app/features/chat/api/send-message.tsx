@@ -124,11 +124,12 @@ async function callGemini(
   messages: Array<{ role: string; content: string }>,
   model: string,
 ) {
-  const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+  const apiKey =
+    process.env.GOOGLE_GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
   if (!apiKey) {
     throw new Error(
-      "GOOGLE_GEMINI_API_KEY가 설정되지 않았습니다. .env 파일에 추가해주세요.",
+      "GOOGLE_GEMINI_API_KEY(또는 GOOGLE_API_KEY)가 설정되지 않았습니다. .env 파일에 추가해주세요.",
     );
   }
 
@@ -153,6 +154,13 @@ async function callGemini(
     },
   };
 
+  // Gemini 2.5 Pro는 Thinking 모델이므로 thinkingConfig 설정 필요
+  if (modelName.includes("2.5-pro")) {
+    requestBody.generationConfig.thinkingConfig = {
+      thinkingBudget: 1024,
+    };
+  }
+
   // Add systemInstruction if system message exists
   // This is critical for character persona to work!
   if (systemMessage) {
@@ -173,17 +181,56 @@ async function callGemini(
   );
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(
-      `Gemini API error: ${error.error?.message || "Unknown error"}`,
-    );
+    const contentType = response.headers.get("content-type") ?? "";
+    let errorMessage = `HTTP ${response.status}`;
+    if (contentType.includes("application/json")) {
+      try {
+        const error = await response.json();
+        errorMessage =
+          error.error?.message ??
+          error.message ??
+          JSON.stringify(error).slice(0, 200);
+      } catch {
+        // ignore
+      }
+    }
+    throw new Error(`Gemini API error: ${errorMessage}`);
   }
 
   const result = await response.json();
-  return (
-    result.candidates?.[0]?.content?.parts?.[0]?.text ||
-    "응답을 생성할 수 없습니다."
-  );
+
+  // [DEBUG] Gemini API 응답 로깅
+  console.log("=== [DEBUG] Gemini API Response ===");
+  console.log("Model:", modelName);
+  console.log("Candidates count:", result.candidates?.length ?? 0);
+  console.log("Finish reason:", result.candidates?.[0]?.finishReason);
+  console.log("Safety ratings:", JSON.stringify(result.candidates?.[0]?.safetyRatings));
+  if (result.promptFeedback) {
+    console.log("Prompt feedback:", JSON.stringify(result.promptFeedback));
+  }
+  console.log("===================================");
+
+  // candidates가 없거나 비어있는 경우 처리
+  if (!result.candidates || result.candidates.length === 0) {
+    console.error("Gemini returned no candidates. Full response:", JSON.stringify(result).slice(0, 500));
+    throw new Error(`Gemini API returned no candidates. Prompt feedback: ${JSON.stringify(result.promptFeedback)}`);
+  }
+
+  const parts = result.candidates[0]?.content?.parts ?? [];
+
+  // Thinking 모델은 thought: true인 part를 반환할 수 있음. 실제 응답만 추출
+  const text = parts
+    .filter((p: { thought?: boolean }) => !p.thought) // thought 부분 제외
+    .map((p: { text?: string }) => p?.text)
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+
+  if (!text) {
+    console.error("Gemini returned empty text. Parts:", JSON.stringify(parts).slice(0, 500));
+  }
+
+  return text || "응답을 생성할 수 없습니다.";
 }
 
 /**
