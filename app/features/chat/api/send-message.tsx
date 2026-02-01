@@ -156,7 +156,7 @@ async function callGemini(
     modelName.includes("2.5") || modelName.includes("3-");
   if (isThinkingModel) {
     requestBody.generationConfig.thinkingConfig = {
-      thinkingBudget: 1024,
+      thinkingBudget: 256,
     };
   }
 
