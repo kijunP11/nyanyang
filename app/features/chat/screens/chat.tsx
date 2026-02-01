@@ -35,6 +35,7 @@ import { characters } from "../../characters/schema";
 import { chatRooms, messages } from "../schema";
 import { getActiveBranchMessages, getRoomBranches } from "../lib/branch-manager.server";
 import MemoryDrawer from "../components/memory-drawer";
+import { ModelSelector, type AIModel } from "../components/model-selector";
 
 /**
  * Loader function for fetching chat room and messages
@@ -107,6 +108,7 @@ export default function ChatScreen() {
   const [isMemoryDrawerOpen, setIsMemoryDrawerOpen] = useState(false);
   const [showRollbackDialog, setShowRollbackDialog] = useState(false);
   const [rollbackMessageId, setRollbackMessageId] = useState<number | null>(null);
+  const [selectedModel, setSelectedModel] = useState<AIModel>("gemini-2.5-flash");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const branchFetcher = useFetcher();
   const revalidator = useRevalidator();
@@ -157,7 +159,7 @@ export default function ChatScreen() {
         body: JSON.stringify({
           room_id: room.room_id,
           message: userMessage,
-          model: "gpt-3.5-turbo",
+          model: selectedModel,
         }),
       });
 
@@ -315,6 +317,12 @@ export default function ChatScreen() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Model Selector */}
+            <ModelSelector
+              selectedModel={selectedModel}
+              onModelChange={setSelectedModel}
+            />
+
             {/* Memory Button */}
             <Button
               variant="ghost"
