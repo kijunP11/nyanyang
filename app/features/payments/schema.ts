@@ -18,7 +18,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { authUid, authUsers, authenticatedRole } from "drizzle-orm/supabase";
 
-import { makeIdentityColumn, timestamps } from "~/core/db/helpers.server";
+import { makeIdentityColumn, timestamps } from "~/core/db/helpers";
 
 /**
  * Payments Table

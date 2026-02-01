@@ -14,7 +14,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { authUid, authUsers, authenticatedRole } from "drizzle-orm/supabase";
 
-import { timestamps } from "~/core/db/helpers.server";
+import { timestamps } from "~/core/db/helpers";
 
 /**
  * User Points Table

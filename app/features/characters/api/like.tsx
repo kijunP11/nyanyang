@@ -17,7 +17,7 @@ import { data } from "react-router";
 import { z } from "zod";
 
 import drizzle from "~/core/db/drizzle-client.server";
-import { requireAuthentication, requireMethod } from "~/core/lib/guards.server";
+import { requireAuthentication } from "~/core/lib/guards.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 
 import { characterLikes, characters } from "../schema";
