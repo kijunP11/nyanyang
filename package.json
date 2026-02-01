@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.43",
+    "@ai-sdk/google": "^3.0.19",
     "@ai-sdk/openai": "^2.0.64",
     "@hcaptcha/react-hcaptcha": "^1.12.0",
     "@radix-ui/react-avatar": "^1.1.3",

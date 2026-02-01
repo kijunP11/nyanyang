@@ -45,18 +45,126 @@ import {
 const bodySchema = z.object({
   room_id: z.coerce.number().int().positive(),
   message: z.string().min(1).max(2000),
-  model: z.enum(["gpt-4", "gpt-3.5-turbo", "claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"]).optional().default("gpt-3.5-turbo"),
+  model: z.enum([
+    // OpenAI
+    "gpt-4", "gpt-3.5-turbo", "gpt-4o",
+    // Anthropic
+    "claude-3-5-sonnet-20241022", "claude-3-haiku-20240307", "claude-sonnet", "opus",
+    // Google Gemini
+    "gemini-3-flash", "gemini-3-pro",
+    "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+  ]).optional().default("gemini-2.5-flash"),
 });
 
 /**
  * Token cost per model (in points per 1000 tokens)
  */
 const TOKEN_COSTS: Record<string, number> = {
+  // OpenAI
   "gpt-3.5-turbo": 2,
   "gpt-4": 30,
+  "gpt-4o": 20,
+  // Anthropic
   "claude-3-haiku-20240307": 2,
   "claude-3-5-sonnet-20241022": 15,
+  "claude-sonnet": 15,
+  "opus": 75,
+  // Google Gemini
+  "gemini-3-flash": 2,
+  "gemini-3-pro": 10,
+  "gemini-2.5-pro": 8,
+  "gemini-2.5-flash": 2,
+  "gemini-2.5-flash-lite": 1,
+  "gemini-2.0-flash": 2,
 };
+
+/**
+ * Get Google API model name from internal ID
+ */
+function getGeminiModelName(model: string): string {
+  const modelMap: Record<string, string> = {
+    "gemini-3-flash": "gemini-3-flash-preview",
+    "gemini-3-pro": "gemini-3-pro-preview",
+    "gemini-2.5-pro": "gemini-2.5-pro",
+    "gemini-2.5-flash": "gemini-2.5-flash",
+    "gemini-2.5-flash-lite": "gemini-2.5-flash-lite",
+    "gemini-2.0-flash": "gemini-2.0-flash",
+  };
+  return modelMap[model] || "gemini-2.0-flash";
+}
+
+/**
+ * Call Google Gemini API directly
+ */
+async function callGemini(
+  systemPrompt: string,
+  messages: Array<{ role: string; content: string }>,
+  model: string,
+): Promise<string> {
+  const apiKey = process.env.GOOGLE_GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("GOOGLE_GEMINI_API_KEY가 설정되지 않았습니다.");
+  }
+
+  // Convert messages to Gemini format
+  const contents = messages.map((msg) => ({
+    role: msg.role === "assistant" ? "model" : "user",
+    parts: [{ text: msg.content }],
+  }));
+
+  const modelName = getGeminiModelName(model);
+
+  const requestBody: Record<string, unknown> = {
+    contents,
+    generationConfig: {
+      temperature: 0.6,
+      maxOutputTokens: 2000,
+    },
+    systemInstruction: {
+      parts: [{ text: systemPrompt }],
+    },
+  };
+
+  // Thinking 모델은 thinkingConfig 필요 (2.5, 3.x 시리즈)
+  const isThinkingModel = modelName.includes("2.5") || modelName.includes("3-");
+  if (isThinkingModel) {
+    (requestBody.generationConfig as Record<string, unknown>).thinkingConfig = {
+      thinkingBudget: 256,
+    };
+  }
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(`Gemini API error: ${error.error?.message || response.status}`);
+  }
+
+  const result = await response.json();
+
+  if (!result.candidates || result.candidates.length === 0) {
+    throw new Error("Gemini API returned no candidates");
+  }
+
+  const parts = result.candidates[0]?.content?.parts ?? [];
+  const text = parts
+    .filter((p: { thought?: boolean }) => !p.thought)
+    .map((p: { text?: string }) => p?.text)
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+
+  return text || "응답을 생성할 수 없습니다.";
+}
 
 /**
  * Action handler for AI chat
@@ -243,14 +351,6 @@ export async function action({ request }: Route.ActionArgs) {
       })
       .returning();
 
-    // Build AI model
-    let aiModel;
-    if (validData.model.startsWith("gpt")) {
-      aiModel = openai(validData.model);
-    } else {
-      aiModel = anthropic(validData.model);
-    }
-
     // Get user's display name from profiles table (using Supabase client for RLS)
     const userName = await getUserDisplayName(client, user.id);
 
@@ -258,10 +358,6 @@ export async function action({ request }: Route.ActionArgs) {
     const systemPrompt = buildCharacterPrompt(character, userName);
 
     // Build optimized context with memory system
-    // This intelligently combines:
-    // - Recent messages (last 10)
-    // - Important conversation summaries
-    // - Token budget management
     const aiMessages = await buildContextWithNewMessage(
       {
         roomId: validData.room_id,
@@ -272,13 +368,90 @@ export async function action({ request }: Route.ActionArgs) {
       validData.message
     );
 
+    // Handle Gemini models separately (non-streaming)
+    if (validData.model.startsWith("gemini")) {
+      const geminiResponse = await callGemini(systemPrompt, aiMessages, validData.model);
+      const estimatedTokens = Math.ceil(geminiResponse.length / 4);
+      const actualCost = Math.ceil((estimatedTokens / 1000) * costPerThousand);
+
+      // Save assistant message
+      await db.insert(messages).values({
+        room_id: validData.room_id,
+        user_id: user.id,
+        role: "assistant",
+        content: geminiResponse,
+        sequence_number: nextSequence + 1,
+        tokens_used: estimatedTokens,
+        cost: actualCost,
+        parent_message_id: userMessage.message_id,
+        branch_name: branchName,
+        is_active_branch: 1,
+      });
+
+      // Deduct points
+      const newBalance = pointBalance.current_balance - actualCost;
+      const newTotalSpent = pointBalance.total_spent + actualCost;
+
+      await db.update(userPoints).set({
+        current_balance: newBalance,
+        total_spent: newTotalSpent,
+      }).where(eq(userPoints.user_id, user.id));
+
+      // Create transaction record
+      await db.insert(pointTransactions).values({
+        user_id: user.id,
+        amount: -actualCost,
+        balance_after: newBalance,
+        type: "usage",
+        reason: `Chat message in room ${validData.room_id}`,
+        reference_id: `room_${validData.room_id}`,
+      });
+
+      // Update room metadata
+      await db.update(chatRooms).set({
+        last_message: geminiResponse.substring(0, 100),
+        last_message_at: new Date(),
+        message_count: room.message_count + 2,
+      }).where(eq(chatRooms.room_id, validData.room_id));
+
+      // Return as SSE for consistency with frontend
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ content: geminiResponse })}\n\n`));
+          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ done: true, tokens: estimatedTokens, cost: actualCost })}\n\n`));
+          controller.close();
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          ...Object.fromEntries(headers.entries()),
+        },
+      });
+    }
+
+    // Build AI model for OpenAI/Anthropic (streaming)
+    let aiModel;
+    if (validData.model.startsWith("gpt")) {
+      aiModel = openai(validData.model);
+    } else if (validData.model === "claude-sonnet") {
+      aiModel = anthropic("claude-3-5-sonnet-20241022");
+    } else if (validData.model === "opus") {
+      aiModel = anthropic("claude-3-opus-20240229");
+    } else {
+      aiModel = anthropic(validData.model);
+    }
+
     // Stream AI response
     const result = streamText({
       model: aiModel,
       system: systemPrompt,
       messages: aiMessages,
-      temperature: 0.6, // Lower temperature for more consistent tone
-      maxTokens: 2000, // Prevent text truncation
+      temperature: 0.6,
+      maxOutputTokens: 2000,
     });
 
     // Collect full response for database storage
@@ -358,7 +531,7 @@ export async function action({ request }: Route.ActionArgs) {
               );
               createConversationSummary(
                 validData.room_id,
-                character.display_name
+                character.display_name || character.name
               ).catch((err) => {
                 console.error("Failed to create summary:", err);
               });
