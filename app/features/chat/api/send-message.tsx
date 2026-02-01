@@ -95,26 +95,25 @@ async function callOpenAI(
  */
 function getGeminiModelName(model: string): string {
   // 2026.1 기준 사용 가능한 최신 모델로 매핑
-  // 3.0 및 2.5 라인업은 아직 API 미공개 상태일 수 있으므로 2.0 Experimental로 안전하게 폴백
   const modelMap: Record<string, string> = {
-    // Gemini 3 (API 미공개 -> 2.0 Flash Exp로 매핑)
-    "gemini-3-flash": "gemini-2.0-flash-exp",
-    "gemini-3-pro": "gemini-2.0-flash-exp",
+    // Gemini 3 (API 미공개 -> 2.0 Flash로 폴백)
+    "gemini-3-flash": "gemini-2.0-flash",
+    "gemini-3-pro": "gemini-2.0-flash",
 
     // Gemini 2.5 (실제 모델)
     "gemini-2.5-pro": "gemini-2.5-pro",
     "gemini-2.5-flash": "gemini-2.5-flash",
     "gemini-2.5-flash-lite": "gemini-2.5-flash-lite",
 
-    // Gemini 2.0 (실제 모델 존재)
-    "gemini-2.0-flash": "gemini-2.0-flash-exp",
+    // Gemini 2.0
+    "gemini-2.0-flash": "gemini-2.0-flash",
 
     // Gemini 1.5 (안정 버전)
     "gemini-1.5-pro": "gemini-1.5-pro",
     "gemini-1.5-flash": "gemini-1.5-flash",
   };
 
-  return modelMap[model] || "gemini-2.0-flash-exp";
+  return modelMap[model] || "gemini-1.5-flash";
 }
 
 /**
