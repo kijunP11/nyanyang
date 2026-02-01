@@ -152,7 +152,7 @@ export default [
     ]),
     // Chat routes
     ...prefix("/chat", [
-      route("/:characterId", "features/chat/screens/chat.tsx"),
+      route("/:roomId", "features/chat/screens/chat.tsx"),
     ]),
     // Character routes
     ...prefix("/characters", [
