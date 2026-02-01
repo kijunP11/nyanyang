@@ -94,11 +94,11 @@ async function callOpenAI(
  * Get accurate Google API model name from internal ID
  */
 function getGeminiModelName(model: string): string {
-  // 2026.1 기준 사용 가능한 최신 모델로 매핑
+  // 2026.1 기준 사용 가능한 모델로 매핑
   const modelMap: Record<string, string> = {
-    // Gemini 3 (API 미공개 -> 2.0 Flash로 폴백)
-    "gemini-3-flash": "gemini-2.0-flash",
-    "gemini-3-pro": "gemini-2.0-flash",
+    // Gemini 3 (Preview 모델 사용)
+    "gemini-3-flash": "gemini-3-flash-preview",
+    "gemini-3-pro": "gemini-3-pro-preview",
 
     // Gemini 2.5 (실제 모델)
     "gemini-2.5-pro": "gemini-2.5-pro",
@@ -108,12 +108,12 @@ function getGeminiModelName(model: string): string {
     // Gemini 2.0
     "gemini-2.0-flash": "gemini-2.0-flash",
 
-    // Gemini 1.5 (안정 버전)
-    "gemini-1.5-pro": "gemini-1.5-pro",
-    "gemini-1.5-flash": "gemini-1.5-flash",
+    // Gemini 1.5 (폐기됨 -> 2.0으로 폴백)
+    "gemini-1.5-pro": "gemini-2.5-pro",
+    "gemini-1.5-flash": "gemini-2.0-flash",
   };
 
-  return modelMap[model] || "gemini-1.5-flash";
+  return modelMap[model] || "gemini-2.0-flash";
 }
 
 /**
@@ -153,8 +153,10 @@ async function callGemini(
     },
   };
 
-  // Gemini 2.5 Pro는 Thinking 모델이므로 thinkingConfig 설정 필요
-  if (modelName.includes("2.5-pro")) {
+  // Thinking 모델들은 thinkingConfig 설정 필요 (2.5, 3.x 시리즈)
+  const isThinkingModel =
+    modelName.includes("2.5") || modelName.includes("3-");
+  if (isThinkingModel) {
     requestBody.generationConfig.thinkingConfig = {
       thinkingBudget: 1024,
     };
