@@ -42,8 +42,8 @@ export function HorizontalCharacterCard({
             className="h-full w-full object-cover transition-transform group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-4xl">
-            🎭
+          <div className="flex h-full w-full items-center justify-center">
+            <User2 className="h-10 w-10 text-[#6b7280]" />
           </div>
         )}
         {/* NSFW 배지 */}

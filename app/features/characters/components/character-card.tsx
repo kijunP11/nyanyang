@@ -1,3 +1,4 @@
+import { User } from "lucide-react";
 import { Link } from "react-router";
 import { Badge } from "~/core/components/ui/badge";
 import { Card, CardContent } from "~/core/components/ui/card";
@@ -29,8 +30,8 @@ export function CharacterCard({ character }: CharacterCardProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl">
-              🎭
+            <div className="w-full h-full flex items-center justify-center">
+              <User className="h-12 w-12 text-[#6b7280]" />
             </div>
           )}
           {character.is_nsfw && (

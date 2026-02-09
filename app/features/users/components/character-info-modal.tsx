@@ -4,6 +4,7 @@
  * 캐릭터 카드 클릭 시 표시되는 정보 모달.
  */
 
+import { User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useFetcher } from "react-router";
 
@@ -117,8 +118,8 @@ export default function CharacterInfoModal({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl">
-              🎭
+            <div className="w-full h-full flex items-center justify-center">
+              <User className="h-16 w-16 text-[#6b7280]" />
             </div>
           )}
 

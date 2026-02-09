@@ -4,6 +4,8 @@
  * 좋아요/팔로잉 목록의 세로형 캐릭터 카드.
  */
 
+import { User } from "lucide-react";
+
 import type { CharacterCardData } from "../types";
 
 interface CharacterGridCardProps {
@@ -29,8 +31,8 @@ export default function CharacterGridCard({
             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">
-            🎭
+          <div className="w-full h-full flex items-center justify-center">
+            <User className="h-10 w-10 text-[#6b7280]" />
           </div>
         )}
       </div>
