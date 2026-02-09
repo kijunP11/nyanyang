@@ -17,7 +17,7 @@ import type { Route } from "./+types/chat";
 import { anthropic } from "@ai-sdk/anthropic";
 import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc, sql } from "drizzle-orm";
 import { data } from "react-router";
 import { z } from "zod";
 
@@ -55,6 +55,8 @@ const bodySchema = z.object({
     "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite",
     "gemini-2.0-flash",
   ]).optional().default("gemini-2.5-flash"),
+  regenerate: z.boolean().optional().default(false),
+  replace_message_id: z.coerce.number().int().positive().optional(),
 });
 
 /**
@@ -334,22 +336,70 @@ export async function action({ request }: Route.ActionArgs) {
     // Determine branch name (inherit from last active message or default to "main")
     const branchName = lastActiveMessage?.branch_name || "main";
 
-    // Save user message
-    const [userMessage] = await db
-      .insert(messages)
-      .values({
-        room_id: validData.room_id,
-        user_id: user.id,
-        role: "user",
-        content: validData.message,
-        sequence_number: nextSequence,
-        tokens_used: 0,
-        cost: 0,
-        parent_message_id: lastActiveMessage?.message_id || null,
-        branch_name: branchName,
-        is_active_branch: 1,
-      })
-      .returning();
+    // Handle regenerate mode
+    let userMessage: typeof messages.$inferSelect;
+    let aiSequenceNumber: number;
+
+    if (validData.regenerate && validData.replace_message_id) {
+      // Soft-delete the existing AI message
+      await db
+        .update(messages)
+        .set({ is_deleted: 1 })
+        .where(eq(messages.message_id, validData.replace_message_id));
+
+      // Find the original AI message to get its sequence number
+      const [originalAiMsg] = await db
+        .select()
+        .from(messages)
+        .where(eq(messages.message_id, validData.replace_message_id))
+        .limit(1);
+
+      if (!originalAiMsg) {
+        return data({ error: "Original message not found" }, { status: 404, headers });
+      }
+
+      aiSequenceNumber = originalAiMsg.sequence_number;
+
+      // Find the user message before the AI message (don't insert new one)
+      // Query directly in DB for reliability
+      const [existingUserMsg] = await db
+        .select()
+        .from(messages)
+        .where(
+          and(
+            eq(messages.room_id, validData.room_id),
+            eq(messages.role, "user"),
+            eq(messages.is_deleted, 0),
+            sql`${messages.sequence_number} < ${originalAiMsg.sequence_number}`
+          )
+        )
+        .orderBy(desc(messages.sequence_number))
+        .limit(1);
+
+      if (!existingUserMsg) {
+        return data({ error: "User message not found for regeneration" }, { status: 400, headers });
+      }
+
+      userMessage = existingUserMsg;
+    } else {
+      // Normal message flow - save user message
+      aiSequenceNumber = nextSequence + 1;
+      [userMessage] = await db
+        .insert(messages)
+        .values({
+          room_id: validData.room_id,
+          user_id: user.id,
+          role: "user",
+          content: validData.message,
+          sequence_number: nextSequence,
+          tokens_used: 0,
+          cost: 0,
+          parent_message_id: lastActiveMessage?.message_id || null,
+          branch_name: branchName,
+          is_active_branch: 1,
+        })
+        .returning();
+    }
 
     // Get user's display name from profiles table (using Supabase client for RLS)
     const userName = await getUserDisplayName(client, user.id);
@@ -380,7 +430,7 @@ export async function action({ request }: Route.ActionArgs) {
         user_id: user.id,
         role: "assistant",
         content: geminiResponse,
-        sequence_number: nextSequence + 1,
+        sequence_number: aiSequenceNumber,
         tokens_used: estimatedTokens,
         cost: actualCost,
         parent_message_id: userMessage.message_id,
@@ -407,11 +457,12 @@ export async function action({ request }: Route.ActionArgs) {
         reference_id: `room_${validData.room_id}`,
       });
 
-      // Update room metadata
+      // Update room metadata (regenerate only adds 1 message, normal adds 2)
+      const messageCountIncrement = validData.regenerate ? 1 : 2;
       await db.update(chatRooms).set({
         last_message: geminiResponse.substring(0, 100),
         last_message_at: new Date(),
-        message_count: room.message_count + 2,
+        message_count: room.message_count + messageCountIncrement,
       }).where(eq(chatRooms.room_id, validData.room_id));
 
       // Return as SSE for consistency with frontend
@@ -480,7 +531,7 @@ export async function action({ request }: Route.ActionArgs) {
               user_id: user.id,
               role: "assistant",
               content: fullResponse,
-              sequence_number: nextSequence + 1,
+              sequence_number: aiSequenceNumber,
               tokens_used: totalTokens,
               cost: actualCost,
               parent_message_id: userMessage.message_id,
@@ -512,13 +563,14 @@ export async function action({ request }: Route.ActionArgs) {
               reference_id: `room_${validData.room_id}`,
             });
 
-          // Update room metadata
+          // Update room metadata (regenerate only adds 1 message, normal adds 2)
+          const messageCountIncrement = validData.regenerate ? 1 : 2;
           await db
             .update(chatRooms)
             .set({
               last_message: fullResponse.substring(0, 100),
               last_message_at: new Date(),
-              message_count: room.message_count + 2,
+              message_count: room.message_count + messageCountIncrement,
             })
             .where(eq(chatRooms.room_id, validData.room_id));
 

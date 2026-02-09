@@ -20,13 +20,6 @@ import {
   AlertTitle,
 } from "~/core/components/ui/alert";
 import { Button } from "~/core/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/core/components/ui/card";
 import { Input } from "~/core/components/ui/input";
 import { Label } from "~/core/components/ui/label";
 import makeServerClient from "~/core/lib/supa-client.server";
@@ -42,7 +35,7 @@ import { SignInButtons } from "../components/auth-login-buttons";
 export const meta: Route.MetaFunction = () => {
   return [
     {
-      title: `Log in | ${import.meta.env.VITE_APP_NAME}`,
+      title: `로그인 | ${import.meta.env.VITE_APP_NAME}`,
     },
   ];
 };
@@ -57,10 +50,10 @@ export const meta: Route.MetaFunction = () => {
  * Error messages are provided for user feedback
  */
 const loginSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
+  email: z.string().email({ message: "올바른 이메일 주소를 입력해주세요" }),
   password: z
     .string()
-    .min(8, { message: "Password must be at least 8 characters long" }),
+    .min(8, { message: "비밀번호는 8자 이상이어야 합니다" }),
 });
 
 /**
@@ -115,7 +108,7 @@ export async function action({ request }: Route.ActionArgs) {
   // Verify that we have a valid session
   if (!signInData?.session) {
     return data({ 
-      error: "Failed to create session. Please try again." 
+      error: "세션을 생성하지 못했습니다. 다시 시도해주세요." 
     }, { status: 500 });
   }
 
@@ -164,114 +157,120 @@ export default function Login({ actionData }: Route.ComponentProps) {
     });
   };
   return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center">
-          <CardTitle className="text-2xl font-semibold">
-            Sign into your account
-          </CardTitle>
-          <CardDescription className="text-base">
-            Please enter your details
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <Form
-            className="flex w-full flex-col gap-5"
-            method="post"
-            ref={formRef}
-          >
-            <div className="flex flex-col items-start space-y-2">
-              <Label
-                htmlFor="email"
-                className="flex flex-col items-start gap-1"
-              >
-                Email
-              </Label>
-              <Input
-                id="email"
-                name="email"
-                required
-                type="email"
-                placeholder="Enter your email"
-              />
-              {actionData &&
-              "fieldErrors" in actionData &&
-              actionData.fieldErrors.email ? (
-                <FormErrors errors={actionData.fieldErrors.email} />
-              ) : null}
-            </div>
-            <div className="flex flex-col items-start space-y-2">
-              <div className="flex w-full items-center justify-between">
-                <Label
-                  htmlFor="password"
-                  className="flex flex-col items-start gap-1"
-                >
-                  Password
-                </Label>
-                <Link
-                  to="/auth/forgot-password/reset"
-                  className="text-muted-foreground text-underline hover:text-foreground self-end text-sm underline transition-colors"
-                  tabIndex={-1}
-                  viewTransition
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                name="password"
-                required
-                type="password"
-                placeholder="Enter your password"
-              />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#1a1a1a] px-4">
+      <div className="w-full max-w-[350px]">
+        {/* 타이틀 */}
+        <h1 className="mb-8 text-center text-3xl font-bold text-white">
+          로그인
+        </h1>
 
-              {actionData &&
-              "fieldErrors" in actionData &&
-              actionData.fieldErrors.password ? (
-                <FormErrors errors={actionData.fieldErrors.password} />
-              ) : null}
-            </div>
-            <FormButton label="Log in" className="w-full" />
-            {actionData && "error" in actionData ? (
-              actionData.error === "Email not confirmed" ? (
-                <Alert variant="destructive" className="bg-destructive/10">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Email not confirmed</AlertTitle>
-                  <AlertDescription className="flex flex-col items-start gap-2">
-                    Before signing in, please verify your email.
-                    <Button
-                      variant="outline"
-                      className="text-foreground flex items-center justify-between gap-2"
-                      onClick={onResendClick}
-                    >
-                      Resend confirmation email
-                      {fetcher.state === "submitting" ? (
-                        <Loader2Icon
-                          data-testid="resend-confirmation-email-spinner"
-                          className="size-4 animate-spin"
-                        />
-                      ) : null}
-                    </Button>
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <FormErrors errors={[actionData.error]} />
-              )
+        {/* 로그인 폼 */}
+        <Form
+          className="flex w-full flex-col gap-4"
+          method="post"
+          ref={formRef}
+        >
+          {/* 아이디 입력 */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="email" className="text-sm text-[#9ca3af]">
+              아이디
+            </Label>
+            <Input
+              id="email"
+              name="email"
+              required
+              type="email"
+              placeholder="아이디 입력"
+              className="h-12 border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+            />
+            {actionData &&
+            "fieldErrors" in actionData &&
+            actionData.fieldErrors.email ? (
+              <FormErrors errors={actionData.fieldErrors.email} />
             ) : null}
-          </Form>
+          </div>
+
+          {/* 비밀번호 입력 */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="password" className="text-sm text-[#9ca3af]">
+              비밀번호
+            </Label>
+            <Input
+              id="password"
+              name="password"
+              required
+              type="password"
+              placeholder="비밀번호를 입력하세요"
+              className="h-12 border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+            />
+            {actionData &&
+            "fieldErrors" in actionData &&
+            actionData.fieldErrors.password ? (
+              <FormErrors errors={actionData.fieldErrors.password} />
+            ) : null}
+          </div>
+
+          {/* 로그인 버튼 */}
+          <FormButton
+            label="로그인"
+            className="mt-2 h-11 w-full bg-[#14b8a6] text-white hover:bg-[#0d9488]"
+          />
+
+          {/* 에러 메시지 */}
+          {actionData && "error" in actionData ? (
+            actionData.error === "Email not confirmed" ? (
+              <Alert variant="destructive" className="border-red-500/50 bg-red-500/10">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>이메일 인증 필요</AlertTitle>
+                <AlertDescription className="flex flex-col items-start gap-2">
+                  로그인하기 전에 이메일을 인증해주세요.
+                  <Button
+                    variant="outline"
+                    className="border-[#3f3f46] bg-transparent text-white hover:bg-[#3f3f46]"
+                    onClick={onResendClick}
+                  >
+                    인증 메일 재발송
+                    {fetcher.state === "submitting" ? (
+                      <Loader2Icon
+                        data-testid="resend-confirmation-email-spinner"
+                        className="ml-2 size-4 animate-spin"
+                      />
+                    ) : null}
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <FormErrors errors={[actionData.error]} />
+            )
+          ) : null}
+        </Form>
+
+        {/* 비밀번호 찾기 링크 */}
+        <div className="mt-4 text-center">
+          <Link
+            to="/auth/forgot-password/reset"
+            className="text-sm text-[#9ca3af] underline underline-offset-4 hover:text-white"
+            viewTransition
+          >
+            아이디 또는 비밀번호를 잊어버리셨나요?
+          </Link>
+        </div>
+
+        {/* 소셜 로그인 */}
+        <div className="mt-6">
           <SignInButtons />
-        </CardContent>
-      </Card>
-      <div className="flex flex-col items-center justify-center text-sm">
-        <p className="text-muted-foreground">
-          Don't have an account?{" "}
+        </div>
+
+        {/* 회원가입 링크 */}
+        <p className="mt-6 text-center text-sm text-[#9ca3af]">
+          신규 회원이신가요?{" "}
           <Link
             to="/join"
             viewTransition
             data-testid="form-signup-link"
-            className="text-muted-foreground hover:text-foreground text-underline underline transition-colors"
+            className="font-medium text-[#14b8a6] hover:underline"
           >
-            Sign Up
+            1분만에 회원가입
           </Link>
         </p>
       </div>

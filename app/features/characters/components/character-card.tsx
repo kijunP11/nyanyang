@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { Badge } from "~/core/components/ui/badge";
 import { Card, CardContent } from "~/core/components/ui/card";
-import type { Database } from "~/database.types";
+import type { Database } from "database.types";
 
 type Character = Database["public"]["Tables"]["characters"]["Row"];
 

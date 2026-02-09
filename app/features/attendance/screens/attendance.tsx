@@ -11,7 +11,7 @@ import { data } from "react-router";
 
 import { Button } from "~/core/components/ui/button";
 import makeServerClient from "~/core/lib/supa-client.server";
-import type { Database } from "~/database.types";
+import type { Database } from "database.types";
 import { checkAttendance } from "~/features/attendance/lib/attendance.server";
 import { StampGrid } from "~/features/attendance/components/stamp-grid";
 

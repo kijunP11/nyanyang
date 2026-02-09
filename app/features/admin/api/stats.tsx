@@ -188,7 +188,6 @@ export async function loader({ request }: Route.LoaderArgs) {
     display_name: char.display_name,
     avatar_url: char.avatar_url,
     chat_count: char.chat_count,
-    message_count: char.message_count,
     like_count: char.like_count,
   }));
 

@@ -66,7 +66,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const url = new URL(request.url);
   const search = url.searchParams.get("search") || "";
-  const status = url.searchParams.get("status") || "pending"; // pending, approved, rejected
+  const status = (url.searchParams.get("status") || "pending_review") as "draft" | "pending_review" | "approved" | "rejected" | "archived";
   const offset = parseInt(url.searchParams.get("offset") || "0");
   const limit = parseInt(url.searchParams.get("limit") || "20");
 
@@ -93,9 +93,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     is_public: row.characters.is_public,
     is_nsfw: row.characters.is_nsfw,
     status: row.characters.status,
-    moderation_note: row.characters.moderation_note,
     chat_count: row.characters.chat_count,
-    message_count: row.characters.message_count,
     view_count: row.characters.view_count,
     like_count: row.characters.like_count,
     created_at: row.characters.created_at,
@@ -235,7 +233,6 @@ export async function action({ request }: Route.ActionArgs) {
         .update(characters)
         .set({
           status: "approved",
-          moderation_note: validData.moderation_note || null,
           updated_at: new Date(),
         })
         .where(sql`${characters}.character_id = ${validData.character_id}`)
@@ -280,7 +277,6 @@ export async function action({ request }: Route.ActionArgs) {
         .update(characters)
         .set({
           status: "rejected",
-          moderation_note: validData.moderation_note,
           updated_at: new Date(),
         })
         .where(sql`${characters}.character_id = ${validData.character_id}`)

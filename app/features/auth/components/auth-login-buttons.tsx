@@ -13,13 +13,11 @@
  * This modular approach allows for easy addition or removal of authentication methods
  * without modifying the main authentication screens.
  */
-import { LockIcon, MailIcon, PhoneIcon } from "lucide-react";
 import { Link } from "react-router";
 
 import { Button } from "~/core/components/ui/button";
 
 import { AppleLogo } from "./logos/apple";
-import { GithubLogo } from "./logos/github";
 import { GoogleLogo } from "./logos/google";
 import { KakaoLogo } from "./logos/kakao";
 import { NaverLogo } from "./logos/naver";
@@ -28,129 +26,85 @@ import { NaverLogo } from "./logos/naver";
  * Generic authentication button component
  *
  * This component renders a consistent button for any authentication provider.
- * It includes the provider's logo and a standardized "Continue with [Provider]" text.
- * The button uses the outline variant for a clean look and links to the appropriate
- * authentication flow.
+ * It includes the provider's logo and a standardized text.
+ * The button uses custom styling per provider brand guidelines.
  *
  * @param logo - React node representing the provider's logo
  * @param label - Provider name (e.g., "Google", "Apple")
  * @param href - URL path to the authentication flow for this provider
+ * @param className - Additional CSS classes for custom styling
  */
 function AuthLoginButton({
   logo,
   label,
   href,
+  className = "",
 }: {
   logo: React.ReactNode;
   label: string;
   href: string;
+  className?: string;
 }) {
   return (
     <Button
-      variant="outline"
-      className="inline-flex items-center justify-center gap-2"
+      className={`inline-flex h-11 items-center justify-center gap-2 ${className}`}
       asChild
     >
       <Link to={href}>
         <span>{logo}</span>
-        <span>Continue with {label}</span>
+        <span>{label} 계정으로 로그인</span>
       </Link>
     </Button>
   );
 }
 
-/**
- * Visual divider with "OR" text
- *
- * This component creates a horizontal divider with the text "OR" centered between
- * two lines. It's used to visually separate different authentication method groups
- * (e.g., social logins from passwordless options).
- */
-function Divider() {
-  return (
-    <div className="flex items-center gap-4">
-      <span className="bg-input h-px w-full"></span>
-      <span className="text-muted-foreground text-xs">OR</span>
-      <span className="bg-input h-px w-full"></span>
-    </div>
-  );
-}
-
-/**
- * Passwordless authentication options
- *
- * This component renders buttons for passwordless authentication methods:
- * - OTP (One-Time Password) authentication
- * - Magic Link email authentication
- *
- * These methods provide alternatives to traditional password-based or social login
- * approaches, enhancing accessibility and security.
- *
- * Note: The underscore prefix (_SignInButtons) indicates this is a private component
- * intended for internal use within this module.
- */
-function _SignInButtons() {
-  return (
-    <>
-      <AuthLoginButton
-        logo={<LockIcon className="size-4 scale-110 dark:text-white" />}
-        label="OTP"
-        href="/auth/otp/start"
-      />
-      <AuthLoginButton
-        logo={<MailIcon className="size-4 scale-110 dark:text-white" />}
-        label="Magic Link"
-        href="/auth/magic-link"
-      />
-    </>
-  );
-}
 
 /**
  * Social login authentication options
  *
  * This component renders buttons for social authentication providers:
  * - Google
- * - GitHub
  * - Apple
+ * - Naver
  * - Kakao
  *
- * Each button uses the provider's official logo and links to the appropriate
- * OAuth flow. The styling is consistent while respecting each provider's
- * brand guidelines for their logo presentation.
+ * Each button uses the provider's official logo and brand colors.
  */
 function SocialLoginButtons() {
   return (
-    <>
-      <AuthLoginButton
-        logo={<NaverLogo className="size-4" />}
-        label="Naver"
-        href="/auth/naver" // Supabase OAuth가 아닌 커스텀 엔드포인트
-      />
+    <div className="flex flex-col gap-3">
       <AuthLoginButton
         logo={<GoogleLogo className="size-4" />}
-        label="Google"
+        label="구글"
         href="/auth/social/start/google"
+        className="border-0 bg-[#3f3f46] text-white hover:bg-[#52525b]"
       />
       <AuthLoginButton
-        logo={<AppleLogo className="size-4 scale-150 dark:text-white" />}
-        label="Apple"
+        logo={<AppleLogo className="size-4 scale-150 text-white" />}
+        label="애플"
         href="/auth/social/start/apple"
+        className="border-0 bg-[#3f3f46] text-white hover:bg-[#52525b]"
       />
       <AuthLoginButton
-        logo={<KakaoLogo className="size-4 scale-125 dark:text-yellow-300" />}
-        label="Kakao"
-        href="/auth/social/start/kakao"
+        logo={<NaverLogo className="size-4" />}
+        label="네이버"
+        href="/auth/naver"
+        className="border-0 bg-[#03C75A] text-white hover:bg-[#02b351]"
       />
-    </>
+      <AuthLoginButton
+        logo={<KakaoLogo className="size-4 scale-125" />}
+        label="카카오"
+        href="/auth/social/start/kakao"
+        className="border-0 bg-[#FEE500] text-[#191919] hover:bg-[#fdd800]"
+      />
+    </div>
   );
 }
 
 /**
  * Complete set of sign-in authentication options
  *
- * This exported component provides all authentication options for the sign-in flow,
- * including both social logins and passwordless options, with a divider between them.
+ * This exported component provides social login options for the sign-in flow.
  *
  * Usage:
  * ```tsx
@@ -158,21 +112,13 @@ function SocialLoginButtons() {
  * ```
  */
 export function SignInButtons() {
-  return (
-    <>
-      <Divider />
-      <SocialLoginButtons />
-      <_SignInButtons />
-    </>
-  );
+  return <SocialLoginButtons />;
 }
 
 /**
  * Authentication options for the sign-up flow
  *
- * This exported component provides authentication options specifically for the sign-up flow.
- * It only includes social login options, as the passwordless options are typically
- * more relevant for returning users rather than new registrations.
+ * This exported component provides social login options for the sign-up flow.
  *
  * Usage:
  * ```tsx
@@ -180,10 +126,5 @@ export function SignInButtons() {
  * ```
  */
 export function SignUpButtons() {
-  return (
-    <>
-      <Divider />
-      <SocialLoginButtons />
-    </>
-  );
+  return <SocialLoginButtons />;
 }

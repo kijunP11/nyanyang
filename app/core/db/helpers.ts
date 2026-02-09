@@ -27,8 +27,7 @@ export const timestamps = {
  * This function creates a PostgreSQL IDENTITY column that auto-increments,
  * which is ideal for primary keys that don't need to be UUIDs.
  */
-export function makeIdentityColumn(name: string) {
-  return {
-    [name]: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-  };
+export function makeIdentityColumn<T extends string>(name: T) {
+  const col = bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity();
+  return { [name]: col } as unknown as { [K in T]: typeof col };
 }

@@ -14,7 +14,7 @@ import type { ActionFunctionArgs } from "react-router";
 import { data } from "react-router";
 import { z } from "zod";
 
-import adminClient from "~/core/lib/supa-admin-client.server";
+import makeServerAdminClient from "~/core/lib/supa-admin-client.server";
 
 /**
  * Validation schema for referral code validation request
@@ -74,7 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Query the database to find the profile with this referral code
     // Using admin client to bypass RLS for public validation
-    const { data: profile, error: queryError } = await adminClient
+    const { data: profile, error: queryError } = await makeServerAdminClient()
       .from("profiles")
       .select("profile_id, referral_code, verified_at")
       .eq("referral_code", validData.referralCode)

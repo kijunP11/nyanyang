@@ -34,6 +34,7 @@ export default [
       route("/password", "features/users/api/change-password.tsx"),
       route("/email", "features/users/api/change-email.tsx"),
       route("/profile", "features/users/api/edit-profile.tsx"),
+      route("/follow", "features/users/api/follow.tsx"),
       route(
         "/referral-code/validate",
         "features/users/api/validate-referral-code.tsx",
@@ -95,6 +96,7 @@ export default [
       // Routes that should only be visible to unauthenticated users.
       route("/login", "features/auth/screens/login.tsx"),
       route("/join", "features/auth/screens/join.tsx"),
+      route("/auth/verify", "features/auth/screens/verify.tsx"),
       ...prefix("/auth", [
         route("/api/resend", "features/auth/api/resend.tsx"),
         route("/naver", "features/auth/api/naver.tsx"),
@@ -179,6 +181,7 @@ export default [
     layout("features/users/layouts/dashboard.layout.tsx", [
       ...prefix("/dashboard", [
         index("features/users/screens/dashboard.tsx"),
+        route("likes", "features/users/screens/likes.tsx"),
         route("/my-content", "features/users/screens/my-content.tsx"),
         route("/payments", "features/payments/screens/payments.tsx"),
       ]),

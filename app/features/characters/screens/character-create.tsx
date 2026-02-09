@@ -1,39 +1,20 @@
 /**
  * Character Create Screen
  *
- * Form for creating a new character
+ * Multi-step wizard form for creating a new character.
+ * Uses WizardContext for state management across steps.
  */
 import type { Route } from "./+types/character-create";
 
-import { useState } from "react";
-import {
-  Form,
-  data,
-  redirect,
-  useActionData,
-  useNavigation,
-} from "react-router";
+import { useCallback, useState } from "react";
+import { data, redirect, useActionData, useNavigate, useNavigation } from "react-router";
 import { z } from "zod";
 
 import { Alert, AlertDescription } from "~/core/components/ui/alert";
-import { Button } from "~/core/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "~/core/components/ui/card";
-import { Input } from "~/core/components/ui/input";
-import { Label } from "~/core/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/core/components/ui/select";
-import { Textarea } from "~/core/components/ui/textarea";
 import makeServerClient from "~/core/lib/supa-client.server";
+import { WizardProvider, useWizard } from "../lib/wizard-context";
+import type { CharacterFormData } from "../lib/wizard-types";
+import { CharacterWizard } from "../components/wizard";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -43,23 +24,28 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
+/**
+ * Validation Schema for full character creation
+ */
 const createCharacterSchema = z.object({
+  _action: z.enum(["create", "save_draft"]).optional(),
   name: z.string().min(1, "캐릭터 이름은 필수입니다").max(50),
-  display_name: z.string().min(1).max(50),
+  display_name: z.string().max(50).optional().nullable(),
   tagline: z.string().max(50).optional().nullable(),
-  description: z.string().min(1),
+  description: z.string().min(1, "설명은 필수입니다"),
   role: z.string().optional().nullable(),
   appearance: z.string().optional().nullable(),
-  personality: z.string().min(1),
+  personality: z.string().min(1, "성격 설명은 필수입니다"),
   speech_style: z.string().optional().nullable(),
-  system_prompt: z.string().min(1),
-  greeting_message: z.string().min(1),
+  system_prompt: z.string().min(1, "시스템 프롬프트는 필수입니다"),
+  greeting_message: z.string().min(1, "첫 인사말은 필수입니다"),
   relationship: z.string().optional().nullable(),
   world_setting: z.string().optional().nullable(),
-  avatar_url: z.string().url().optional().nullable(),
-  banner_url: z.string().url().optional().nullable(),
+  avatar_url: z.string().optional().nullable(),
+  banner_url: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),
   category: z.string().optional().nullable(),
+  gender: z.string().optional().nullable(),
   age_rating: z.string().default("everyone"),
   is_public: z.boolean().default(false),
   is_nsfw: z.boolean().default(false),
@@ -67,6 +53,100 @@ const createCharacterSchema = z.object({
   example_dialogues: z.any().optional().nullable(),
 });
 
+/**
+ * Validation Schema for draft save (relaxed)
+ */
+const saveDraftSchema = z.object({
+  _action: z.literal("save_draft"),
+  name: z.string().min(1, "캐릭터 이름은 필수입니다").max(50),
+  display_name: z.string().max(50).optional().nullable(),
+  tagline: z.string().max(50).optional().nullable(),
+  description: z.string().optional().nullable(),
+  role: z.string().optional().nullable(),
+  appearance: z.string().optional().nullable(),
+  personality: z.string().optional().nullable(),
+  speech_style: z.string().optional().nullable(),
+  system_prompt: z.string().optional().nullable(),
+  greeting_message: z.string().optional().nullable(),
+  relationship: z.string().optional().nullable(),
+  world_setting: z.string().optional().nullable(),
+  avatar_url: z.string().optional().nullable(),
+  banner_url: z.string().optional().nullable(),
+  tags: z.array(z.string()).default([]),
+  category: z.string().optional().nullable(),
+  gender: z.string().optional().nullable(),
+  age_rating: z.string().default("everyone"),
+  is_public: z.boolean().default(false),
+  is_nsfw: z.boolean().default(false),
+  enable_memory: z.boolean().default(true),
+  example_dialogues: z.any().optional().nullable(),
+});
+
+const STORAGE_BUCKET = "character-media";
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+/**
+ * Helper: Check if string is base64 data URL
+ */
+function isBase64DataUrl(str: string | null | undefined): boolean {
+  return !!str && str.startsWith("data:");
+}
+
+/**
+ * Helper: Upload base64 image to Storage
+ */
+async function uploadImageToStorage(
+  client: ReturnType<typeof makeServerClient>[0],
+  characterId: number,
+  mediaType: "avatar" | "banner",
+  base64Data: string
+): Promise<string | null> {
+  try {
+    // Extract base64 content
+    const matches = base64Data.match(/^data:(.+);base64,(.+)$/);
+    if (!matches) return null;
+
+    const [, mimeType, data] = matches;
+    const buffer = Buffer.from(data, "base64");
+
+    // Check file size
+    if (buffer.length > MAX_FILE_SIZE) {
+      console.warn(`File size exceeds limit for ${mediaType}`);
+      return null;
+    }
+
+    // Generate unique file path
+    const extension = mimeType.split("/")[1] || "png";
+    const uniqueFileName = `${characterId}/${mediaType}/${Date.now()}.${extension}`;
+
+    // Upload to Storage
+    const { error: uploadError } = await client.storage
+      .from(STORAGE_BUCKET)
+      .upload(uniqueFileName, buffer, {
+        contentType: mimeType,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error("Storage upload error:", uploadError);
+      return null;
+    }
+
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = client.storage.from(STORAGE_BUCKET).getPublicUrl(uniqueFileName);
+
+    return publicUrl;
+  } catch (error) {
+    console.error("Upload image error:", error);
+    return null;
+  }
+}
+
+/**
+ * Loader - Check authentication
+ */
 export async function loader({ request }: Route.LoaderArgs) {
   const [client] = makeServerClient(request);
   const {
@@ -80,6 +160,9 @@ export async function loader({ request }: Route.LoaderArgs) {
   return {};
 }
 
+/**
+ * Action - Create character or save draft
+ */
 export async function action({ request }: Route.ActionArgs) {
   const [client, headers] = makeServerClient(request);
   const {
@@ -90,92 +173,63 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect("/login", { headers });
   }
 
-  const formData = await request.formData();
-
-  const name = formData.get("name") as string;
-  const display_name = (formData.get("display_name") as string) || name;
-  const tagline = (formData.get("tagline") as string) || null;
-  const description = formData.get("description") as string;
-  const role = (formData.get("role") as string) || null;
-  const appearance = (formData.get("appearance") as string) || null;
-  const personality = formData.get("personality") as string;
-  const speech_style = (formData.get("speech_style") as string) || null;
-  const system_prompt = formData.get("system_prompt") as string;
-  const greeting_message = formData.get("greeting_message") as string;
-  const relationship = (formData.get("relationship") as string) || null;
-  const world_setting = (formData.get("world_setting") as string) || null;
-  const tags = (formData.get("tags") as string)
-    ? (formData.get("tags") as string)
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean)
-    : [];
-  const is_public = formData.get("is_public") === "on";
-  const is_nsfw = formData.get("is_nsfw") === "on";
-
-  const inputData = {
-    name,
-    display_name,
-    tagline,
-    description,
-    role,
-    appearance,
-    personality,
-    speech_style,
-    system_prompt,
-    greeting_message,
-    relationship,
-    world_setting,
-    tags,
-    is_public,
-    is_nsfw,
-    category: null,
-    age_rating: "everyone",
-    enable_memory: true,
-    example_dialogues: null,
-    avatar_url: null,
-    banner_url: null,
-  };
-
   try {
-    const result = createCharacterSchema.safeParse(inputData);
+    const formData = await request.json();
+    const actionType = formData._action || "create";
+    const isDraft = actionType === "save_draft";
+
+    // Use appropriate schema based on action type
+    const schema = isDraft ? saveDraftSchema : createCharacterSchema;
+    const result = schema.safeParse(formData);
 
     if (!result.success) {
-      return {
-        error: "유효성 검사 실패",
-        fieldErrors: result.error.flatten().fieldErrors,
-      };
+      return data(
+        {
+          error: "유효성 검사 실패",
+          fieldErrors: result.error.flatten().fieldErrors,
+        },
+        { headers }
+      );
     }
 
     const validData = result.data;
 
-    // DB 저장
+    // Extract base64 images (will upload after INSERT)
+    const avatarBase64 = isBase64DataUrl(validData.avatar_url)
+      ? validData.avatar_url
+      : null;
+    const bannerBase64 = isBase64DataUrl(validData.banner_url)
+      ? validData.banner_url
+      : null;
+
+    // Create character in database (without base64 images initially)
     const { data: newCharacter, error } = await client
       .from("characters")
       .insert({
         creator_id: user.id,
         name: validData.name,
-        display_name: validData.display_name,
-        tagline: validData.tagline,
-        description: validData.description,
-        role: validData.role,
-        appearance: validData.appearance,
-        personality: validData.personality,
-        speech_style: validData.speech_style,
-        system_prompt: validData.system_prompt,
-        greeting_message: validData.greeting_message,
-        relationship: validData.relationship,
-        world_setting: validData.world_setting,
-        avatar_url: validData.avatar_url,
-        banner_url: validData.banner_url,
+        display_name: validData.display_name || validData.name,
+        tagline: validData.tagline || null,
+        description: validData.description || "",
+        role: validData.role || null,
+        appearance: validData.appearance || null,
+        personality: validData.personality || "",
+        speech_style: validData.speech_style || null,
+        system_prompt: validData.system_prompt || "",
+        greeting_message: validData.greeting_message || "",
+        relationship: validData.relationship || null,
+        world_setting: validData.world_setting || null,
+        avatar_url: avatarBase64 ? null : validData.avatar_url, // Skip base64, keep existing URL
+        banner_url: bannerBase64 ? null : validData.banner_url,
         tags: validData.tags,
-        category: validData.category,
+        category: validData.category || null,
+        gender: validData.gender || null,
         age_rating: validData.age_rating,
-        is_public: validData.is_public,
+        is_public: isDraft ? false : validData.is_public, // Draft is always private
         is_nsfw: validData.is_nsfw,
         enable_memory: validData.enable_memory,
-        example_dialogues: validData.example_dialogues,
-        status: "approved",
+        example_dialogues: validData.example_dialogues || null,
+        status: isDraft ? "draft" : "approved",
       })
       .select()
       .single();
@@ -185,272 +239,226 @@ export async function action({ request }: Route.ActionArgs) {
       return data({ error: error.message }, { headers });
     }
 
-    // 기본 Safety Filter 생성
-    await client.from("character_safety_filters").insert({
-      character_id: newCharacter.character_id,
-      block_nsfw: true,
-      block_violence: true,
-      block_hate_speech: true,
-      block_personal_info: true,
-      sensitivity_level: 5,
-    });
+    const characterId = newCharacter.character_id;
 
-    return redirect(`/characters/${newCharacter.character_id}/edit`, {
-      headers,
-    });
-  } catch (error: any) {
-    console.error("Character create error:", error);
+    // Upload base64 images to Storage
+    const updateData: Record<string, string> = {};
+
+    if (avatarBase64) {
+      const avatarUrl = await uploadImageToStorage(
+        client,
+        characterId,
+        "avatar",
+        avatarBase64
+      );
+      if (avatarUrl) {
+        updateData.avatar_url = avatarUrl;
+      }
+    }
+
+    if (bannerBase64) {
+      const bannerUrl = await uploadImageToStorage(
+        client,
+        characterId,
+        "banner",
+        bannerBase64
+      );
+      if (bannerUrl) {
+        updateData.banner_url = bannerUrl;
+      }
+    }
+
+    // Update character with Storage URLs if any images were uploaded
+    if (Object.keys(updateData).length > 0) {
+      await client
+        .from("characters")
+        .update(updateData)
+        .eq("character_id", characterId);
+    }
+
+    // Create default safety filter (only for non-draft)
+    if (!isDraft) {
+      await client.from("character_safety_filters").insert({
+        character_id: characterId,
+        block_nsfw: true,
+        block_violence: true,
+        block_hate_speech: true,
+        block_personal_info: true,
+        sensitivity_level: 5,
+      });
+    }
+
     return data(
       {
-        error: `캐릭터 생성 중 오류가 발생했습니다: ${
-          error.message || String(error)
-        }`,
+        success: true,
+        characterId,
+        isDraft,
+        message: isDraft ? "임시저장되었습니다" : "캐릭터가 생성되었습니다",
       },
-      { headers },
+      { headers }
+    );
+  } catch (error: unknown) {
+    console.error("Character create error:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return data(
+      {
+        error: `캐릭터 생성 중 오류가 발생했습니다: ${errorMessage}`,
+      },
+      { headers }
     );
   }
 }
 
-export default function CharacterCreate() {
+/**
+ * Inner component that uses WizardContext
+ */
+function CharacterCreateInner() {
+  const { state, dispatch } = useWizard();
+  const { formData } = state;
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   const isSubmitting = navigation.state === "submitting";
-  const [role, setRole] = useState<string | undefined>(undefined);
+
+  // Prepare submit data
+  const prepareSubmitData = useCallback(
+    (isDraft: boolean) => ({
+      _action: isDraft ? "save_draft" : "create",
+      ...formData,
+      display_name: formData.display_name || formData.name,
+      example_dialogues:
+        formData.example_dialogues.length > 0
+          ? formData.example_dialogues.map((d) => ({
+              user: d.user,
+              character: d.character,
+            }))
+          : null,
+    }),
+    [formData]
+  );
+
+  // Handle form submission
+  const handleSubmit = useCallback(async () => {
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await fetch("/characters/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(prepareSubmitData(false)),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        navigate(`/characters/${result.characterId}`);
+      } else {
+        setError(result.error || "캐릭터 생성에 실패했습니다");
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+      setError("캐릭터 생성 중 오류가 발생했습니다");
+    }
+  }, [prepareSubmitData, navigate]);
+
+  // Handle save draft
+  const handleSaveDraft = useCallback(async () => {
+    // Validate minimum requirement (name)
+    if (!formData.name.trim()) {
+      setError("임시저장하려면 캐릭터 이름이 필요합니다");
+      return;
+    }
+
+    setError(null);
+    setSuccessMessage(null);
+    dispatch({ type: "SET_SAVING_DRAFT", payload: true });
+
+    try {
+      const response = await fetch("/characters/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(prepareSubmitData(true)),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSuccessMessage(result.message || "임시저장되었습니다");
+        dispatch({ type: "SET_CHARACTER_ID", payload: result.characterId });
+        // Optionally navigate to edit page
+        // navigate(`/characters/${result.characterId}/edit`);
+      } else {
+        setError(result.error || "임시저장에 실패했습니다");
+      }
+    } catch (err) {
+      console.error("Save draft error:", err);
+      setError("임시저장 중 오류가 발생했습니다");
+    } finally {
+      dispatch({ type: "SET_SAVING_DRAFT", payload: false });
+    }
+  }, [formData.name, prepareSubmitData, dispatch]);
+
+  // Handle cancel
+  const handleCancel = useCallback(() => {
+    if (state.isDirty) {
+      if (confirm("작성 중인 내용이 있습니다. 정말 취소하시겠습니까?")) {
+        navigate(-1);
+      }
+    } else {
+      navigate(-1);
+    }
+  }, [state.isDirty, navigate]);
+
+  const displayError =
+    error || (actionData && "error" in actionData ? actionData.error : null);
 
   return (
-    <div className="container mx-auto max-w-3xl py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">캐릭터 만들기</h1>
-        <p className="text-muted-foreground mt-2">
-          새로운 캐릭터를 만들어보세요
-        </p>
-      </div>
-
-      {actionData?.error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertDescription>{actionData.error}</AlertDescription>
-        </Alert>
+    <>
+      {displayError && (
+        <div className="fixed left-0 right-0 top-4 z-50 mx-auto max-w-md px-4">
+          <Alert variant="destructive" className="border-red-500 bg-red-500/10">
+            <AlertDescription className="text-red-400">
+              {displayError}
+            </AlertDescription>
+          </Alert>
+        </div>
       )}
 
-      <Form method="post">
-        <div className="space-y-6">
-          {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>기본 정보</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="name">캐릭터 이름 *</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  required
-                  maxLength={50}
-                  placeholder="예: 냐냥이"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="display_name">표시 이름</Label>
-                <Input
-                  id="display_name"
-                  name="display_name"
-                  maxLength={50}
-                  placeholder="화면에 표시될 이름 (비워두면 캐릭터 이름 사용)"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="tagline">한 줄 소개</Label>
-                <Input
-                  id="tagline"
-                  name="tagline"
-                  maxLength={50}
-                  placeholder="예: 친근한 대학 선배"
-                />
-                <p className="text-muted-foreground mt-1 text-sm">
-                  캐릭터를 한 문장으로 표현해주세요
-                </p>
-              </div>
-
-              <div>
-                <Label htmlFor="description">설명 *</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  required
-                  rows={3}
-                  placeholder="캐릭터에 대한 간단한 설명을 작성해주세요"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="greeting_message">첫 인사말 *</Label>
-                <Textarea
-                  id="greeting_message"
-                  name="greeting_message"
-                  required
-                  rows={2}
-                  placeholder="예: 안녕! 만나서 반가워!"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="relationship">나와의 관계 (선택)</Label>
-                <Input
-                  id="relationship"
-                  name="relationship"
-                  placeholder="예: 10년지기 친구, 처음 만난 선배"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="world_setting">세계관 (선택)</Label>
-                <Textarea
-                  id="world_setting"
-                  name="world_setting"
-                  rows={2}
-                  placeholder="예: 현대 도시, 대학 캠퍼스"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Personality */}
-          <Card>
-            <CardHeader>
-              <CardTitle>성격 및 AI 설정</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="role">역할</Label>
-                <Select value={role} onValueChange={setRole}>
-                  <SelectTrigger id="role">
-                    <SelectValue placeholder="선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="friend">친구</SelectItem>
-                    <SelectItem value="teacher">선생님</SelectItem>
-                    <SelectItem value="lover">연인</SelectItem>
-                    <SelectItem value="mentor">멘토</SelectItem>
-                    <SelectItem value="companion">동반자</SelectItem>
-                  </SelectContent>
-                </Select>
-                <input type="hidden" name="role" value={role} />
-              </div>
-
-              <div>
-                <Label htmlFor="appearance">외모 (선택)</Label>
-                <Textarea
-                  id="appearance"
-                  name="appearance"
-                  rows={2}
-                  placeholder="예: 짧은 머리, 안경, 캐주얼한 복장"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="personality">성격 *</Label>
-                <Textarea
-                  id="personality"
-                  name="personality"
-                  required
-                  rows={3}
-                  placeholder="캐릭터의 성격을 자세히 설명해주세요"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="speech_style">말투 (선택)</Label>
-                <Input
-                  id="speech_style"
-                  name="speech_style"
-                  placeholder="예: 반말, 친근한 톤"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="system_prompt">시스템 프롬프트 *</Label>
-                <Textarea
-                  id="system_prompt"
-                  name="system_prompt"
-                  required
-                  rows={5}
-                  placeholder="AI가 이 캐릭터를 연기할 때 따를 지침을 작성해주세요"
-                />
-                <p className="text-muted-foreground mt-1 text-sm">
-                  캐릭터의 말투, 행동 방식, 배경 설정 등을 상세히 작성해주세요
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tags and Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>태그 및 설정</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="tags">태그</Label>
-                <Input
-                  id="tags"
-                  name="tags"
-                  placeholder="예: 고양이, 귀여움, 판타지 (쉼표로 구분)"
-                />
-                <p className="text-muted-foreground mt-1 text-sm">
-                  쉼표(,)로 구분하여 여러 개 입력
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="is_public"
-                  name="is_public"
-                  className="h-4 w-4"
-                />
-                <Label htmlFor="is_public" className="cursor-pointer">
-                  공개 캐릭터 (다른 사용자도 볼 수 있습니다)
-                </Label>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="is_nsfw"
-                  name="is_nsfw"
-                  className="h-4 w-4"
-                />
-                <Label htmlFor="is_nsfw" className="cursor-pointer">
-                  NSFW (성인 콘텐츠 포함)
-                </Label>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Submit */}
-          <div className="flex gap-3">
-            <Button
-              type="submit"
-              size="lg"
-              disabled={isSubmitting}
-              className="flex-1"
-            >
-              {isSubmitting ? "생성 중..." : "캐릭터 만들기"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              onClick={() => window.history.back()}
-            >
-              취소
-            </Button>
-          </div>
+      {successMessage && (
+        <div className="fixed left-0 right-0 top-4 z-50 mx-auto max-w-md px-4">
+          <Alert className="border-green-500 bg-green-500/10">
+            <AlertDescription className="text-green-400">
+              {successMessage}
+            </AlertDescription>
+          </Alert>
         </div>
-      </Form>
-    </div>
+      )}
+
+      <CharacterWizard
+        isSubmitting={isSubmitting || state.isSavingDraft}
+        onSubmit={handleSubmit}
+        onSaveDraft={handleSaveDraft}
+        onCancel={handleCancel}
+      />
+    </>
+  );
+}
+
+/**
+ * Main Component
+ */
+export default function CharacterCreate() {
+  return (
+    <WizardProvider>
+      <CharacterCreateInner />
+    </WizardProvider>
   );
 }

@@ -2,11 +2,9 @@
  * Model Status Banner Component
  * 
  * Displays model status alerts (unstable, recommended alternatives)
+ * Dark theme styled for chat interface
  */
 import { AlertTriangle } from "lucide-react";
-
-import { Alert, AlertDescription, AlertTitle } from "~/core/components/ui/alert";
-import { Button } from "~/core/components/ui/button";
 
 export type ModelStatus = "stable" | "unstable" | "down";
 
@@ -26,28 +24,30 @@ export function ModelStatusBanner({
   if (status === "stable") return null;
 
   return (
-    <Alert variant="destructive" className="mx-4 mt-4">
-      <AlertTriangle className="h-4 w-4" />
-      <AlertTitle>모델 상태: 불안정</AlertTitle>
-      <AlertDescription className="mt-2">
-        현재 사용 중인 모델({currentModel})이 불안정합니다. 다른 모델 사용을
-        권장합니다.
-        {recommendedAlternatives.length > 0 && (
-          <div className="mt-2 flex gap-2">
-            {recommendedAlternatives.map((model) => (
-              <Button
-                key={model}
-                variant="outline"
-                size="sm"
-                onClick={() => onSwitchModel?.(model)}
-              >
-                {model}로 전환
-              </Button>
-            ))}
-          </div>
-        )}
-      </AlertDescription>
-    </Alert>
+    <div className="mx-4 mt-2 flex items-center gap-3 rounded-lg border border-[#f59e0b]/30 bg-[#f59e0b]/10 px-4 py-3">
+      <AlertTriangle className="h-4 w-4 flex-shrink-0 text-[#f59e0b]" />
+      <div className="flex-1">
+        <p className="text-sm font-medium text-[#f59e0b]">
+          모델 상태: {status === "unstable" ? "불안정" : "중단"}
+        </p>
+        <p className="text-xs text-[#9ca3af]">
+          현재 모델({currentModel})이 불안정합니다. 다른 모델을 권장합니다.
+        </p>
+      </div>
+      {recommendedAlternatives.length > 0 && (
+        <div className="flex gap-2">
+          {recommendedAlternatives.map((model) => (
+            <button
+              key={model}
+              onClick={() => onSwitchModel?.(model)}
+              className="rounded-md bg-[#f59e0b] px-3 py-1 text-xs font-medium text-white hover:bg-[#d97706]"
+            >
+              {model}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

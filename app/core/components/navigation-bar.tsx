@@ -8,7 +8,6 @@
  * - User authentication state awareness (logged in vs. logged out)
  * - User profile menu with avatar and dropdown options
  * - Theme switching functionality
- * - Language switching functionality
  * - Mobile-friendly navigation drawer
  *
  * The component handles different states:
@@ -16,12 +15,10 @@
  * - Authenticated state with user profile information
  * - Unauthenticated state with sign in/sign up buttons
  */
-import { CogIcon, HomeIcon, LogOutIcon, MenuIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { CogIcon, HomeIcon, LogOutIcon, MenuIcon, SearchIcon, SunIcon, MoonIcon } from "lucide-react";
 import { Link, NavLink } from "react-router";
+import { Theme, useTheme } from "remix-themes";
 
-import LangSwitcher from "./lang-switcher";
-import ThemeSwitcher from "./theme-switcher";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
@@ -32,7 +29,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Separator } from "./ui/separator";
 import {
   SheetClose,
   SheetContent,
@@ -78,17 +74,17 @@ function UserMenu({
         </Avatar>
       </DropdownMenuTrigger>
 
-      {/* Dropdown content with user info and actions */}
-      <DropdownMenuContent className="w-56">
+      {/* Dropdown content with user info and actions - 항상 다크 스타일 */}
+      <DropdownMenuContent className="w-56 border-white/10 bg-[#232323] text-white">
         {/* User information display */}
-        <DropdownMenuLabel className="grid flex-1 text-left text-sm leading-tight">
+        <DropdownMenuLabel className="grid flex-1 text-left text-sm leading-tight text-white">
           <span className="truncate font-semibold">{name}</span>
-          <span className="truncate text-xs">{email}</span>
+          <span className="truncate text-xs text-white/60">{email}</span>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-white/10" />
 
         {/* Dashboard link */}
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild className="text-white/80 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white">
           <SheetClose asChild>
             <Link to="/dashboard" viewTransition>
               <HomeIcon className="size-4" />
@@ -98,7 +94,7 @@ function UserMenu({
         </DropdownMenuItem>
         
         {/* Character Creation link */}
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild className="text-white/80 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white">
           <SheetClose asChild>
             <Link to="/characters/create" viewTransition>
               <CogIcon className="size-4" />
@@ -108,7 +104,7 @@ function UserMenu({
         </DropdownMenuItem>
 
         {/* Logout link */}
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild className="text-white/80 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white">
           <SheetClose asChild>
             <Link to="/logout" viewTransition>
               <LogOutIcon className="size-4" />
@@ -125,33 +121,29 @@ function UserMenu({
  * AuthButtons Component
  *
  * Displays authentication buttons (Sign in and Sign up) for unauthenticated users.
- * This component is shown in the navigation bar when no user is logged in and provides
- * quick access to authentication screens.
- *
- * Features:
- * - Sign in button with ghost styling (less prominent)
- * - Sign up button with default styling (more prominent)
- * - View transitions for smooth navigation to auth screens
- * - Compatible with mobile navigation drawer (SheetClose integration)
- *
- * @returns Fragment containing sign in and sign up buttons
+ * Figma design: 로그인 텍스트 (흰색 70%) + | 구분선 + 회원가입 버튼 (민트)
  */
 function AuthButtons() {
   return (
-    <>
-      {/* Sign in button (less prominent) */}
-      <Button variant="ghost" asChild>
-        <SheetClose asChild>
-          <Link to="/login" viewTransition>
-            로그인
-          </Link>
-        </SheetClose>
-      </Button>
+    <div className="flex items-center gap-2">
+      {/* Sign in text link */}
+      <SheetClose asChild>
+        <Link 
+          to="/login" 
+          viewTransition
+          className="text-sm font-bold text-white/70 hover:text-white transition-colors"
+        >
+          로그인
+        </Link>
+      </SheetClose>
 
-      {/* Sign up button (more prominent) */}
+      {/* Separator */}
+      <div className="h-5 w-px bg-white/20" />
+
+      {/* Sign up button (민트색) */}
       <Button
         variant="default"
-        className="bg-[#41C7BD] text-white hover:bg-[#41C7BD]/90"
+        className="h-[34px] rounded-[2px] bg-[#00c4af] px-3 text-sm font-bold text-white hover:bg-[#00c4af]/90"
         asChild
       >
         <SheetClose asChild>
@@ -160,48 +152,77 @@ function AuthButtons() {
           </Link>
         </SheetClose>
       </Button>
-    </>
+    </div>
   );
 }
 
 /**
- * Actions Component
- *
- * Displays utility actions and settings in the navigation bar, including:
- * - Debug/settings dropdown menu with links to monitoring tools
- * - Theme switcher for toggling between light and dark mode
- * - Language switcher for changing the application language
- *
- * This component is shown in the navigation bar for all users regardless of
- * authentication state and provides access to application-wide settings and tools.
- *
- * @returns Fragment containing settings dropdown, theme switcher, and language switcher
+ * SearchInput Component
+ * 
+ * Search input UI (껍데기 only, 기능 연결 나중에)
+ * Figma: #2f3032 배경, 320px (데스크톱) / full (모바일), placeholder
  */
-function Actions() {
-  return null;
+function SearchInput({ className }: { className?: string }) {
+  return (
+    <div className={`relative flex h-10 items-center rounded-md border border-[#6b7280] bg-[#2f3032] ${className ?? "w-[320px]"}`}>
+      <input
+        type="text"
+        placeholder="컨텐츠명, 창작자명, #태그명으로 검색"
+        className="h-full w-full cursor-pointer bg-transparent px-3 text-sm text-white placeholder:text-[#9ca3af] focus:outline-none"
+        readOnly
+      />
+      <div className="absolute right-3">
+        <SearchIcon className="size-4 text-[#9ca3af]" />
+      </div>
+    </div>
+  );
 }
+
+/**
+ * ThemeToggle Component
+ * 
+ * 원형 40px 테마 토글 버튼
+ */
+function ThemeToggle() {
+  const [theme, setTheme] = useTheme();
+  
+  const toggleTheme = () => {
+    setTheme(theme === Theme.DARK ? Theme.LIGHT : Theme.DARK);
+  };
+
+  return (
+    <button
+      onClick={toggleTheme}
+      className="flex size-10 items-center justify-center rounded-full bg-[#2f3032] transition-colors hover:bg-[#3f4042]"
+      aria-label="Toggle theme"
+    >
+      {theme === Theme.DARK ? (
+        <SunIcon className="size-5 text-white" />
+      ) : (
+        <MoonIcon className="size-5 text-white" />
+      )}
+    </button>
+  );
+}
+
+/**
+ * Nav link style helper
+ * Figma: 활성 탭 - 흰색 + #14b8a6 하단 바 (3px), 비활성 탭 - rgba(153,163,183,0.7)
+ * 언더바는 네비바 최하단에 붙도록 h-full + after:bottom-0 사용
+ */
+const getNavLinkClass = (isActive: boolean) =>
+  isActive
+    ? "relative h-full flex items-center text-sm font-bold text-white transition-colors after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-full after:bg-[#14b8a6]"
+    : "h-full flex items-center text-sm font-bold text-[rgba(153,163,183,0.7)] hover:text-white transition-colors";
 
 /**
  * NavigationBar Component
  *
- * The main navigation header for the application that adapts to different screen sizes
- * and user authentication states. This component serves as the primary navigation
- * interface and combines several sub-components to create a complete navigation experience.
- *
- * Features:
- * - Responsive design with desktop navigation and mobile drawer
- * - Application branding with localized title
- * - Main navigation links (Blog, Contact, Payments)
- * - User authentication state handling (loading, authenticated, unauthenticated)
- * - User profile menu with avatar for authenticated users
- * - Sign in/sign up buttons for unauthenticated users
- * - Theme and language switching options
- *
- * @param name - The authenticated user's name (if available)
- * @param email - The authenticated user's email (if available)
- * @param avatarUrl - The authenticated user's avatar URL (if available)
- * @param loading - Boolean indicating if the auth state is still loading
- * @returns The complete navigation bar component
+ * Figma 디자인 기반 리디자인:
+ * - 배경: #232323 (항상 다크)
+ * - 높이: 60px 고정
+ * - 메뉴: 스토리, 내 작품, 포인트, 이용 가이드 (4개)
+ * - 로그인 후: 검색창 + 테마 토글 + 유저 메뉴
  */
 export function NavigationBar({
   name,
@@ -214,148 +235,96 @@ export function NavigationBar({
   avatarUrl?: string | null;
   loading: boolean;
 }) {
-  // Get translation function for internationalization
-  const { t } = useTranslation();
-
   return (
-    <nav
-      className={
-        "mx-auto flex h-full w-full items-center justify-between border-b px-5 shadow-xs backdrop-blur-lg transition-opacity md:px-10"
-      }
-    >
-      <div className="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-start py-3">
-        {/* Application logo/title with link to home */}
-        <Link to="/">
-          <img src="/logo3.png" alt="NYANYANG" className="h-6 md:h-7" />
-        </Link>
+    <nav className="h-[60px] w-full border-b border-white/10 bg-[#232323]">
+      <div className="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-between px-5 md:px-10">
+        {/* Left side: Logo + Navigation links */}
+        <div className="flex h-full items-center gap-8">
+          {/* Application logo */}
+          <Link to="/">
+            <img src="/logo3.png" alt="NYANYANG" className="h-6" />
+          </Link>
 
-        {/* Desktop navigation menu (hidden on mobile) */}
-        <div className="ml-6 h-full flex-1 items-center gap-5 md:flex">
-          {/* Main navigation links */}
-          <NavLink
-            to="/blog"
-            viewTransition
-            className={({ isActive }) =>
-              isActive
-                ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
-            }
-          >
-            스토리
-          </NavLink>
-          <NavLink
-            to="/contact"
-            viewTransition
-            className={({ isActive }) =>
-              isActive
-                ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
-            }
-          >
-            내 작품
-          </NavLink>
-          <NavLink
-            to="/points"
-            viewTransition
-            className={({ isActive }) =>
-              isActive
-                ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
-            }
-          >
-            포인트
-          </NavLink>
-          {name && (
-            <>
-              <NavLink
-                to="/characters"
-                viewTransition
-                className={({ isActive }) =>
-                  isActive
-                    ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                    : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
-                }
-              >
-                캐릭터
-              </NavLink>
-              <NavLink
-                to="/rooms"
-                viewTransition
-                className={({ isActive }) =>
-                  isActive
-                    ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                    : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
-                }
-              >
-                채팅
-              </NavLink>
-              <NavLink
-                to="/attendance"
-                viewTransition
-                className={({ isActive }) =>
-                  isActive
-                    ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                    : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
-                }
-              >
-                출석체크
-              </NavLink>
-            </>
-          )}
-          <NavLink
-            to="/guide"
-            viewTransition
-            className={({ isActive }) =>
-              isActive
-                ? "relative text-sm text-white transition-colors after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                : "text-muted-foreground hover:text-foreground relative text-sm transition-colors"
-            }
-          >
-            이용 가이드
-          </NavLink>
-
-          {/* 우측 유틸/인증 영역 래퍼: 오른쪽 끝으로 밀기 */}
-          <div className="ml-auto flex items-center gap-5">
-            <Separator orientation="vertical" />
-
-            {/* Settings, theme switcher, and language switcher */}
-            <Actions />
-
-            <Separator orientation="vertical" />
-
-            {/* Conditional rendering based on authentication state */}
-            {loading ? (
-              // Loading state with skeleton placeholder
-              <div className="flex items-center">
-                <div className="bg-muted-foreground/20 size-8 animate-pulse rounded-lg" />
-              </div>
-            ) : (
-              <>
-                {name ? (
-                  // Authenticated state with user menu
-                  <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
-                ) : (
-                  // Unauthenticated state with auth buttons
-                  <AuthButtons />
-                )}
-              </>
-            )}
+          {/* Desktop navigation links (hidden on mobile) */}
+          <div className="hidden h-full items-center gap-6 md:flex">
+            <NavLink
+              to="/blog"
+              viewTransition
+              className={({ isActive }) => getNavLinkClass(isActive)}
+            >
+              스토리
+            </NavLink>
+            <NavLink
+              to="/dashboard/my-content"
+              viewTransition
+              className={({ isActive }) => getNavLinkClass(isActive)}
+            >
+              내 작품
+            </NavLink>
+            <NavLink
+              to="/points"
+              viewTransition
+              className={({ isActive }) => getNavLinkClass(isActive)}
+            >
+              포인트
+            </NavLink>
+            <NavLink
+              to="/guide"
+              viewTransition
+              className={({ isActive }) => getNavLinkClass(isActive)}
+            >
+              이용 가이드
+            </NavLink>
           </div>
         </div>
 
+        {/* Right side: Search (logged in) + Theme + Auth */}
+        <div className="hidden items-center gap-4 md:flex">
+          {/* 로그인 후: 검색창 표시 */}
+          {name && <SearchInput />}
+          
+          {/* 테마 토글 (로그인 후에만) */}
+          {name && <ThemeToggle />}
+
+          {/* Conditional rendering based on authentication state */}
+          {loading ? (
+            <div className="flex items-center">
+              <div className="size-8 animate-pulse rounded-lg bg-white/20" />
+            </div>
+          ) : (
+            <>
+              {name ? (
+                <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
+              ) : (
+                <AuthButtons />
+              )}
+            </>
+          )}
+        </div>
+
         {/* Mobile menu trigger (hidden on desktop) */}
-        <SheetTrigger className="size-6 md:hidden">
+        <SheetTrigger className="size-6 text-white md:hidden">
           <MenuIcon />
         </SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
+        
+        {/* Mobile navigation drawer */}
+        <SheetContent className="border-white/10 bg-[#232323]">
+          <SheetHeader className="flex flex-col gap-4 pt-8">
+            {/* Mobile search (로그인 후) */}
+            {name && (
+              <div className="px-2">
+                <SearchInput className="w-full" />
+              </div>
+            )}
+            
+            {/* Mobile navigation links */}
             <SheetClose asChild>
               <NavLink
                 to="/blog"
                 className={({ isActive }) =>
                   isActive
-                    ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                    : "text-muted-foreground hover:text-foreground relative"
+                    ? "px-2 py-2 text-white font-bold"
+                    : "px-2 py-2 text-[rgba(153,163,183,0.7)] font-bold hover:text-white"
                 }
               >
                 스토리
@@ -363,11 +332,11 @@ export function NavigationBar({
             </SheetClose>
             <SheetClose asChild>
               <NavLink
-                to="/contact"
+                to="/dashboard/my-content"
                 className={({ isActive }) =>
                   isActive
-                    ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                    : "text-muted-foreground hover:text-foreground relative"
+                    ? "px-2 py-2 text-white font-bold"
+                    : "px-2 py-2 text-[rgba(153,163,183,0.7)] font-bold hover:text-white"
                 }
               >
                 내 작품
@@ -378,90 +347,41 @@ export function NavigationBar({
                 to="/points"
                 className={({ isActive }) =>
                   isActive
-                    ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                    : "text-muted-foreground hover:text-foreground relative"
+                    ? "px-2 py-2 text-white font-bold"
+                    : "px-2 py-2 text-[rgba(153,163,183,0.7)] font-bold hover:text-white"
                 }
               >
                 포인트
               </NavLink>
             </SheetClose>
-            {name && (
-              <>
-                <SheetClose asChild>
-                  <NavLink
-                    to="/characters"
-                    className={({ isActive }) =>
-                      isActive
-                        ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                        : "text-muted-foreground hover:text-foreground relative"
-                    }
-                  >
-                    캐릭터
-                  </NavLink>
-                </SheetClose>
-                <SheetClose asChild>
-                  <NavLink
-                    to="/rooms"
-                    className={({ isActive }) =>
-                      isActive
-                        ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                        : "text-muted-foreground hover:text-foreground relative"
-                    }
-                  >
-                    채팅
-                  </NavLink>
-                </SheetClose>
-                <SheetClose asChild>
-                  <NavLink
-                    to="/attendance"
-                    className={({ isActive }) =>
-                      isActive
-                        ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                        : "text-muted-foreground hover:text-foreground relative"
-                    }
-                  >
-                    출석체크
-                  </NavLink>
-                </SheetClose>
-              </>
-            )}
             <SheetClose asChild>
               <NavLink
                 to="/guide"
                 className={({ isActive }) =>
                   isActive
-                    ? "relative text-white after:absolute after:-bottom-2 after:left-1/2 after:h-[3px] after:w-16 after:-translate-x-1/2 after:rounded-sm after:bg-[#41C7BD]"
-                    : "text-muted-foreground hover:text-foreground relative"
+                    ? "px-2 py-2 text-white font-bold"
+                    : "px-2 py-2 text-[rgba(153,163,183,0.7)] font-bold hover:text-white"
                 }
               >
                 이용 가이드
               </NavLink>
             </SheetClose>
           </SheetHeader>
+          
+          {/* Mobile footer */}
           {loading ? (
-            <div className="flex items-center">
-              <div className="bg-muted-foreground h-4 w-24 animate-pulse rounded-full" />
+            <div className="flex items-center px-2 pt-8">
+              <div className="h-4 w-24 animate-pulse rounded-full bg-white/20" />
             </div>
           ) : (
-            <SheetFooter>
+            <SheetFooter className="mt-8 px-2">
               {name ? (
-                <div className="grid grid-cols-3">
-                  <div className="col-span-2 flex w-full justify-between">
-                    <Actions />
-                  </div>
-                  <div className="flex justify-end">
-                    <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
-                  </div>
+                <div className="flex items-center justify-between">
+                  <ThemeToggle />
+                  <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
                 </div>
               ) : (
-                <div className="flex flex-col gap-5">
-                  <div className="flex justify-between">
-                    <Actions />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <AuthButtons />
-                  </div>
-                </div>
+                <AuthButtons />
               )}
             </SheetFooter>
           )}

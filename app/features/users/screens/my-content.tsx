@@ -173,8 +173,8 @@ export default function MyContentScreen() {
   };
 
   // Format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateString: string | Date) => {
+    const date = dateString instanceof Date ? dateString : new Date(dateString);
     return date.toLocaleDateString("ko-KR", {
       year: "numeric",
       month: "long",
@@ -274,7 +274,7 @@ export default function MyContentScreen() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {characters.map((character: Character) => (
+                {characters.map((character) => (
                   <TableRow key={character.character_id}>
                     <TableCell className="font-medium">
                       {character.display_name}
@@ -283,11 +283,11 @@ export default function MyContentScreen() {
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
                           <AvatarImage
-                            src={character.avatar_url || undefined}
-                            alt={character.display_name}
+                            src={character.avatar_url ?? undefined}
+                            alt={character.display_name ?? undefined}
                           />
                           <AvatarFallback>
-                            {character.display_name[0]}
+                            {(character.display_name ?? "C")[0]}
                           </AvatarFallback>
                         </Avatar>
                         <span>{character.display_name}</span>
@@ -315,7 +315,7 @@ export default function MyContentScreen() {
                           variant="ghost"
                           size="icon"
                           onClick={() =>
-                            handleDelete(character.character_id, character.display_name)
+                            handleDelete(character.character_id, character.display_name ?? "캐릭터")
                           }
                           disabled={deletingId === character.character_id}
                         >

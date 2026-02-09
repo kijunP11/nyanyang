@@ -128,6 +128,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "character_keywords_character_id_characters_character_id_fk"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["character_id"]
+          },
+          {
             foreignKeyName: "character_keywords_character_id_fkey"
             columns: ["character_id"]
             isOneToOne: false
@@ -140,18 +147,21 @@ export type Database = {
         Row: {
           character_id: number
           created_at: string
+          like_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
           character_id: number
           created_at?: string
+          like_id?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           character_id?: number
           created_at?: string
+          like_id?: string
           updated_at?: string
           user_id?: string
         }
@@ -207,6 +217,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "character_safety_filters_character_id_characters_character_id_f"
+            columns: ["character_id"]
+            isOneToOne: true
+            referencedRelation: "characters"
+            referencedColumns: ["character_id"]
+          },
+          {
             foreignKeyName: "character_safety_filters_character_id_fkey"
             columns: ["character_id"]
             isOneToOne: true
@@ -217,7 +234,8 @@ export type Database = {
       }
       characters: {
         Row: {
-          age_rating: string
+          age: number | null
+          age_rating: string | null
           appearance: string | null
           avatar_url: string | null
           banner_url: string | null
@@ -226,32 +244,34 @@ export type Database = {
           chat_count: number
           created_at: string
           creator_id: string
-          description: string
-          display_name: string
-          enable_memory: boolean
+          description: string | null
+          display_name: string | null
+          enable_memory: boolean | null
           example_dialogues: Json | null
-          greeting_message: string
-          is_featured: boolean
+          gallery_urls: Json | null
+          gender: string | null
+          greeting_message: string | null
           is_nsfw: boolean
           is_public: boolean
           like_count: number
-          message_count: number
-          moderation_note: string | null
           name: string
-          personality: string
+          personality: string | null
+          personality_traits: string[] | null
           relationship: string | null
           role: string | null
           speech_style: string | null
           status: string
-          system_prompt: string
+          system_prompt: string | null
           tagline: string | null
-          tags: Json
+          tags: string[] | null
+          tone: string | null
           updated_at: string
           view_count: number
           world_setting: string | null
         }
         Insert: {
-          age_rating?: string
+          age?: number | null
+          age_rating?: string | null
           appearance?: string | null
           avatar_url?: string | null
           banner_url?: string | null
@@ -260,32 +280,34 @@ export type Database = {
           chat_count?: number
           created_at?: string
           creator_id: string
-          description: string
-          display_name: string
-          enable_memory?: boolean
+          description?: string | null
+          display_name?: string | null
+          enable_memory?: boolean | null
           example_dialogues?: Json | null
-          greeting_message: string
-          is_featured?: boolean
+          gallery_urls?: Json | null
+          gender?: string | null
+          greeting_message?: string | null
           is_nsfw?: boolean
           is_public?: boolean
           like_count?: number
-          message_count?: number
-          moderation_note?: string | null
           name: string
-          personality: string
+          personality?: string | null
+          personality_traits?: string[] | null
           relationship?: string | null
           role?: string | null
           speech_style?: string | null
           status?: string
-          system_prompt: string
+          system_prompt?: string | null
           tagline?: string | null
-          tags?: Json
+          tags?: string[] | null
+          tone?: string | null
           updated_at?: string
           view_count?: number
           world_setting?: string | null
         }
         Update: {
-          age_rating?: string
+          age?: number | null
+          age_rating?: string | null
           appearance?: string | null
           avatar_url?: string | null
           banner_url?: string | null
@@ -294,26 +316,27 @@ export type Database = {
           chat_count?: number
           created_at?: string
           creator_id?: string
-          description?: string
-          display_name?: string
-          enable_memory?: boolean
+          description?: string | null
+          display_name?: string | null
+          enable_memory?: boolean | null
           example_dialogues?: Json | null
-          greeting_message?: string
-          is_featured?: boolean
+          gallery_urls?: Json | null
+          gender?: string | null
+          greeting_message?: string | null
           is_nsfw?: boolean
           is_public?: boolean
           like_count?: number
-          message_count?: number
-          moderation_note?: string | null
           name?: string
-          personality?: string
+          personality?: string | null
+          personality_traits?: string[] | null
           relationship?: string | null
           role?: string | null
           speech_style?: string | null
           status?: string
-          system_prompt?: string
+          system_prompt?: string | null
           tagline?: string | null
-          tags?: Json
+          tags?: string[] | null
+          tone?: string | null
           updated_at?: string
           view_count?: number
           world_setting?: string | null
@@ -511,6 +534,8 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          follower_count: number
+          following_count: number
           marketing_consent: boolean
           name: string
           profile_id: string
@@ -521,6 +546,8 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          follower_count?: number
+          following_count?: number
           marketing_consent?: boolean
           name: string
           profile_id: string
@@ -531,6 +558,8 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          follower_count?: number
+          following_count?: number
           marketing_consent?: boolean
           name?: string
           profile_id?: string
@@ -613,6 +642,30 @@ export type Database = {
             referencedColumns: ["room_id"]
           },
         ]
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          follow_id: string
+          follower_id: string
+          following_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          follow_id?: string
+          follower_id: string
+          following_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          follow_id?: string
+          follower_id?: string
+          following_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_points: {
         Row: {

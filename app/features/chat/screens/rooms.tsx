@@ -5,6 +5,7 @@
  * Shows room preview, last message, and character info.
  */
 
+// @ts-expect-error - Route types generated when registered in routes.ts
 import type { Route } from "./+types/rooms";
 
 import { Link, useLoaderData } from "react-router";
@@ -65,81 +66,83 @@ export default function ChatRoomsScreen() {
   const { rooms } = useLoaderData<typeof loader>();
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">내 채팅방</h1>
-        <p className="text-muted-foreground mt-2">
-          캐릭터와의 대화 목록
-        </p>
-      </div>
-
-      {rooms.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">
-            아직 채팅방이 없습니다.
+    <div className="min-h-screen bg-[#1a1a1a]">
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white">내 채팅방</h1>
+          <p className="text-[#9ca3af] mt-2">
+            캐릭터와의 대화 목록
           </p>
-          <Link
-            to="/characters"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            캐릭터 찾아보기
-          </Link>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {rooms.map((room) => (
-            <Link
-              key={room.room_id}
-              to={`/chat/${room.room_id}`}
-              className="block rounded-lg border bg-card p-4 hover:bg-accent transition-colors"
-            >
-              <div className="flex items-start gap-4">
-                {/* Character Avatar */}
-                <div className="flex-shrink-0">
-                  {room.character.avatar_url ? (
-                    <img
-                      src={room.character.avatar_url}
-                      alt={room.character.display_name}
-                      className="h-12 w-12 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-lg font-semibold">
-                        {room.character.display_name[0]}
-                      </span>
-                    </div>
-                  )}
-                </div>
 
-                {/* Room Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-semibold truncate">
-                      {room.character.display_name}
-                    </h3>
-                    {room.last_message_at && (
-                      <span className="text-xs text-muted-foreground ml-2">
-                        {new Date(room.last_message_at).toLocaleDateString('ko-KR')}
-                      </span>
+        {rooms.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-[#9ca3af] mb-4">
+              아직 채팅방이 없습니다.
+            </p>
+            <Link
+              to="/characters"
+              className="inline-flex items-center justify-center rounded-md bg-[#14b8a6] px-4 py-2 text-sm font-medium text-white hover:bg-[#0d9488]"
+            >
+              캐릭터 찾아보기
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {rooms.map((room) => (
+              <Link
+                key={room.room_id}
+                to={`/chat/${room.room_id}`}
+                className="block rounded-lg border border-[#3f3f46] bg-[#232323] p-4 hover:border-[#14b8a6] transition-colors"
+              >
+                <div className="flex items-start gap-4">
+                  {/* Character Avatar */}
+                  <div className="flex-shrink-0">
+                    {room.character.avatar_url ? (
+                      <img
+                        src={room.character.avatar_url ?? undefined}
+                        alt={room.character.display_name ?? undefined}
+                        className="h-12 w-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 rounded-full bg-[#14b8a6]/10 flex items-center justify-center">
+                        <span className="text-lg font-semibold text-white">
+                          {(room.character.display_name ?? "?")[0]}
+                        </span>
+                      </div>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    {room.title}
-                  </p>
-                  {room.last_message && (
-                    <p className="text-sm text-muted-foreground truncate">
-                      {room.last_message}
+
+                  {/* Room Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-semibold text-white truncate">
+                        {room.character.display_name}
+                      </h3>
+                      {room.last_message_at && (
+                        <span className="text-xs text-[#9ca3af] ml-2">
+                          {new Date(room.last_message_at).toLocaleDateString('ko-KR')}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-[#9ca3af] mb-1">
+                      {room.title}
                     </p>
-                  )}
-                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                    <span>{room.message_count}개 메시지</span>
+                    {room.last_message && (
+                      <p className="text-sm text-[#6b7280] truncate">
+                        {room.last_message}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-3 mt-2 text-xs text-[#6b7280]">
+                      <span>{room.message_count}개 메시지</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

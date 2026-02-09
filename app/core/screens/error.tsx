@@ -18,7 +18,7 @@ export default function ErrorPage() {
   const errorDescription = searchParams.get("error_description");
   return (
     <div className="flex flex-col items-center justify-center gap-2">
-      <h1 className="text-3xl font-semibold text-red-700">Error</h1>
+      <h1 className="text-3xl font-semibold text-destructive">Error</h1>
       <p className="text-muted-foreground">Error code: {errorCode}</p>
       <p className="text-muted-foreground">{errorDescription}</p>
       <Button variant={"link"} asChild>

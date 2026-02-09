@@ -5,6 +5,7 @@
  * Steps: 1) Basic Info, 2) Personality, 3) System Prompt, 4) Images
  */
 
+// @ts-expect-error - Route types generated when registered in routes.ts
 import type { Route } from "./+types/create";
 
 import { Form, useActionData, useNavigation } from "react-router";

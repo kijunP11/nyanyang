@@ -48,7 +48,7 @@ function getStripeClient(): Stripe {
  * Available point packages with their pricing and details.
  *
  * Each package contains:
- * - points: Number of points to be credited
+ * - points: Number of points to be credited (base + bonus)
  * - price: Price in KRW (Korean Won)
  * - name: Display name in Korean
  *
@@ -56,10 +56,12 @@ function getStripeClient(): Stripe {
  * @type {Record<string, {points: number, price: number, name: string}>}
  */
 const POINT_PACKAGES = {
-  small: { points: 1000, price: 990, name: "스몰 패키지" },
-  medium: { points: 5000, price: 4900, name: "미디엄 패키지" },
-  large: { points: 10000, price: 9500, name: "라지 패키지" },
-  mega: { points: 50000, price: 45000, name: "메가 패키지" },
+  starter: { points: 2000, price: 2000, name: "스타터 패키지" },
+  basic: { points: 5000, price: 4900, name: "베이직 패키지" }, // 4900 + 100 bonus
+  standard: { points: 10000, price: 9600, name: "스탠다드 패키지" }, // 9600 + 400 bonus
+  premium: { points: 30000, price: 28000, name: "프리미엄 패키지" }, // 28000 + 2000 bonus
+  pro: { points: 50000, price: 46000, name: "프로 패키지" }, // 46000 + 4000 bonus
+  mega: { points: 100000, price: 90000, name: "메가 패키지" }, // 90000 + 10000 bonus
 } as const;
 
 /**
@@ -71,7 +73,7 @@ const POINT_PACKAGES = {
  * @type {z.ZodObject}
  */
 const bodySchema = z.object({
-  package: z.enum(["small", "medium", "large", "mega"]),
+  package: z.enum(["starter", "basic", "standard", "premium", "pro", "mega"]),
 });
 
 /**

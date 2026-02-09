@@ -1,50 +1,33 @@
 /**
  * Home Page Component
  *
- * This file implements the main landing page of the application with internationalization support.
- * It demonstrates the use of i18next for multi-language content, React Router's data API for
- * server-side rendering, and responsive design with Tailwind CSS.
- *
- * Key features:
- * - Server-side translation with i18next
- * - Client-side translation with useTranslation hook
- * - SEO-friendly metadata using React Router's meta export
- * - Responsive typography with Tailwind CSS
- * - Story grid sections with cards
+ * 메인 홈 페이지 - Figma V2 디자인 (세로형 카드 + 가로 스크롤)
  */
 import type { Route } from "./+types/home";
 
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Link, useFetcher } from "react-router";
-import { data } from "react-router";
+import { Link, data } from "react-router";
 
-import { Button } from "~/core/components/ui/button";
-import { Card, CardContent } from "~/core/components/ui/card";
-import { Dialog, DialogContent } from "~/core/components/ui/dialog";
 import i18next from "~/core/lib/i18next.server";
 import makeServerClient from "~/core/lib/supa-client.server";
-import type { Database } from "~/database.types";
-import { checkAttendance } from "~/features/attendance/lib/attendance.server";
-import { CharacterCard } from "~/features/characters/components/character-card";
-import { AttendanceCheck } from "~/features/home/components/attendance-check";
-import {
-  NoticeBanner,
-  type NoticeData,
-} from "~/features/home/components/notice-banner";
+import type { Database } from "database.types";
+
+import { HeroCarousel, type HeroSlide } from "../components/hero-carousel";
+import type { NoticeData } from "../components/notice-banner";
+import { ScrollSection } from "../components/scroll-section";
+import { VerticalCharacterCard } from "../components/vertical-character-card";
 
 type Character = Database["public"]["Tables"]["characters"]["Row"];
-type ChatRoom = Database["public"]["Tables"]["chat_rooms"]["Row"];
-type ChatRoomWithCharacter = ChatRoom & { characters: Character | null };
 type AttendanceRecord =
   Database["public"]["Tables"]["attendance_records"]["Row"];
+
+type CharacterWithCreator = Character & { creator_name: string | null };
 
 interface LoaderData {
   title: string;
   subtitle: string;
-  myCharacters: Character[];
-  recentChats: ChatRoomWithCharacter[];
-  popularCharacters: Character[];
+  featuredCharacters: CharacterWithCreator[];
+  popularCharacters: CharacterWithCreator[];
+  newestCharacters: CharacterWithCreator[];
   attendanceRecord: AttendanceRecord | null;
   consecutiveDays: number;
   notices: NoticeData[];
@@ -66,15 +49,15 @@ export const meta: Route.MetaFunction = ({ data }) => {
  */
 export async function loader({ request }: Route.LoaderArgs) {
   const t = await i18next.getFixedT(request);
-  const [client] = makeServerClient(request);
+  const [client, headers] = makeServerClient(request);
 
   // 기본값 설정
   const defaultData: LoaderData = {
     title: t("home.title"),
     subtitle: t("home.subtitle"),
-    myCharacters: [],
-    recentChats: [],
+    featuredCharacters: [],
     popularCharacters: [],
+    newestCharacters: [],
     attendanceRecord: null,
     consecutiveDays: 0,
     notices: [],
@@ -92,39 +75,37 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     // 병렬 쿼리 실행
     const [
-      myCharactersResult,
-      recentChatsResult,
-      popularCharactersResult,
+      featuredResult,
+      popularResult,
+      newestResult,
       attendanceResult,
     ] = await Promise.all([
-      // 1. 내 캐릭터 (로그인한 경우만)
-      user
-        ? client
-            .from("characters")
-            .select("*")
-            .eq("creator_id", user.id)
-            .order("created_at", { ascending: false })
-            .limit(4)
-        : Promise.resolve({ data: [] }),
-
-      // 2. 최근 대화 (로그인한 경우만)
-      user
-        ? client
-            .from("chat_rooms")
-            .select("*, characters(*)")
-            .eq("user_id", user.id)
-            .order("last_message_at", { ascending: false })
-            .limit(5)
-        : Promise.resolve({ data: [] }),
-
-      // 3. 인기 캐릭터 (누구나)
+      // 1. 추천 캐릭터 (좋아요 순)
       client
         .from("characters")
         .select("*")
         .eq("is_public", true)
         .eq("status", "approved")
         .order("like_count", { ascending: false })
-        .limit(8),
+        .limit(10),
+
+      // 2. 실시간 인기 (조회수 순)
+      client
+        .from("characters")
+        .select("*")
+        .eq("is_public", true)
+        .eq("status", "approved")
+        .order("view_count", { ascending: false })
+        .limit(10),
+
+      // 3. 크리에이터 신작 (최신순)
+      client
+        .from("characters")
+        .select("*")
+        .eq("is_public", true)
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(10),
 
       // 4. 오늘 출석 기록 (로그인한 경우만)
       user
@@ -137,11 +118,39 @@ export async function loader({ request }: Route.LoaderArgs) {
         : Promise.resolve({ data: null }),
     ]);
 
+    // 모든 캐릭터의 creator_id 추출
+    const allCharacters = [
+      ...(featuredResult.data || []),
+      ...(popularResult.data || []),
+      ...(newestResult.data || []),
+    ];
+    const creatorIds = [...new Set(allCharacters.map((c) => c.creator_id))];
+
+    // profiles 일괄 조회
+    const { data: profiles } = creatorIds.length > 0
+      ? await client
+          .from("profiles")
+          .select("profile_id, name")
+          .in("profile_id", creatorIds)
+      : { data: [] };
+
+    // creator_id → name 매핑
+    const profileMap = new Map(
+      (profiles || []).map((p) => [p.profile_id, p.name])
+    );
+
+    // creator_name 추가
+    const addCreatorName = (chars: Character[]): CharacterWithCreator[] =>
+      chars.map((c) => ({
+        ...c,
+        creator_name: profileMap.get(c.creator_id) || null,
+      }));
+
     // 연속 출석일 계산
     const attendanceRecord = attendanceResult.data as AttendanceRecord | null;
     const consecutiveDays = attendanceRecord?.consecutive_days || 0;
 
-    // 공지사항 Mock 데이터 (추후 DB 연동 시 수정)
+    // 공지사항 Mock 데이터
     const notices: NoticeData[] = [
       {
         id: "1",
@@ -153,258 +162,232 @@ export async function loader({ request }: Route.LoaderArgs) {
       },
     ];
 
-    return {
-      ...defaultData,
-      myCharacters: (myCharactersResult.data as Character[]) || [],
-      recentChats: (recentChatsResult.data as ChatRoomWithCharacter[]) || [],
-      popularCharacters: (popularCharactersResult.data as Character[]) || [],
-      attendanceRecord,
-      consecutiveDays,
-      notices,
-      isLoggedIn: !!user,
-    };
+    return data(
+      {
+        ...defaultData,
+        featuredCharacters: addCreatorName(featuredResult.data || []),
+        popularCharacters: addCreatorName(popularResult.data || []),
+        newestCharacters: addCreatorName(newestResult.data || []),
+        attendanceRecord,
+        consecutiveDays,
+        notices,
+        isLoggedIn: !!user,
+      },
+      { headers }
+    );
   } catch (error) {
     console.error("Home loader error:", error);
-    // 에러 발생 시에도 페이지가 깨지지 않도록 기본값 반환
-    return defaultData;
+    return data(defaultData, { headers });
   }
 }
 
-/**
- * Action function for handling attendance check
- */
-export async function action({ request }: Route.ActionArgs) {
-  const [client] = makeServerClient(request);
+export default function Home({ loaderData }: Route.ComponentProps) {
   const {
-    data: { user },
-  } = await client.auth.getUser();
-
-  if (!user) {
-    return data({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const result = await checkAttendance(client, user.id);
-
-  if (!result.success) {
-    return data(
-      { error: result.error || "Failed to check attendance" },
-      { status: result.error === "Already checked today" ? 400 : 500 },
-    );
-  }
-
-  return data({
-    success: true,
-    consecutiveDays: result.consecutiveDays,
-    pointsAwarded: result.pointsAwarded,
-  });
-}
-
-export default function Home({ loaderData, actionData }: Route.ComponentProps) {
-  const { t } = useTranslation();
-  const fetcher = useFetcher();
-  const {
-    myCharacters,
-    recentChats,
+    featuredCharacters,
     popularCharacters,
+    newestCharacters,
     attendanceRecord,
-    consecutiveDays: loaderConsecutiveDays,
+    consecutiveDays,
     notices,
     isLoggedIn,
   } = loaderData;
 
-  // Action 결과가 있으면 연속일 업데이트
-  const consecutiveDays =
-    actionData &&
-    "success" in actionData &&
-    actionData.success &&
-    actionData.consecutiveDays
-      ? actionData.consecutiveDays
-      : loaderConsecutiveDays;
+  const isCheckedIn = !!attendanceRecord;
 
-  const isCheckedIn =
-    !!attendanceRecord ||
-    (actionData && "success" in actionData && actionData.success === true);
-
-  // 출석체크 팝업 상태 관리
-  const [isAttendanceDialogOpen, setIsAttendanceDialogOpen] = useState(false);
-
-  // 로그인했고 오늘 출석 안 했으면 자동으로 팝업 열기 (LocalStorage + 날짜 기반)
-  useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    const hasClosedToday = localStorage.getItem(`attendance-closed-${today}`);
-
-    if (isLoggedIn && !isCheckedIn && !hasClosedToday) {
-      setIsAttendanceDialogOpen(true);
-    }
-  }, [isLoggedIn, isCheckedIn]);
-
-  // 출석 완료 후 1.5초 딜레이로 팝업 닫기
-  useEffect(() => {
-    if (actionData && "success" in actionData && actionData.success) {
-      const timer = setTimeout(() => {
-        setIsAttendanceDialogOpen(false);
-      }, 1500);
-
-      return () => clearTimeout(timer);
-    }
-  }, [actionData]);
-
-  const handleCheckIn = () => {
-    fetcher.submit({}, { method: "POST" });
-  };
-
-  // Dialog 닫기 핸들러 (LocalStorage에 저장)
-  const handleDialogChange = (open: boolean) => {
-    setIsAttendanceDialogOpen(open);
-    if (!open && !isCheckedIn) {
-      const today = new Date().toISOString().split("T")[0];
-      localStorage.setItem(`attendance-closed-${today}`, "true");
-    }
-  };
+  // 히어로 슬라이드 데이터
+  const heroSlides: HeroSlide[] = [
+    {
+      image: "/nft.jpg",
+      title: "나만의 AI 캐릭터와 대화하세요",
+      description: "다양한 캐릭터들이 기다리고 있어요",
+      badge: "이벤트",
+      link: "/characters",
+    },
+    {
+      image: "/nft-2.jpg",
+      title: "캐릭터를 직접 만들어보세요",
+      description: "나만의 특별한 캐릭터를 창작해보세요",
+      link: "/characters/create",
+    },
+    {
+      image: "/blog/hello-world.jpg",
+      title: "매일 출석하고 포인트 받기",
+      description: "꾸준히 방문하면 더 많은 혜택이!",
+      link: "/attendance",
+    },
+  ];
 
   return (
-    <div className="container mx-auto flex flex-col gap-12 py-8">
-      {/* Hero Section */}
-      <section className="from-primary/5 flex flex-col items-center justify-center gap-6 rounded-3xl bg-gradient-to-b to-transparent py-12 text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight lg:text-6xl">
-          {t("home.title")}
-        </h1>
-        <p className="text-muted-foreground mx-auto max-w-2xl text-xl">
-          {t("home.subtitle")}
-        </p>
-        <div className="flex gap-4">
-          <Link to="/characters">
-            <Button size="lg">캐릭터 둘러보기</Button>
-          </Link>
-          <Link to="/characters/create">
-            <Button variant="outline" size="lg">
-              캐릭터 만들기
-            </Button>
-          </Link>
-        </div>
-      </section>
+    <div className="min-h-screen bg-[#111111]">
+      <div className="mx-auto flex max-w-screen-2xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
+        {/* 1. 히어로 캐러셀 */}
+        <HeroCarousel slides={heroSlides} />
 
-      {/* Widget Section: Notices */}
-      {notices.length > 0 && (
-        <section>
-          <NoticeBanner notices={notices} />
-        </section>
-      )}
+        {/* 2. 공지 배너 */}
+        {notices.length > 0 && (
+          <section className="flex items-center gap-3 rounded-lg bg-[#232323] px-4 py-3">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#14b8a6]/20">
+              <span className="text-lg">📢</span>
+            </div>
+            <p className="flex-1 truncate text-sm text-white">
+              {notices[0].title}: {notices[0].content}
+            </p>
+            {notices[0].link && (
+              <Link
+                to={notices[0].link}
+                className="flex-shrink-0 text-sm text-[#14b8a6] hover:underline"
+              >
+                자세히 →
+              </Link>
+            )}
+          </section>
+        )}
 
-      {/* 출석체크 팝업 */}
-      <Dialog open={isAttendanceDialogOpen} onOpenChange={handleDialogChange}>
-        <DialogContent className="sm:max-w-md">
-          <AttendanceCheck
-            dailyReward={100}
-            cumulativeDays={consecutiveDays}
-            cumulativeReward={consecutiveDays >= 7 ? 500 : 0}
-            checkedIn={isCheckedIn}
-            onCheckIn={handleCheckIn}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* My Characters Section */}
-      <section>
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">내 캐릭터</h2>
+        {/* 3. 출석체크 배너 */}
+        {isLoggedIn && (
           <Link
-            to="/characters"
-            className="text-muted-foreground cursor-pointer text-sm hover:underline"
+            to="/attendance"
+            className={`flex items-center justify-between rounded-xl px-6 py-5 transition-transform hover:scale-[1.01] ${
+              isCheckedIn
+                ? "border border-[#14b8a6]/30 bg-[#14b8a6]/10"
+                : "bg-gradient-to-r from-[#14b8a6] to-[#0d9488]"
+            }`}
           >
-            전체보기
+            <div>
+              <p
+                className={`text-lg font-bold ${isCheckedIn ? "text-[#14b8a6]" : "text-white"}`}
+              >
+                {isCheckedIn
+                  ? "오늘 출석 완료! 내일도 방문해주세요"
+                  : "매일매일 출석체크"}
+              </p>
+              <p
+                className={`text-sm ${isCheckedIn ? "text-[#9ca3af]" : "text-white/80"}`}
+              >
+                {isCheckedIn
+                  ? `${consecutiveDays}일 연속 출석 중`
+                  : "일일/누적보상 한번에 수령하세요!"}
+              </p>
+            </div>
+            <div
+              className={`flex items-center gap-2 ${isCheckedIn ? "text-[#14b8a6]" : "text-white"}`}
+            >
+              <span className="text-2xl">{isCheckedIn ? "✅" : "🐱"}</span>
+              <span className="text-lg font-bold">NYANYANG</span>
+            </div>
           </Link>
-        </div>
+        )}
 
-        {myCharacters.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {myCharacters.map((character) => (
-              <CharacterCard
+        {/* 4. 검색 바 + 태그 필터 */}
+        <section className="flex flex-col gap-4">
+          {/* 검색 바 */}
+          <div className="flex gap-2">
+            <button className="flex h-11 items-center gap-1.5 rounded-lg border border-[#3f3f46] bg-[#232323] px-4 text-sm text-white hover:bg-[#2f3032]">
+              <span>전체</span>
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="캐릭터명, 태그로 검색"
+                className="h-11 w-full rounded-lg border border-[#3f3f46] bg-[#232323] px-4 text-sm text-white placeholder:text-[#9ca3af] focus:border-[#14b8a6] focus:outline-none"
+                readOnly
+              />
+            </div>
+            <button className="h-11 rounded-lg bg-[#14b8a6] px-6 text-sm font-medium text-white hover:bg-[#0d9488]">
+              검색
+            </button>
+          </div>
+          {/* 태그 필터 */}
+          <div className="scrollbar-hide flex gap-2 overflow-x-auto">
+            {[
+              "전체",
+              "추천",
+              "남성",
+              "여성",
+              "로맨스",
+              "순애",
+              "구원",
+              "추리",
+              "집착",
+              "미래",
+              "소꿉친구",
+              "가족",
+              "유명인",
+              "판타지",
+            ].map((tag, index) => (
+              <button
+                key={tag}
+                className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  index === 0
+                    ? "bg-[#14b8a6] text-white"
+                    : "bg-[#232323] text-[#9ca3af] hover:bg-[#3f3f46] hover:text-white"
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+            <button className="flex flex-shrink-0 items-center gap-1 rounded-full border border-[#3f3f46] px-4 py-2 text-sm font-medium text-[#9ca3af] hover:bg-[#3f3f46] hover:text-white">
+              <span>#</span>
+              <span>태그 더보기</span>
+            </button>
+          </div>
+        </section>
+
+        {/* 5. 추천 캐릭터 섹션 */}
+        {featuredCharacters.length > 0 && (
+          <ScrollSection title="추천 캐릭터" moreLink="/characters?sort=popular">
+            {featuredCharacters.map((character) => (
+              <VerticalCharacterCard
                 key={character.character_id}
                 character={character}
+                creatorName={character.creator_name}
               />
             ))}
-          </div>
-        ) : (
-          <div className="bg-muted/30 border-muted rounded-xl border border-dashed py-12 text-center">
-            <p className="text-muted-foreground mb-4">
-              아직 만든 캐릭터가 없어요
-            </p>
-            <Link to="/characters/create">
-              <Button variant="outline">첫 캐릭터 만들기</Button>
-            </Link>
-          </div>
+          </ScrollSection>
         )}
-      </section>
 
-      {/* Recent Chats Section */}
-      {recentChats.length > 0 && (
-        <section>
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-bold">최근 대화</h2>
-          </div>
-          <div className="scrollbar-hide flex gap-4 overflow-x-auto pb-4">
-            {recentChats.map((room) => (
-              <Link
-                key={room.room_id}
-                to={`/chat/${room.character_id}`}
-                className="w-72 flex-shrink-0"
-              >
-                <Card className="h-full transition-shadow hover:shadow-md">
-                  <CardContent className="flex items-start gap-4 p-4">
-                    {/* Avatar */}
-                    <div className="bg-muted h-12 w-12 flex-shrink-0 overflow-hidden rounded-full">
-                      {room.characters?.avatar_url ? (
-                        <img
-                          src={room.characters.avatar_url}
-                          alt={room.characters.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xl">
-                          🎭
-                        </div>
-                      )}
-                    </div>
-                    {/* Info */}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-semibold">
-                        {room.characters?.name || "알 수 없는 캐릭터"}
-                      </h3>
-                      <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
-                        {room.last_message || "대화 내용 없음"}
-                      </p>
-                      <span className="text-muted-foreground mt-2 block text-xs">
-                        {room.last_message_at
-                          ? new Date(room.last_message_at).toLocaleDateString()
-                          : ""}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+        {/* 6. 실시간 인기 섹션 */}
+        {popularCharacters.length > 0 && (
+          <ScrollSection title="🔥 실시간 인기" moreLink="/characters?sort=popular">
+            {popularCharacters.map((character) => (
+              <VerticalCharacterCard
+                key={character.character_id}
+                character={character}
+                creatorName={character.creator_name}
+              />
             ))}
-          </div>
-        </section>
-      )}
+          </ScrollSection>
+        )}
 
-      {/* Popular Characters Section */}
-      <section>
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">인기 캐릭터</h2>
-          <Link
-            to="/characters?sort=popular"
-            className="text-muted-foreground cursor-pointer text-sm hover:underline"
+        {/* 7. 크리에이터 신작 섹션 */}
+        {newestCharacters.length > 0 && (
+          <ScrollSection
+            title="크리에이터 신작!"
+            moreLink="/characters?sort=newest"
           >
-            전체보기
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {popularCharacters.map((character) => (
-            <CharacterCard key={character.character_id} character={character} />
-          ))}
-        </div>
-      </section>
+            {newestCharacters.map((character) => (
+              <VerticalCharacterCard
+                key={character.character_id}
+                character={character}
+                creatorName={character.creator_name}
+              />
+            ))}
+          </ScrollSection>
+        )}
+      </div>
     </div>
   );
 }

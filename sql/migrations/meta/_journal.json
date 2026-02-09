@@ -22,6 +22,20 @@
       "when": 1763684774112,
       "tag": "0002_reflective_maximus",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769918177928,
+      "tag": "0003_outstanding_shiver_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770620618941,
+      "tag": "0004_dear_rockslide",
+      "breakpoints": true
     }
   ]
 }

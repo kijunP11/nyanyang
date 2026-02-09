@@ -1,16 +1,20 @@
 /**
  * Character Edit Screen
  *
- * Edit existing character with image upload, keywords, and safety filters
+ * Hybrid mode: Wizard for character info + Tabs for keywords/safety filters
  */
 import type { Route } from "./+types/character-edit";
 
+import { useCallback, useState } from "react";
 import {
-  Form,
+  data,
   redirect,
   useActionData,
   useNavigation,
+  useNavigate,
+  Form,
 } from "react-router";
+import { z } from "zod";
 
 import makeServerClient from "~/core/lib/supa-client.server";
 import { Button } from "~/core/components/ui/button";
@@ -31,6 +35,9 @@ import {
   TabsTrigger,
 } from "~/core/components/ui/tabs";
 import { Badge } from "~/core/components/ui/badge";
+import { WizardProvider, useWizard } from "../lib/wizard-context";
+import type { CharacterFormData, ExampleDialogue } from "../lib/wizard-types";
+import { CharacterWizard } from "../components/wizard";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -39,6 +46,92 @@ export const meta: Route.MetaFunction = () => {
     },
   ];
 };
+
+const STORAGE_BUCKET = "character-media";
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+/**
+ * Helper: Check if string is base64 data URL
+ */
+function isBase64DataUrl(str: string | null | undefined): boolean {
+  return !!str && str.startsWith("data:");
+}
+
+/**
+ * Helper: Upload base64 image to Storage
+ */
+async function uploadImageToStorage(
+  client: ReturnType<typeof makeServerClient>[0],
+  characterId: number,
+  mediaType: "avatar" | "banner",
+  base64Data: string
+): Promise<string | null> {
+  try {
+    const matches = base64Data.match(/^data:(.+);base64,(.+)$/);
+    if (!matches) return null;
+
+    const [, mimeType, dataContent] = matches;
+    const buffer = Buffer.from(dataContent, "base64");
+
+    if (buffer.length > MAX_FILE_SIZE) {
+      console.warn(`File size exceeds limit for ${mediaType}`);
+      return null;
+    }
+
+    const extension = mimeType.split("/")[1] || "png";
+    const uniqueFileName = `${characterId}/${mediaType}/${Date.now()}.${extension}`;
+
+    const { error: uploadError } = await client.storage
+      .from(STORAGE_BUCKET)
+      .upload(uniqueFileName, buffer, {
+        contentType: mimeType,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error("Storage upload error:", uploadError);
+      return null;
+    }
+
+    const {
+      data: { publicUrl },
+    } = client.storage.from(STORAGE_BUCKET).getPublicUrl(uniqueFileName);
+
+    return publicUrl;
+  } catch (error) {
+    console.error("Upload image error:", error);
+    return null;
+  }
+}
+
+/**
+ * Validation Schema for wizard update
+ */
+const updateWizardSchema = z.object({
+  _action: z.literal("update_wizard"),
+  name: z.string().min(1, "캐릭터 이름은 필수입니다").max(50),
+  display_name: z.string().max(50).optional().nullable(),
+  tagline: z.string().max(50).optional().nullable(),
+  description: z.string().min(1, "설명은 필수입니다"),
+  role: z.string().optional().nullable(),
+  appearance: z.string().optional().nullable(),
+  personality: z.string().min(1, "성격 설명은 필수입니다"),
+  speech_style: z.string().optional().nullable(),
+  system_prompt: z.string().min(1, "시스템 프롬프트는 필수입니다"),
+  greeting_message: z.string().min(1, "첫 인사말은 필수입니다"),
+  relationship: z.string().optional().nullable(),
+  world_setting: z.string().optional().nullable(),
+  avatar_url: z.string().optional().nullable(),
+  banner_url: z.string().optional().nullable(),
+  tags: z.array(z.string()).default([]),
+  category: z.string().optional().nullable(),
+  gender: z.string().optional().nullable(),
+  age_rating: z.string().default("everyone"),
+  is_public: z.boolean().default(false),
+  is_nsfw: z.boolean().default(false),
+  enable_memory: z.boolean().default(true),
+  example_dialogues: z.any().optional().nullable(),
+});
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const [client] = makeServerClient(request);
@@ -109,40 +202,92 @@ export async function action({ request, params }: Route.ActionArgs) {
     return { error: "Character ID required" };
   }
 
-  const formData = await request.formData();
-  const actionType = formData.get("_action") as string;
+  // Check if JSON or FormData
+  const contentType = request.headers.get("content-type") || "";
+  const isJson = contentType.includes("application/json");
 
   try {
-    // Update basic info
-    if (actionType === "update_basic") {
-      const name = formData.get("name") as string;
-      const description = formData.get("description") as string;
-      const display_name = formData.get("display_name") as string;
-      const personality = formData.get("personality") as string;
-      const system_prompt = formData.get("system_prompt") as string;
-      const greeting_message = formData.get("greeting_message") as string;
-      const is_public = formData.get("is_public") === "on";
-      const is_nsfw = formData.get("is_nsfw") === "on";
+    if (isJson) {
+      // Wizard update (JSON)
+      const formData = await request.json();
+      const actionType = formData._action;
 
-      const tags = (formData.get("tags") as string)
-        ? (formData.get("tags") as string)
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean)
-        : [];
+      if (actionType !== "update_wizard") {
+        // JSON인데 update_wizard가 아닌 경우 에러 (body 이중 소비 방지)
+        return data({ error: "알 수 없는 JSON 작업입니다" }, { headers });
+      }
+
+      const result = updateWizardSchema.safeParse(formData);
+
+      if (!result.success) {
+        return data(
+          {
+            error: "유효성 검사 실패",
+            fieldErrors: result.error.flatten().fieldErrors,
+          },
+          { headers }
+        );
+      }
+
+      const validData = result.data;
+
+      // Handle base64 images
+      const avatarBase64 = isBase64DataUrl(validData.avatar_url)
+        ? validData.avatar_url
+        : null;
+      const bannerBase64 = isBase64DataUrl(validData.banner_url)
+        ? validData.banner_url
+        : null;
+
+      // Upload new images if base64
+      let finalAvatarUrl = avatarBase64 ? null : validData.avatar_url;
+      let finalBannerUrl = bannerBase64 ? null : validData.banner_url;
+
+      if (avatarBase64) {
+        const uploadedUrl = await uploadImageToStorage(
+          client,
+          Number(characterId),
+          "avatar",
+          avatarBase64
+        );
+        if (uploadedUrl) finalAvatarUrl = uploadedUrl;
+      }
+
+      if (bannerBase64) {
+        const uploadedUrl = await uploadImageToStorage(
+          client,
+          Number(characterId),
+          "banner",
+          bannerBase64
+        );
+        if (uploadedUrl) finalBannerUrl = uploadedUrl;
+      }
 
       const { error } = await client
         .from("characters")
         .update({
-          name,
-          display_name: display_name || name,
-          description,
-          personality,
-          system_prompt,
-          greeting_message,
-          tags,
-          is_public,
-          is_nsfw,
+          name: validData.name,
+          display_name: validData.display_name || validData.name,
+          tagline: validData.tagline,
+          description: validData.description,
+          role: validData.role,
+          appearance: validData.appearance,
+          personality: validData.personality,
+          speech_style: validData.speech_style,
+          system_prompt: validData.system_prompt,
+          greeting_message: validData.greeting_message,
+          relationship: validData.relationship,
+          world_setting: validData.world_setting,
+          avatar_url: finalAvatarUrl,
+          banner_url: finalBannerUrl,
+          tags: validData.tags,
+          category: validData.category,
+          gender: validData.gender,
+          age_rating: validData.age_rating,
+          is_public: validData.is_public,
+          is_nsfw: validData.is_nsfw,
+          enable_memory: validData.enable_memory,
+          example_dialogues: validData.example_dialogues,
           updated_at: new Date().toISOString(),
         })
         .eq("character_id", Number(characterId))
@@ -150,8 +295,12 @@ export async function action({ request, params }: Route.ActionArgs) {
 
       if (error) throw error;
 
-      return { success: "캐릭터 정보가 업데이트되었습니다" };
+      return data({ success: "캐릭터 정보가 업데이트되었습니다" }, { headers });
     }
+
+    // Form-based actions (keywords, safety filters)
+    const formData = await request.formData();
+    const actionType = formData.get("_action") as string;
 
     // Add keyword
     if (actionType === "add_keyword") {
@@ -170,7 +319,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
       if (error) throw error;
 
-      return { success: "키워드가 추가되었습니다" };
+      return data({ success: "키워드가 추가되었습니다" }, { headers });
     }
 
     // Delete keyword
@@ -181,11 +330,11 @@ export async function action({ request, params }: Route.ActionArgs) {
         .from("character_keywords")
         .delete()
         .eq("keyword_id", Number(keywordId))
-        .eq("character_id", Number(characterId)); // Safety check
+        .eq("character_id", Number(characterId));
 
       if (error) throw error;
 
-      return { success: "키워드가 삭제되었습니다" };
+      return data({ success: "키워드가 삭제되었습니다" }, { headers });
     }
 
     // Update safety filter
@@ -204,7 +353,6 @@ export async function action({ request, params }: Route.ActionArgs) {
             .filter(Boolean)
         : [];
 
-      // Check if exists
       const { data: existing } = await client
         .from("character_safety_filters")
         .select("filter_id")
@@ -242,16 +390,135 @@ export async function action({ request, params }: Route.ActionArgs) {
 
       if (error) throw error;
 
-      return { success: "안전 필터가 업데이트되었습니다" };
+      return data({ success: "안전 필터가 업데이트되었습니다" }, { headers });
     }
 
-    return { error: "알 수 없는 작업입니다" };
-  } catch (error: any) {
+    return data({ error: "알 수 없는 작업입니다" }, { headers });
+  } catch (error: unknown) {
     console.error("Character edit error:", error);
-    return {
-      error: `작업 중 오류가 발생했습니다: ${error.message || String(error)}`,
-    };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return data(
+      { error: `작업 중 오류가 발생했습니다: ${errorMessage}` },
+      { headers }
+    );
   }
+}
+
+/**
+ * Convert loader character data to wizard form data
+ */
+function characterToFormData(character: Record<string, unknown>): Partial<CharacterFormData> {
+  const exampleDialogues: ExampleDialogue[] = [];
+
+  // Parse example_dialogues if it exists
+  if (character.example_dialogues) {
+    const dialogues = Array.isArray(character.example_dialogues)
+      ? character.example_dialogues
+      : [];
+    dialogues.forEach(
+      (d: { user?: string; character?: string }, index: number) => {
+        exampleDialogues.push({
+          id: `loaded-${index}`,
+          user: d.user || "",
+          character: d.character || "",
+        });
+      }
+    );
+  }
+
+  return {
+    name: (character.name as string) || "",
+    display_name: (character.display_name as string) || "",
+    tagline: (character.tagline as string) || "",
+    description: (character.description as string) || "",
+    avatar_url: (character.avatar_url as string) || null,
+    banner_url: (character.banner_url as string) || null,
+    role: (character.role as string) || "",
+    appearance: (character.appearance as string) || "",
+    personality: (character.personality as string) || "",
+    speech_style: (character.speech_style as string) || "",
+    example_dialogues: exampleDialogues,
+    greeting_message: (character.greeting_message as string) || "",
+    relationship: (character.relationship as string) || "",
+    world_setting: (character.world_setting as string) || "",
+    system_prompt: (character.system_prompt as string) || "",
+    enable_memory: (character.enable_memory as boolean) ?? true,
+    gender: (character.gender as string) || "",
+    age_rating: (character.age_rating as string) || "everyone",
+    tags: Array.isArray(character.tags) ? character.tags : [],
+    category: (character.category as string) || "",
+    is_public: (character.is_public as boolean) ?? false,
+    is_nsfw: (character.is_nsfw as boolean) ?? false,
+  };
+}
+
+/**
+ * Wizard Tab Inner Component
+ */
+function WizardTabContent({ characterId }: { characterId: number }) {
+  const { state } = useWizard();
+  const { formData } = state;
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = useCallback(async () => {
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`/characters/${characterId}/edit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          _action: "update_wizard",
+          ...formData,
+          display_name: formData.display_name || formData.name,
+          example_dialogues:
+            formData.example_dialogues.length > 0
+              ? formData.example_dialogues.map((d) => ({
+                  user: d.user,
+                  character: d.character,
+                }))
+              : null,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        navigate(`/characters/${characterId}`);
+      } else {
+        setError(result.error || "업데이트에 실패했습니다");
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      setError("업데이트 중 오류가 발생했습니다");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [formData, characterId, navigate]);
+
+  const handleCancel = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
+
+  return (
+    <>
+      {error && (
+        <Alert variant="destructive" className="mb-6 border-red-500 bg-red-500/10">
+          <AlertDescription className="text-red-400">{error}</AlertDescription>
+        </Alert>
+      )}
+      <CharacterWizard
+        isSubmitting={isSubmitting}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+      />
+    </>
+  );
 }
 
 export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
@@ -260,177 +527,72 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
-  // tags가 JSON 배열일 수 있으므로 처리
-  const tagsArray = Array.isArray(character.tags)
-    ? character.tags
-    : typeof character.tags === "string"
-      ? JSON.parse(character.tags)
-      : [];
+  const initialFormData = characterToFormData(character);
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{character.name} 편집</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-3xl font-bold text-white">{character.name} 편집</h1>
+          <p className="mt-2 text-[#9ca3af]">
             캐릭터 정보를 수정하고 관리하세요
           </p>
         </div>
-        <Button variant="outline" onClick={() => window.history.back()}>
+        <Button
+          variant="outline"
+          onClick={() => window.history.back()}
+          className="border-[#3f3f46] bg-transparent text-white hover:bg-[#3f3f46]"
+        >
           돌아가기
         </Button>
       </div>
 
-      {actionData?.success && (
-        <Alert className="mb-6">
-          <AlertDescription>{actionData.success}</AlertDescription>
+      {actionData && "success" in actionData && actionData.success && (
+        <Alert className="mb-6 border-green-500 bg-green-500/10">
+          <AlertDescription className="text-green-400">
+            {actionData.success}
+          </AlertDescription>
         </Alert>
       )}
 
-      {actionData?.error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertDescription>{actionData.error}</AlertDescription>
+      {actionData && "error" in actionData && actionData.error && (
+        <Alert variant="destructive" className="mb-6 border-red-500 bg-red-500/10">
+          <AlertDescription className="text-red-400">
+            {actionData.error}
+          </AlertDescription>
         </Alert>
       )}
 
-      <Tabs defaultValue="basic" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="basic">기본 정보</TabsTrigger>
-          <TabsTrigger value="keywords">키워드북</TabsTrigger>
-          <TabsTrigger value="safety">안전 필터</TabsTrigger>
+      <Tabs defaultValue="info" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 bg-[#232323]">
+          <TabsTrigger
+            value="info"
+            className="data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white"
+          >
+            캐릭터 정보
+          </TabsTrigger>
+          <TabsTrigger
+            value="keywords"
+            className="data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white"
+          >
+            키워드북
+          </TabsTrigger>
+          <TabsTrigger
+            value="safety"
+            className="data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white"
+          >
+            안전 필터
+          </TabsTrigger>
         </TabsList>
 
-        {/* Basic Info Tab */}
-        <TabsContent value="basic">
-          <Form method="post">
-            <input type="hidden" name="_action" value="update_basic" />
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>기본 정보</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">캐릭터 이름</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      defaultValue={character.name}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="display_name">표시 이름</Label>
-                    <Input
-                      id="display_name"
-                      name="display_name"
-                      defaultValue={character.display_name || ""}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description">설명</Label>
-                    <Textarea
-                      id="description"
-                      name="description"
-                      rows={3}
-                      defaultValue={character.description || ""}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="greeting_message">인사말</Label>
-                    <Textarea
-                      id="greeting_message"
-                      name="greeting_message"
-                      rows={2}
-                      defaultValue={character.greeting_message || ""}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>성격 및 AI 설정</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="personality">성격</Label>
-                    <Textarea
-                      id="personality"
-                      name="personality"
-                      rows={3}
-                      defaultValue={character.personality || ""}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="system_prompt">시스템 프롬프트</Label>
-                    <Textarea
-                      id="system_prompt"
-                      name="system_prompt"
-                      rows={5}
-                      defaultValue={character.system_prompt || ""}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>태그 및 설정</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="tags">태그</Label>
-                    <Input
-                      id="tags"
-                      name="tags"
-                      defaultValue={tagsArray.join(", ")}
-                      placeholder="쉼표로 구분"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="is_public"
-                      name="is_public"
-                      defaultChecked={character.is_public}
-                      className="h-4 w-4"
-                    />
-                    <Label htmlFor="is_public" className="cursor-pointer">
-                      공개 캐릭터
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="is_nsfw"
-                      name="is_nsfw"
-                      defaultChecked={character.is_nsfw}
-                      className="h-4 w-4"
-                    />
-                    <Label htmlFor="is_nsfw" className="cursor-pointer">
-                      NSFW 콘텐츠
-                    </Label>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isSubmitting}
-                className="w-full"
-              >
-                {isSubmitting ? "저장 중..." : "저장"}
-              </Button>
-            </div>
-          </Form>
+        {/* Character Info Tab - Wizard Mode */}
+        <TabsContent value="info">
+          <WizardProvider
+            initialData={initialFormData}
+            characterId={character.character_id}
+          >
+            <WizardTabContent characterId={character.character_id} />
+          </WizardProvider>
         </TabsContent>
 
         {/* Keywords Tab */}
@@ -438,9 +600,9 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
           <div className="space-y-6">
             {/* Existing Keywords */}
             {character.keywords && character.keywords.length > 0 && (
-              <Card>
+              <Card className="border-[#3f3f46] bg-[#1a1a1a]">
                 <CardHeader>
-                  <CardTitle>등록된 키워드</CardTitle>
+                  <CardTitle className="text-white">등록된 키워드</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {character.keywords.map(
@@ -452,17 +614,19 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                     }) => (
                       <div
                         key={kw.keyword_id}
-                        className="flex items-start justify-between p-3 border rounded"
+                        className="flex items-start justify-between rounded border border-[#3f3f46] bg-[#232323] p-3"
                       >
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge>{kw.keyword}</Badge>
-                            <span className="text-xs text-muted-foreground">
+                          <div className="mb-1 flex items-center gap-2">
+                            <Badge className="bg-[#14b8a6]/20 text-[#14b8a6]">
+                              {kw.keyword}
+                            </Badge>
+                            <span className="text-xs text-[#6b7280]">
                               우선순위: {kw.priority}
                             </span>
                           </div>
                           {kw.description && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-[#9ca3af]">
                               {kw.description}
                             </p>
                           )}
@@ -483,47 +647,54 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                             variant="ghost"
                             size="sm"
                             disabled={isSubmitting}
+                            className="text-[#9ca3af] hover:bg-[#3f3f46] hover:text-red-400"
                           >
                             삭제
                           </Button>
                         </Form>
                       </div>
-                    ),
+                    )
                   )}
                 </CardContent>
               </Card>
             )}
 
             {/* Add Keyword Form */}
-            <Card>
+            <Card className="border-[#3f3f46] bg-[#1a1a1a]">
               <CardHeader>
-                <CardTitle>새 키워드 추가</CardTitle>
+                <CardTitle className="text-white">새 키워드 추가</CardTitle>
               </CardHeader>
               <CardContent>
                 <Form method="post" className="space-y-4">
                   <input type="hidden" name="_action" value="add_keyword" />
 
                   <div>
-                    <Label htmlFor="keyword">키워드</Label>
+                    <Label htmlFor="keyword" className="text-white">
+                      키워드
+                    </Label>
                     <Input
                       id="keyword"
                       name="keyword"
                       required
                       placeholder="예: 밥"
+                      className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="keyword_description">설명</Label>
+                    <Label htmlFor="keyword_description" className="text-white">
+                      설명
+                    </Label>
                     <Input
                       id="keyword_description"
                       name="keyword_description"
                       placeholder="이 키워드에 대한 설명"
+                      className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="response_template">
+                    <Label htmlFor="response_template" className="text-white">
                       응답 템플릿 (선택)
                     </Label>
                     <Textarea
@@ -531,11 +702,14 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       name="response_template"
                       rows={2}
                       placeholder='예: *배고픈 듯 쳐다본다* "밥 먹고 싶어..."'
+                      className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="priority">우선순위</Label>
+                    <Label htmlFor="priority" className="text-white">
+                      우선순위
+                    </Label>
                     <Input
                       id="priority"
                       name="priority"
@@ -543,8 +717,9 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       defaultValue={0}
                       min={0}
                       max={100}
+                      className="border-[#3f3f46] bg-[#232323] text-white focus:border-[#14b8a6]"
                     />
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="mt-1 text-sm text-[#6b7280]">
                       높을수록 우선 적용됩니다
                     </p>
                   </div>
@@ -552,7 +727,7 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full"
+                    className="w-full bg-[#14b8a6] text-white hover:bg-[#0d9488]"
                   >
                     {isSubmitting ? "추가 중..." : "키워드 추가"}
                   </Button>
@@ -566,26 +741,24 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
         <TabsContent value="safety">
           <Form method="post">
             <input type="hidden" name="_action" value="update_safety" />
-            <Card>
+            <Card className="border-[#3f3f46] bg-[#1a1a1a]">
               <CardHeader>
-                <CardTitle>안전 필터 설정</CardTitle>
+                <CardTitle className="text-white">안전 필터 설정</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
                     <input
                       type="checkbox"
                       id="block_nsfw"
                       name="block_nsfw"
                       defaultChecked={character.safetyFilter?.block_nsfw ?? true}
-                      className="h-4 w-4"
+                      className="h-4 w-4 accent-[#14b8a6]"
                     />
-                    <Label htmlFor="block_nsfw" className="cursor-pointer">
-                      NSFW 콘텐츠 차단
-                    </Label>
-                  </div>
+                    <span className="text-white">NSFW 콘텐츠 차단</span>
+                  </label>
 
-                  <div className="flex items-center gap-2">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
                     <input
                       type="checkbox"
                       id="block_violence"
@@ -593,14 +766,12 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       defaultChecked={
                         character.safetyFilter?.block_violence ?? true
                       }
-                      className="h-4 w-4"
+                      className="h-4 w-4 accent-[#14b8a6]"
                     />
-                    <Label htmlFor="block_violence" className="cursor-pointer">
-                      폭력적 콘텐츠 차단
-                    </Label>
-                  </div>
+                    <span className="text-white">폭력적 콘텐츠 차단</span>
+                  </label>
 
-                  <div className="flex items-center gap-2">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
                     <input
                       type="checkbox"
                       id="block_hate_speech"
@@ -608,17 +779,12 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       defaultChecked={
                         character.safetyFilter?.block_hate_speech ?? true
                       }
-                      className="h-4 w-4"
+                      className="h-4 w-4 accent-[#14b8a6]"
                     />
-                    <Label
-                      htmlFor="block_hate_speech"
-                      className="cursor-pointer"
-                    >
-                      혐오 발언 차단
-                    </Label>
-                  </div>
+                    <span className="text-white">혐오 발언 차단</span>
+                  </label>
 
-                  <div className="flex items-center gap-2">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
                     <input
                       type="checkbox"
                       id="block_personal_info"
@@ -626,19 +792,16 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       defaultChecked={
                         character.safetyFilter?.block_personal_info ?? true
                       }
-                      className="h-4 w-4"
+                      className="h-4 w-4 accent-[#14b8a6]"
                     />
-                    <Label
-                      htmlFor="block_personal_info"
-                      className="cursor-pointer"
-                    >
-                      개인정보 차단
-                    </Label>
-                  </div>
+                    <span className="text-white">개인정보 차단</span>
+                  </label>
                 </div>
 
                 <div>
-                  <Label htmlFor="blocked_words">차단 단어</Label>
+                  <Label htmlFor="blocked_words" className="text-white">
+                    차단 단어
+                  </Label>
                   <Input
                     id="blocked_words"
                     name="blocked_words"
@@ -646,22 +809,24 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       character.safetyFilter?.blocked_words?.join(", ") || ""
                     }
                     placeholder="쉼표로 구분"
+                    className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="sensitivity_level">민감도 레벨 (1-10)</Label>
+                  <Label htmlFor="sensitivity_level" className="text-white">
+                    민감도 레벨 (1-10)
+                  </Label>
                   <Input
                     id="sensitivity_level"
                     name="sensitivity_level"
                     type="number"
                     min={1}
                     max={10}
-                    defaultValue={
-                      character.safetyFilter?.sensitivity_level || 5
-                    }
+                    defaultValue={character.safetyFilter?.sensitivity_level || 5}
+                    className="border-[#3f3f46] bg-[#232323] text-white focus:border-[#14b8a6]"
                   />
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="mt-1 text-sm text-[#6b7280]">
                     높을수록 더 엄격하게 필터링합니다
                   </p>
                 </div>
@@ -670,7 +835,7 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                   type="submit"
                   size="lg"
                   disabled={isSubmitting}
-                  className="w-full"
+                  className="w-full bg-[#14b8a6] text-white hover:bg-[#0d9488]"
                 >
                   {isSubmitting ? "저장 중..." : "필터 설정 저장"}
                 </Button>

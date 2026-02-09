@@ -4,6 +4,7 @@
  * Displays detailed information about a character and allows starting a chat.
  */
 
+// @ts-expect-error - Route types generated when registered in routes.ts
 import type { Route } from "./+types/detail";
 
 import { useLoaderData, useFetcher, Form } from "react-router";
@@ -102,9 +103,9 @@ export default function CharacterDetailScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#1a1a1a]">
       {/* Hero Section */}
-      <div className="relative h-80 bg-gradient-to-b from-primary/20 to-background">
+      <div className="relative h-80 bg-gradient-to-b from-[#14b8a6]/20 to-[#1a1a1a]">
         <div className="absolute inset-0 flex items-center justify-center">
           {character.banner_url ? (
             <img
@@ -118,7 +119,7 @@ export default function CharacterDetailScreen() {
 
       {/* Content */}
       <div className="container mx-auto max-w-4xl px-4 -mt-24 relative z-10">
-        <div className="bg-card rounded-lg border shadow-lg p-6">
+        <div className="rounded-lg border border-[#3f3f46] bg-[#232323] p-6 shadow-lg">
           {/* Character Header */}
           <div className="flex items-start gap-6 mb-6">
             {/* Avatar */}
@@ -126,11 +127,11 @@ export default function CharacterDetailScreen() {
               <img
                 src={character.avatar_url}
                 alt={character.display_name}
-                className="w-32 h-32 rounded-full object-cover border-4 border-background shadow-lg"
+                className="w-32 h-32 rounded-full object-cover border-4 border-[#1a1a1a] shadow-lg"
               />
             ) : (
-              <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center border-4 border-background shadow-lg">
-                <span className="text-4xl font-bold">
+              <div className="w-32 h-32 rounded-full bg-[#14b8a6]/10 flex items-center justify-center border-4 border-[#1a1a1a] shadow-lg">
+                <span className="text-4xl font-bold text-white">
                   {character.display_name[0]}
                 </span>
               </div>
@@ -138,15 +139,15 @@ export default function CharacterDetailScreen() {
 
             {/* Info */}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">
+              <h1 className="text-3xl font-bold text-white mb-2">
                 {character.display_name}
               </h1>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-[#9ca3af] mb-4">
                 {character.description}
               </p>
 
               {/* Stats */}
-              <div className="flex items-center gap-6 text-sm text-muted-foreground mb-4">
+              <div className="flex items-center gap-6 text-sm text-[#9ca3af] mb-4">
                 <span>❤️ {likeCount} 좋아요</span>
                 <span>💬 {character.chat_count} 대화</span>
                 <span>👁️ {character.view_count} 조회</span>
@@ -157,7 +158,7 @@ export default function CharacterDetailScreen() {
                 <Form method="post">
                   <button
                     type="submit"
-                    className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                    className="rounded-md bg-[#14b8a6] px-6 py-2 text-sm font-medium text-white hover:bg-[#0d9488]"
                   >
                     💬 대화 시작하기
                   </button>
@@ -166,8 +167,8 @@ export default function CharacterDetailScreen() {
                   onClick={handleLike}
                   className={`rounded-md px-6 py-2 text-sm font-medium border ${
                     isLiked
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-background hover:bg-accent"
+                      ? "bg-[#14b8a6] text-white border-[#14b8a6]"
+                      : "border-[#3f3f46] bg-[#232323] text-white hover:bg-[#3f3f46]"
                   }`}
                 >
                   {isLiked ? "❤️ 좋아요" : "🤍 좋아요"}
@@ -179,12 +180,12 @@ export default function CharacterDetailScreen() {
           {/* Tags */}
           {character.tags && character.tags.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold mb-2">태그</h3>
+              <h3 className="text-sm font-semibold text-white mb-2">태그</h3>
               <div className="flex flex-wrap gap-2">
                 {character.tags.map((tag: string, idx: number) => (
                   <span
                     key={idx}
-                    className="inline-block px-3 py-1 text-sm rounded-md bg-primary/10 text-primary"
+                    className="inline-block px-3 py-1 text-sm rounded-md bg-[#14b8a6]/10 text-[#14b8a6]"
                   >
                     {tag}
                   </span>
@@ -195,17 +196,17 @@ export default function CharacterDetailScreen() {
 
           {/* Personality */}
           <div className="mb-6">
-            <h3 className="text-sm font-semibold mb-2">성격</h3>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+            <h3 className="text-sm font-semibold text-white mb-2">성격</h3>
+            <p className="text-sm text-[#9ca3af] whitespace-pre-wrap">
               {character.personality}
             </p>
           </div>
 
           {/* Greeting */}
           {character.greeting_message && (
-            <div className="bg-muted rounded-lg p-4">
-              <h3 className="text-sm font-semibold mb-2">첫 인사</h3>
-              <p className="text-sm italic">
+            <div className="rounded-lg bg-[#2f3032] p-4">
+              <h3 className="text-sm font-semibold text-white mb-2">첫 인사</h3>
+              <p className="text-sm italic text-[#9ca3af]">
                 "{character.greeting_message}"
               </p>
             </div>

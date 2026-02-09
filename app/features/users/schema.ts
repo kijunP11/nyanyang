@@ -7,10 +7,12 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  integer,
   pgPolicy,
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 import { authUid, authUsers, authenticatedRole } from "drizzle-orm/supabase";
@@ -43,6 +45,9 @@ export const profiles = pgTable(
     referral_code: text().unique(),
     // 본인인증 완료 시간
     verified_at: timestamp("verified_at"),
+    // 팔로워/팔로잉 카운터 (비정규화)
+    follower_count: integer("follower_count").notNull().default(0),
+    following_count: integer("following_count").notNull().default(0),
     // Adds created_at and updated_at timestamp columns
     ...timestamps,
   },
@@ -68,6 +73,13 @@ export const profiles = pgTable(
       to: authenticatedRole,
       as: "permissive",
       using: sql`${authUid} = ${table.profile_id}`,
+    }),
+    // RLS Policy: Allow viewing any profile (for follower counts, etc.)
+    pgPolicy("select-any-profile-policy", {
+      for: "select",
+      to: authenticatedRole,
+      as: "permissive",
+      using: sql`true`,
     }),
   ],
 );
@@ -111,6 +123,43 @@ export const referrals = pgTable(
       to: authenticatedRole,
       as: "permissive",
       using: sql`${authUid} = ${table.referrer_id} OR ${authUid} = ${table.referee_id}`,
+    }),
+  ],
+);
+
+/**
+ * User Follows Table
+ *
+ * Tracks follow relationships between users.
+ * follower_id follows following_id.
+ */
+export const userFollows = pgTable(
+  "user_follows",
+  {
+    follow_id: uuid().primaryKey().defaultRandom(),
+    follower_id: uuid()
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "cascade" }),
+    following_id: uuid()
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "cascade" }),
+    ...timestamps,
+  },
+  (table) => [
+    // 중복 팔로우 방지
+    unique("user_follows_unique").on(table.follower_id, table.following_id),
+    // 자신의 팔로우 관리 (insert/update/delete)
+    pgPolicy("manage_own_follows_policy", {
+      for: "all",
+      to: authenticatedRole,
+      using: sql`(select auth.uid()) = ${table.follower_id}`,
+      withCheck: sql`(select auth.uid()) = ${table.follower_id}`,
+    }),
+    // 자신의 팔로워 조회
+    pgPolicy("view_followers_policy", {
+      for: "select",
+      to: authenticatedRole,
+      using: sql`(select auth.uid()) = ${table.following_id}`,
     }),
   ],
 );

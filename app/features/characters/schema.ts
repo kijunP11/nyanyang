@@ -76,6 +76,7 @@ export const characters = pgTable(
     category: text(), // Added in 0005
     age_rating: text().default("everyone"), // Added in 0005
     enable_memory: boolean().default(true), // Added in 0005
+    recommended_model: text(), // Added for chat feature - AI model recommendation
 
     is_public: boolean().notNull().default(false),
     is_nsfw: boolean().notNull().default(false),

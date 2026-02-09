@@ -144,7 +144,7 @@ export async function action({ request }: Route.ActionArgs) {
         enable_memory: validData.enable_memory,
         avatar_url: validData.avatar_url || null,
         banner_url: validData.banner_url || null,
-        status: "pending", // Default to pending for moderation
+        status: "pending_review", // Default to pending_review for moderation
       })
       .returning({
         character_id: characters.character_id,
