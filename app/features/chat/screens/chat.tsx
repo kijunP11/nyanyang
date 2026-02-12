@@ -12,7 +12,7 @@
 
 import type { Route } from "./+types/chat";
 
-import { useLoaderData, useFetcher, useRevalidator } from "react-router";
+import { useLoaderData, useFetcher, useRevalidator, useOutletContext } from "react-router";
 import { useState, useEffect, useRef } from "react";
 import { eq, desc } from "drizzle-orm";
 import { ArrowLeft, Brain, Menu, RefreshCw, RotateCcw, Send, Plus } from "lucide-react";
@@ -37,6 +37,8 @@ import { getActiveBranchMessages, getRoomBranches } from "../lib/branch-manager.
 import MemoryDrawer from "../components/memory-drawer";
 import { ModelSelector, type AIModel } from "../components/model-selector";
 import { ModelStatusBanner, type ModelStatus } from "../components/model-status-banner";
+import { ChatSidebar, type ChatItem } from "~/core/components/chat-sidebar";
+import type { NavigationOutletContext } from "~/core/layouts/navigation.layout";
 
 /**
  * Loader function for fetching chat room and messages
@@ -93,14 +95,38 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   // Get all branches for the branch selector
   const branches = await getRoomBranches(roomId);
 
-  return { room, messages: messageList, branches };
+  // Fetch all user's chat rooms for sidebar
+  const allRooms = await db
+    .select({
+      room_id: chatRooms.room_id,
+      title: chatRooms.title,
+      last_message_at: chatRooms.last_message_at,
+      created_at: chatRooms.created_at,
+      character_name: characters.display_name,
+      character_avatar_url: characters.avatar_url,
+    })
+    .from(chatRooms)
+    .innerJoin(characters, eq(chatRooms.character_id, characters.character_id))
+    .where(eq(chatRooms.user_id, user.id))
+    .orderBy(desc(chatRooms.last_message_at));
+
+  return { room, messages: messageList, branches, allRooms };
 }
 
 /**
  * Chat Screen Component
  */
 export default function ChatScreen() {
-  const { room, messages: initialMessages, branches } = useLoaderData<typeof loader>();
+  const { room, messages: initialMessages, branches, allRooms } = useLoaderData<typeof loader>();
+  const { user: navUser } = useOutletContext<NavigationOutletContext>();
+
+  // Map allRooms to ChatItem[] for sidebar
+  const sidebarChats: ChatItem[] = allRooms.map((r) => ({
+    roomId: r.room_id,
+    characterName: r.character_name ?? "Unknown",
+    characterAvatarUrl: r.character_avatar_url,
+    lastMessageAt: (r.last_message_at ?? r.created_at).toISOString(),
+  }));
   const [messageList, setMessageList] = useState(initialMessages);
   const [inputValue, setInputValue] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -419,7 +445,17 @@ export default function ChatScreen() {
   }, [showMenu]);
 
   return (
-    <div className="relative flex h-screen w-full overflow-hidden">
+    <div className="flex h-[calc(100vh-57px)] w-full overflow-hidden">
+      {/* Sidebar */}
+      <div className="hidden lg:block">
+        <ChatSidebar
+          user={navUser ? { name: navUser.name, email: navUser.email, avatarUrl: navUser.avatarUrl } : null}
+          chats={sidebarChats}
+        />
+      </div>
+
+      {/* Chat Area */}
+      <div className="relative flex flex-1 overflow-hidden">
       {/* 블러 배경 이미지 */}
       {room.character.avatar_url && (
         <div
@@ -874,6 +910,7 @@ export default function ChatScreen() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

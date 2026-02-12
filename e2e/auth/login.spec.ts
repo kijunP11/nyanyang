@@ -86,7 +86,7 @@ test.describe("User Login UI", () => {
     const link = page.getByText("Forgot your password?", { exact: true });
     await expect(link).toBeVisible();
     await link.click();
-    await expect(page).toHaveURL("/auth/forgot-password/reset");
+    await expect(page).toHaveURL("/auth/account-recovery");
   });
 
   /**

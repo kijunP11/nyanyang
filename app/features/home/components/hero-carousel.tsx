@@ -4,6 +4,7 @@
  * 3장이 동시에 보이는 peek 캐러셀 (좌/우 작은 이미지 + 중앙 큰 이미지)
  */
 
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
@@ -25,17 +26,18 @@ export function HeroCarousel({
   autoPlayInterval = 5000,
 }: HeroCarouselProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
 
   // 자동 슬라이드
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || !isPlaying) return;
 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, autoPlayInterval);
 
     return () => clearInterval(timer);
-  }, [slides.length, autoPlayInterval]);
+  }, [slides.length, autoPlayInterval, isPlaying]);
 
   const getSlideStyle = (index: number) => {
     const total = slides.length;
@@ -55,6 +57,14 @@ export function HeroCarousel({
     return "opacity-0 scale-75 z-0";
   };
 
+  const goToPrev = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const goToNext = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
   const renderSlideContent = (slide: HeroSlide, index: number) => {
     const isCurrent = index === currentSlide;
     const content = (
@@ -70,7 +80,7 @@ export function HeroCarousel({
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
             <div className="absolute bottom-8 left-8 right-8">
               {slide.badge && (
-                <span className="mb-2 inline-block rounded-full bg-[#14b8a6] px-3 py-1 text-xs font-medium text-white">
+                <span className="mb-2 inline-block rounded-full bg-[#41C7BD] px-3 py-1 text-xs font-medium text-white">
                   {slide.badge}
                 </span>
               )}
@@ -112,19 +122,38 @@ export function HeroCarousel({
         ))}
       </div>
 
-      {/* 슬라이드 인디케이터 */}
-      <div className="absolute bottom-4 left-1/2 z-30 flex -translate-x-1/2 gap-2">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`h-2 rounded-full transition-all ${
-              index === currentSlide
-                ? "w-6 bg-[#14b8a6]"
-                : "w-2 bg-white/50 hover:bg-white/70"
-            }`}
-          />
-        ))}
+      {/* 하단 좌측: 페이지 카운터 + 재생/일시정지 */}
+      <div className="absolute bottom-4 left-8 z-30 flex items-center gap-2">
+        <span className="rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+          {String(currentSlide + 1).padStart(2, "0")}/
+          {String(slides.length).padStart(2, "0")}
+        </span>
+        <button
+          onClick={() => setIsPlaying(!isPlaying)}
+          className="flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition-colors hover:bg-black/70"
+        >
+          {isPlaying ? (
+            <Pause className="h-3 w-3" />
+          ) : (
+            <Play className="h-3 w-3" />
+          )}
+        </button>
+      </div>
+
+      {/* 하단 우측: 좌우 화살표 */}
+      <div className="absolute bottom-4 right-8 z-30 flex items-center gap-1">
+        <button
+          onClick={goToPrev}
+          className="flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition-colors hover:bg-black/70"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <button
+          onClick={goToNext}
+          className="flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition-colors hover:bg-black/70"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
     </section>
   );

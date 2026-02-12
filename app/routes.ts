@@ -85,6 +85,7 @@ export default [
       route("/users", "features/admin/api/users.tsx"),
       route("/characters", "features/admin/api/characters.tsx"),
       route("/stats", "features/admin/api/stats.tsx"),
+      route("/notices", "features/notices/api/notices.tsx"),
     ]),
   ]),
 
@@ -95,6 +96,7 @@ export default [
     layout("core/layouts/public.layout.tsx", [
       // Routes that should only be visible to unauthenticated users.
       route("/login", "features/auth/screens/login.tsx"),
+      route("/login/email", "features/auth/screens/login-email.tsx"),
       route("/join", "features/auth/screens/join.tsx"),
       route("/auth/verify", "features/auth/screens/verify.tsx"),
       ...prefix("/auth", [
@@ -102,7 +104,7 @@ export default [
         route("/naver", "features/auth/api/naver.tsx"),
         route("/naver/callback", "features/auth/api/naver-callback.tsx"),
         route(
-          "/forgot-password/reset",
+          "/account-recovery",
           "features/auth/screens/forgot-password.tsx",
         ),
         route("/magic-link", "features/auth/screens/magic-link.tsx"),
@@ -147,10 +149,18 @@ export default [
     route("/points", "features/points/screens/points.tsx"),
     route("/guide", "features/guide/screens/guide.tsx"),
     route("/attendance", "features/attendance/screens/attendance.tsx"),
+    // Placeholder routes for upcoming features
+    route("/my-content", "features/placeholder/screens/my-content.tsx"),
+    route("/image-generation", "features/placeholder/screens/image-generation.tsx"),
     // Blog routes moved under the main navigation layout so the NavigationBar persists
     ...prefix("/blog", [
       index("features/blog/screens/posts.tsx"),
       route(":slug", "features/blog/screens/post.tsx"),
+    ]),
+    // Notices (공지사항/이벤트) routes
+    ...prefix("/notices", [
+      index("features/notices/screens/notice-list.tsx"),
+      route("/:slug", "features/notices/screens/notice-detail.tsx"),
     ]),
     // Chat routes
     ...prefix("/chat", [

@@ -14,6 +14,7 @@ export interface JoinSessionData {
   name: string;
   email: string;
   password: string;
+  nickname?: string;
   referralCode?: string;
 }
 

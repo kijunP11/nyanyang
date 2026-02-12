@@ -46,7 +46,7 @@ if (!TEST_EMAIL) {
 test.describe("Reset Password UI", () => {
   // Navigate to the forgot password page before each test
   test.beforeEach(async ({ page }) => {
-    await page.goto("/auth/forgot-password/reset");
+    await page.goto("/auth/account-recovery");
   });
 
   /**
@@ -171,7 +171,7 @@ test.describe.serial("Reset Password Flow", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("/auth/forgot-password/reset");
+    await page.goto("/auth/account-recovery");
   });
 
   /**

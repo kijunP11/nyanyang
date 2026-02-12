@@ -12,12 +12,14 @@ interface ScrollSectionProps {
   title: string;
   children: React.ReactNode;
   moreLink?: string;
+  badge?: string;
 }
 
 export function ScrollSection({
   title,
   children,
   moreLink,
+  badge,
 }: ScrollSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showArrow, setShowArrow] = useState(false);
@@ -58,11 +60,22 @@ export function ScrollSection({
     <section>
       {/* 헤더 */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-white">{title}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-bold text-[#181D27]">{title}</h2>
+          {badge && (
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs font-bold text-white ${
+                badge === "HOT" ? "bg-red-500" : "bg-[#41C7BD]"
+              }`}
+            >
+              {badge}
+            </span>
+          )}
+        </div>
         {moreLink && (
           <Link
             to={moreLink}
-            className="text-sm text-[#9ca3af] hover:text-white"
+            className="text-sm text-[#A4A7AE] hover:text-[#535862]"
           >
             전체보기
           </Link>
@@ -83,7 +96,7 @@ export function ScrollSection({
         {showArrow && (
           <button
             onClick={scrollRight}
-            className="absolute -right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#3f3f46] bg-[#232323]/80 text-white backdrop-blur transition-colors hover:border-[#14b8a6] hover:text-[#14b8a6]"
+            className="absolute -right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#E9EAEB] bg-white/90 text-[#535862] shadow-sm backdrop-blur transition-colors hover:border-[#41C7BD] hover:text-[#41C7BD]"
           >
             <ChevronRight className="h-5 w-5" />
           </button>

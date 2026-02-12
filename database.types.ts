@@ -533,6 +533,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          badge_type: string
           created_at: string
           follower_count: number
           following_count: number
@@ -545,6 +546,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          badge_type?: string
           created_at?: string
           follower_count?: number
           following_count?: number
@@ -557,6 +559,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          badge_type?: string
           created_at?: string
           follower_count?: number
           following_count?: number

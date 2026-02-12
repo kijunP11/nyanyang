@@ -1,111 +1,66 @@
-/**
- * 비밀번호 재설정 — 새 비밀번호 입력 (리셋 링크 클릭 후)
- */
-import type { Route } from "./+types/new-password";
+# F0 Figma 피드백 수정 — 2건
 
-import { useEffect, useRef } from "react";
+Figma 디자인과 비교하여 발견된 차이 2건을 수정합니다.
+
+---
+
+## 수정 1: `app/features/auth/screens/complete-profile.tsx`
+
+### 내용
+버튼 텍스트 "가입 완료" → **"시작하기"** (Figma 기준)
+
+### 변경
+284행 한 줄만 수정:
+
+```tsx
+// 현재 (284행):
+label="가입 완료"
+
+// 변경:
+label="시작하기"
+```
+
+---
+
+## 수정 2: `app/features/auth/screens/new-password.tsx`
+
+### 내용
+비밀번호 재설정 성공 시, 현재는 인라인 `FormSuccess` 메시지만 표시.
+Figma에서는 **별도 완료 화면**으로 전환됩니다:
+
+```
+"비밀번호 재설정 완료"  (제목, text-2xl font-bold text-black)
+"새 비밀번호로 로그인할 수 있습니다."  (부제, text-sm text-gray-500)
+
+[로그인 하러 가기]      — 주요 버튼 (bg-[#41C7BD] text-white)
+[메인화면으로 돌아가기]  — 보조 버튼 (bg-white border border-gray-300 text-black)
+```
+
+### 변경
+
+**import에 `Link` 추가:**
+```tsx
+// 현재 (7행):
+import { Form, data, redirect } from "react-router";
+
+// 변경:
 import { Form, Link, data, redirect } from "react-router";
-import { z } from "zod";
+```
 
-import FormButton from "~/core/components/form-button";
-import FormErrors from "~/core/components/form-error";
-import { Input } from "~/core/components/ui/input";
-import { Label } from "~/core/components/ui/label";
-import makeServerClient from "~/core/lib/supa-client.server";
+**`FormSuccess` import 제거** (더 이상 사용하지 않음):
+```tsx
+// 삭제 (12행):
+import FormSuccess from "~/core/components/form-success";
+```
 
-export const meta: Route.MetaFunction = () => {
-  return [
-    {
-      title: `비밀번호 재설정 | ${import.meta.env.VITE_APP_NAME}`,
-    },
-  ];
-};
+**컴포넌트 JSX 전체 교체 (106~193행):**
 
-const updatePasswordSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, { message: "비밀번호는 8자 이상이어야 합니다" }),
-    confirmPassword: z
-      .string()
-      .min(8, { message: "비밀번호는 8자 이상이어야 합니다" }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "비밀번호가 일치하지 않습니다",
-    path: ["confirmPassword"],
-  });
+성공 여부에 따라 폼 / 완료 화면을 조건부 렌더링합니다.
 
-/**
- * Server action for handling password update form submission
- *
- * This function processes the form data and attempts to update the user's password.
- * The flow is:
- * 1. Verify the user is authenticated (has clicked the reset link)
- * 2. Parse and validate the new password using the schema
- * 3. Return validation errors if the data is invalid
- * 4. Update the user's password with Supabase auth
- * 5. Return success or error response
- *
- * @param request - The form submission request
- * @returns Validation errors, auth errors, or success confirmation
- */
-export async function action({ request }: Route.ActionArgs) {
-  // Create Supabase client and get the current user
-  const [client] = makeServerClient(request);
-  const {
-    data: { user },
-  } = await client.auth.getUser();
-  
-  if (!user) {
-    return redirect("/auth/account-recovery");
-  }
-  
-  // Parse and validate form data
-  const formData = await request.formData();
-  const {
-    success,
-    data: validData,
-    error,
-  } = updatePasswordSchema.safeParse(Object.fromEntries(formData));
-  
-  // Return validation errors if passwords are invalid
-  if (!success) {
-    return data({ fieldErrors: error.flatten().fieldErrors }, { status: 400 });
-  }
-  
-  // Update the user's password with Supabase
-  const { error: updateError } = await client.auth.updateUser({
-    password: validData.password,
-  });
-  
-  // Return error if password update fails
-  if (updateError) {
-    return data({ error: updateError.message }, { status: 400 });
-  }
-  
-  // Return success response
-  return {
-    success: true,
-  };
-}
-
-/**
- * Password Update Component
- *
- * This component renders the form for creating a new password after a reset.
- * It includes:
- * - Password input field with validation
- * - Password confirmation field with matching validation
- * - Submit button for updating the password
- * - Error display for validation and server errors
- * - Success confirmation message after updating the password
- *
- * @param actionData - Data returned from the form action, including errors or success status
- */
+```tsx
 export default function ChangePassword({ actionData }: Route.ComponentProps) {
   const formRef = useRef<HTMLFormElement>(null);
-  const isSuccess =
-    actionData && "success" in actionData && actionData.success;
+  const isSuccess = actionData && "success" in actionData && actionData.success;
 
   useEffect(() => {
     if (isSuccess) {
@@ -117,6 +72,7 @@ export default function ChangePassword({ actionData }: Route.ComponentProps) {
     }
   }, [isSuccess]);
 
+  // 성공 시 완료 화면
   if (isSuccess) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
@@ -147,6 +103,7 @@ export default function ChangePassword({ actionData }: Route.ComponentProps) {
     );
   }
 
+  // 기본: 비밀번호 입력 폼
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
       <div className="w-full max-w-[360px]">
@@ -222,3 +179,19 @@ export default function ChangePassword({ actionData }: Route.ComponentProps) {
     </div>
   );
 }
+```
+
+### 핵심 변경 요약
+- `isSuccess` 변수로 성공 여부 판별
+- 성공 시 폼 대신 완료 화면 렌더링 (제목 + 부제 + 2개 Link 버튼)
+- `FormSuccess` 컴포넌트 → 삭제 (import도 제거)
+- `Link` import 추가
+
+---
+
+## 검증
+```bash
+npm run typecheck
+```
+- `/auth/forgot-password/create` 접근 → 폼 표시 → 성공 후 완료 화면 전환 확인
+- `/auth/complete-profile` 접근 → 버튼 텍스트 "시작하기" 확인

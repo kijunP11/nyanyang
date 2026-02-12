@@ -1,26 +1,23 @@
 /**
  * Navigation Bar Component
  *
- * A responsive navigation header that adapts to different screen sizes and user authentication states.
- * This component provides the main navigation interface for the application, including:
- *
- * - Responsive design with desktop and mobile layouts
- * - User authentication state awareness (logged in vs. logged out)
- * - User profile menu with avatar and dropdown options
- * - Theme switching functionality
- * - Mobile-friendly navigation drawer
- *
- * The component handles different states:
- * - Loading state with skeleton placeholders
- * - Authenticated state with user profile information
- * - Unauthenticated state with sign in/sign up buttons
+ * Figma 디자인 기반 GNB: 라이트/다크 모드, 5개 메뉴(추천/캐릭터/내 컨텐츠/이미지 생성/뱃지/리워드),
+ * 비로그인: 로그인 + 구분선 + 테마토글 + 알림 / 로그인: 발바닥 + 테마토글 + 알림 + 아바타
  */
-import { CogIcon, HomeIcon, LogOutIcon, MenuIcon, SearchIcon, SunIcon, MoonIcon } from "lucide-react";
+import {
+  Bell,
+  Cog,
+  Home,
+  LogOut,
+  Menu,
+  Moon,
+  PawPrint,
+  Sun,
+} from "lucide-react";
 import { Link, NavLink } from "react-router";
 import { Theme, useTheme } from "remix-themes";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Button } from "./ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import {
+  Sheet,
   SheetClose,
   SheetContent,
   SheetFooter,
@@ -37,24 +35,6 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 
-/**
- * UserMenu Component
- *
- * Displays the authenticated user's profile menu with avatar and dropdown options.
- * This component is shown in the navigation bar when a user is logged in and provides
- * quick access to user-specific actions and information.
- *
- * Features:
- * - Avatar display with image or fallback initials
- * - User name and email display
- * - Quick navigation to dashboard
- * - Logout functionality
- *
- * @param name - The user's display name
- * @param email - The user's email address (optional)
- * @param avatarUrl - URL to the user's avatar image (optional)
- * @returns A dropdown menu component with user information and actions
- */
 function UserMenu({
   name,
   email,
@@ -66,48 +46,40 @@ function UserMenu({
 }) {
   return (
     <DropdownMenu>
-      {/* Avatar as the dropdown trigger */}
       <DropdownMenuTrigger asChild>
-        <Avatar className="size-8 cursor-pointer rounded-lg">
-          <AvatarImage src={avatarUrl ?? undefined} />
-          <AvatarFallback>{name.slice(0, 2)}</AvatarFallback>
-        </Avatar>
+        <div className="flex size-10 cursor-pointer items-center justify-center">
+          <Avatar className="size-6 rounded-full border-[1.667px] border-white shadow-[0px_5px_6.667px_-4px_rgba(10,13,18,0.08),0px_1.667px_2.5px_-2px_rgba(10,13,18,0.03)]">
+            <AvatarImage src={avatarUrl ?? undefined} />
+            <AvatarFallback className="text-xs">{name.slice(0, 2)}</AvatarFallback>
+          </Avatar>
+        </div>
       </DropdownMenuTrigger>
-
-      {/* Dropdown content with user info and actions - 항상 다크 스타일 */}
-      <DropdownMenuContent className="w-56 border-white/10 bg-[#232323] text-white">
-        {/* User information display */}
-        <DropdownMenuLabel className="grid flex-1 text-left text-sm leading-tight text-white">
+      <DropdownMenuContent className="w-56" align="end">
+        <DropdownMenuLabel className="grid flex-1 text-left text-sm leading-tight">
           <span className="truncate font-semibold">{name}</span>
-          <span className="truncate text-xs text-white/60">{email}</span>
+          <span className="truncate text-xs text-muted-foreground">{email}</span>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/10" />
-
-        {/* Dashboard link */}
-        <DropdownMenuItem asChild className="text-white/80 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white">
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
           <SheetClose asChild>
             <Link to="/dashboard" viewTransition>
-              <HomeIcon className="size-4" />
+              <Home className="size-4" />
               대시보드
             </Link>
           </SheetClose>
         </DropdownMenuItem>
-        
-        {/* Character Creation link */}
-        <DropdownMenuItem asChild className="text-white/80 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white">
+        <DropdownMenuItem asChild>
           <SheetClose asChild>
             <Link to="/characters/create" viewTransition>
-              <CogIcon className="size-4" />
+              <Cog className="size-4" />
               캐릭터 만들기
             </Link>
           </SheetClose>
         </DropdownMenuItem>
-
-        {/* Logout link */}
-        <DropdownMenuItem asChild className="text-white/80 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white">
+        <DropdownMenuItem asChild>
           <SheetClose asChild>
             <Link to="/logout" viewTransition>
-              <LogOutIcon className="size-4" />
+              <LogOut className="size-4" />
               Log out
             </Link>
           </SheetClose>
@@ -117,113 +89,54 @@ function UserMenu({
   );
 }
 
-/**
- * AuthButtons Component
- *
- * Displays authentication buttons (Sign in and Sign up) for unauthenticated users.
- * Figma design: 로그인 텍스트 (흰색 70%) + | 구분선 + 회원가입 버튼 (민트)
- */
-function AuthButtons() {
-  return (
-    <div className="flex items-center gap-2">
-      {/* Sign in text link */}
-      <SheetClose asChild>
-        <Link 
-          to="/login" 
-          viewTransition
-          className="text-sm font-bold text-white/70 hover:text-white transition-colors"
-        >
-          로그인
-        </Link>
-      </SheetClose>
-
-      {/* Separator */}
-      <div className="h-5 w-px bg-white/20" />
-
-      {/* Sign up button (민트색) */}
-      <Button
-        variant="default"
-        className="h-[34px] rounded-[2px] bg-[#00c4af] px-3 text-sm font-bold text-white hover:bg-[#00c4af]/90"
-        asChild
-      >
-        <SheetClose asChild>
-          <Link to="/join" viewTransition>
-            회원가입
-          </Link>
-        </SheetClose>
-      </Button>
-    </div>
-  );
-}
-
-/**
- * SearchInput Component
- * 
- * Search input UI (껍데기 only, 기능 연결 나중에)
- * Figma: #2f3032 배경, 320px (데스크톱) / full (모바일), placeholder
- */
-function SearchInput({ className }: { className?: string }) {
-  return (
-    <div className={`relative flex h-10 items-center rounded-md border border-[#6b7280] bg-[#2f3032] ${className ?? "w-[320px]"}`}>
-      <input
-        type="text"
-        placeholder="컨텐츠명, 창작자명, #태그명으로 검색"
-        className="h-full w-full cursor-pointer bg-transparent px-3 text-sm text-white placeholder:text-[#9ca3af] focus:outline-none"
-        readOnly
-      />
-      <div className="absolute right-3">
-        <SearchIcon className="size-4 text-[#9ca3af]" />
-      </div>
-    </div>
-  );
-}
-
-/**
- * ThemeToggle Component
- * 
- * 원형 40px 테마 토글 버튼
- */
 function ThemeToggle() {
   const [theme, setTheme] = useTheme();
-  
   const toggleTheme = () => {
     setTheme(theme === Theme.DARK ? Theme.LIGHT : Theme.DARK);
   };
-
   return (
     <button
       onClick={toggleTheme}
-      className="flex size-10 items-center justify-center rounded-full bg-[#2f3032] transition-colors hover:bg-[#3f4042]"
+      className="flex size-10 items-center justify-center transition-colors"
       aria-label="Toggle theme"
     >
       {theme === Theme.DARK ? (
-        <SunIcon className="size-5 text-white" />
+        <Sun className="size-6 text-[#D5D7DA]" />
       ) : (
-        <MoonIcon className="size-5 text-white" />
+        <Moon className="size-6 text-black/70" />
       )}
     </button>
   );
 }
 
-/**
- * Nav link style helper
- * Figma: 활성 탭 - 흰색 + #14b8a6 하단 바 (3px), 비활성 탭 - rgba(153,163,183,0.7)
- * 언더바는 네비바 최하단에 붙도록 h-full + after:bottom-0 사용
- */
+function AuthButtons() {
+  return (
+    <div className="flex items-center gap-3">
+      <Link
+        to="/login"
+        viewTransition
+        className="whitespace-nowrap text-base font-medium text-black/70 transition-colors hover:text-black dark:text-[#D5D7DA] dark:hover:text-white"
+      >
+        로그인
+      </Link>
+      <div className="h-5 w-px bg-black/20 dark:bg-white/20" />
+      <ThemeToggle />
+      <button
+        type="button"
+        className="flex size-10 items-center justify-center"
+        aria-label="알림"
+      >
+        <Bell className="size-6 text-black/70 dark:text-[#D5D7DA]" />
+      </button>
+    </div>
+  );
+}
+
 const getNavLinkClass = (isActive: boolean) =>
   isActive
-    ? "relative h-full flex items-center text-sm font-bold text-white transition-colors after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-full after:bg-[#14b8a6]"
-    : "h-full flex items-center text-sm font-bold text-[rgba(153,163,183,0.7)] hover:text-white transition-colors";
+    ? "relative flex h-full items-center px-[10px] text-sm font-bold text-[#414651] transition-colors dark:text-white border-b-4 border-[#00C4AF]"
+    : "relative flex h-full items-center px-[10px] text-sm font-bold text-[#A4A7AE] transition-colors hover:text-[#414651] dark:hover:text-white";
 
-/**
- * NavigationBar Component
- *
- * Figma 디자인 기반 리디자인:
- * - 배경: #232323 (항상 다크)
- * - 높이: 60px 고정
- * - 메뉴: 스토리, 내 작품, 포인트, 이용 가이드 (4개)
- * - 로그인 후: 검색창 + 테마 토글 + 유저 메뉴
- */
 export function NavigationBar({
   name,
   email,
@@ -236,157 +149,195 @@ export function NavigationBar({
   loading: boolean;
 }) {
   return (
-    <nav className="h-[60px] w-full border-b border-white/10 bg-[#232323]">
-      <div className="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-between px-5 md:px-10">
-        {/* Left side: Logo + Navigation links */}
-        <div className="flex h-full items-center gap-8">
-          {/* Application logo */}
-          <Link to="/">
-            <img src="/logo3.png" alt="NYANYANG" className="h-6" />
-          </Link>
+    <Sheet>
+      <nav className="h-[57px] w-full border-b border-black/20 bg-white dark:border-white/20 dark:bg-[#181D27]">
+        <div className="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-between px-5 md:px-10">
+          <div className="flex h-full items-center gap-[82px]">
+            <Link to="/" className="flex shrink-0 items-center">
+              <img src="/logo3.png" alt="NYANYANG" className="h-[30px]" />
+            </Link>
+            <div className="hidden h-full items-center gap-1 md:flex">
+              <NavLink
+                to="/"
+                end
+                viewTransition
+                className={({ isActive }) => getNavLinkClass(isActive)}
+              >
+                추천
+              </NavLink>
+              <NavLink
+                to="/characters"
+                viewTransition
+                className={({ isActive }) => getNavLinkClass(isActive)}
+              >
+                캐릭터
+              </NavLink>
+              <NavLink
+                to="/my-content"
+                viewTransition
+                className={({ isActive }) => getNavLinkClass(isActive)}
+              >
+                내 컨텐츠
+              </NavLink>
+              <NavLink
+                to="/image-generation"
+                viewTransition
+                className={({ isActive }) => getNavLinkClass(isActive)}
+              >
+                이미지 생성
+              </NavLink>
+              <NavLink
+                to="/points"
+                viewTransition
+                className={({ isActive }) => getNavLinkClass(isActive)}
+              >
+                뱃지/리워드
+              </NavLink>
+            </div>
+          </div>
 
-          {/* Desktop navigation links (hidden on mobile) */}
-          <div className="hidden h-full items-center gap-6 md:flex">
+          <div className="hidden items-center gap-4 md:flex">
+            {loading ? (
+              <div className="flex items-center">
+                <div className="size-6 animate-pulse rounded-full bg-black/10 dark:bg-white/20" />
+              </div>
+            ) : (
+              <>
+                {name ? (
+                  <div className="flex items-center">
+                    <Link
+                      to="/dashboard"
+                      className="flex size-10 items-center justify-center text-black/70 dark:text-[#D5D7DA]"
+                      aria-label="대시보드"
+                    >
+                      <PawPrint className="size-6" />
+                    </Link>
+                    <ThemeToggle />
+                    <button
+                      type="button"
+                      className="flex size-10 items-center justify-center"
+                      aria-label="알림"
+                    >
+                      <Bell className="size-6 text-black/70 dark:text-[#D5D7DA]" />
+                    </button>
+                    <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
+                  </div>
+                ) : (
+                  <AuthButtons />
+                )}
+              </>
+            )}
+          </div>
+
+          <SheetTrigger
+            className="flex size-10 items-center justify-center text-black/70 dark:text-[#D5D7DA] md:hidden"
+            aria-label="메뉴 열기"
+          >
+            <Menu className="size-6" />
+          </SheetTrigger>
+        </div>
+      </nav>
+
+      <SheetContent className="border-black/10 bg-white dark:border-white/10 dark:bg-[#181D27]">
+        <SheetHeader className="flex flex-col gap-1 pt-8">
+          <SheetClose asChild>
             <NavLink
-              to="/blog"
+              to="/"
+              end
               viewTransition
-              className={({ isActive }) => getNavLinkClass(isActive)}
+              className={({ isActive }) =>
+                isActive
+                  ? "block px-2 py-2 text-sm font-bold text-[#414651] dark:text-white"
+                  : "block px-2 py-2 text-sm font-bold text-[#A4A7AE] hover:text-[#414651] dark:hover:text-white"
+              }
             >
-              스토리
+              추천
             </NavLink>
+          </SheetClose>
+          <SheetClose asChild>
             <NavLink
-              to="/dashboard/my-content"
+              to="/characters"
               viewTransition
-              className={({ isActive }) => getNavLinkClass(isActive)}
+              className={({ isActive }) =>
+                isActive
+                  ? "block px-2 py-2 text-sm font-bold text-[#414651] dark:text-white"
+                  : "block px-2 py-2 text-sm font-bold text-[#A4A7AE] hover:text-[#414651] dark:hover:text-white"
+              }
             >
-              내 작품
+              캐릭터
             </NavLink>
+          </SheetClose>
+          <SheetClose asChild>
+            <NavLink
+              to="/my-content"
+              viewTransition
+              className={({ isActive }) =>
+                isActive
+                  ? "block px-2 py-2 text-sm font-bold text-[#414651] dark:text-white"
+                  : "block px-2 py-2 text-sm font-bold text-[#A4A7AE] hover:text-[#414651] dark:hover:text-white"
+              }
+            >
+              내 컨텐츠
+            </NavLink>
+          </SheetClose>
+          <SheetClose asChild>
+            <NavLink
+              to="/image-generation"
+              viewTransition
+              className={({ isActive }) =>
+                isActive
+                  ? "block px-2 py-2 text-sm font-bold text-[#414651] dark:text-white"
+                  : "block px-2 py-2 text-sm font-bold text-[#A4A7AE] hover:text-[#414651] dark:hover:text-white"
+              }
+            >
+              이미지 생성
+            </NavLink>
+          </SheetClose>
+          <SheetClose asChild>
             <NavLink
               to="/points"
               viewTransition
-              className={({ isActive }) => getNavLinkClass(isActive)}
+              className={({ isActive }) =>
+                isActive
+                  ? "block px-2 py-2 text-sm font-bold text-[#414651] dark:text-white"
+                  : "block px-2 py-2 text-sm font-bold text-[#A4A7AE] hover:text-[#414651] dark:hover:text-white"
+              }
             >
-              포인트
+              뱃지/리워드
             </NavLink>
-            <NavLink
-              to="/guide"
-              viewTransition
-              className={({ isActive }) => getNavLinkClass(isActive)}
-            >
-              이용 가이드
-            </NavLink>
-          </div>
-        </div>
-
-        {/* Right side: Search (logged in) + Theme + Auth */}
-        <div className="hidden items-center gap-4 md:flex">
-          {/* 로그인 후: 검색창 표시 */}
-          {name && <SearchInput />}
-          
-          {/* 테마 토글 (로그인 후에만) */}
-          {name && <ThemeToggle />}
-
-          {/* Conditional rendering based on authentication state */}
+          </SheetClose>
+        </SheetHeader>
+        <SheetFooter className="mt-8 flex flex-row items-center gap-2 px-2">
           {loading ? (
-            <div className="flex items-center">
-              <div className="size-8 animate-pulse rounded-lg bg-white/20" />
-            </div>
+            <div className="h-10 w-24 animate-pulse rounded-full bg-black/10 dark:bg-white/20" />
           ) : (
             <>
-              {name ? (
+              <ThemeToggle />
+              <button
+                type="button"
+                className="flex size-10 items-center justify-center"
+                aria-label="알림"
+              >
+                <Bell className="size-6 text-black/70 dark:text-[#D5D7DA]" />
+              </button>
+              {name && (
                 <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
-              ) : (
-                <AuthButtons />
+              )}
+              {!name && (
+                <SheetClose asChild>
+                  <Link
+                    to="/login"
+                    viewTransition
+                    className="text-base font-medium text-black/70 dark:text-[#D5D7DA]"
+                  >
+                    로그인
+                  </Link>
+                </SheetClose>
               )}
             </>
           )}
-        </div>
-
-        {/* Mobile menu trigger (hidden on desktop) */}
-        <SheetTrigger className="size-6 text-white md:hidden">
-          <MenuIcon />
-        </SheetTrigger>
-        
-        {/* Mobile navigation drawer */}
-        <SheetContent className="border-white/10 bg-[#232323]">
-          <SheetHeader className="flex flex-col gap-4 pt-8">
-            {/* Mobile search (로그인 후) */}
-            {name && (
-              <div className="px-2">
-                <SearchInput className="w-full" />
-              </div>
-            )}
-            
-            {/* Mobile navigation links */}
-            <SheetClose asChild>
-              <NavLink
-                to="/blog"
-                className={({ isActive }) =>
-                  isActive
-                    ? "px-2 py-2 text-white font-bold"
-                    : "px-2 py-2 text-[rgba(153,163,183,0.7)] font-bold hover:text-white"
-                }
-              >
-                스토리
-              </NavLink>
-            </SheetClose>
-            <SheetClose asChild>
-              <NavLink
-                to="/dashboard/my-content"
-                className={({ isActive }) =>
-                  isActive
-                    ? "px-2 py-2 text-white font-bold"
-                    : "px-2 py-2 text-[rgba(153,163,183,0.7)] font-bold hover:text-white"
-                }
-              >
-                내 작품
-              </NavLink>
-            </SheetClose>
-            <SheetClose asChild>
-              <NavLink
-                to="/points"
-                className={({ isActive }) =>
-                  isActive
-                    ? "px-2 py-2 text-white font-bold"
-                    : "px-2 py-2 text-[rgba(153,163,183,0.7)] font-bold hover:text-white"
-                }
-              >
-                포인트
-              </NavLink>
-            </SheetClose>
-            <SheetClose asChild>
-              <NavLink
-                to="/guide"
-                className={({ isActive }) =>
-                  isActive
-                    ? "px-2 py-2 text-white font-bold"
-                    : "px-2 py-2 text-[rgba(153,163,183,0.7)] font-bold hover:text-white"
-                }
-              >
-                이용 가이드
-              </NavLink>
-            </SheetClose>
-          </SheetHeader>
-          
-          {/* Mobile footer */}
-          {loading ? (
-            <div className="flex items-center px-2 pt-8">
-              <div className="h-4 w-24 animate-pulse rounded-full bg-white/20" />
-            </div>
-          ) : (
-            <SheetFooter className="mt-8 px-2">
-              {name ? (
-                <div className="flex items-center justify-between">
-                  <ThemeToggle />
-                  <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
-                </div>
-              ) : (
-                <AuthButtons />
-              )}
-            </SheetFooter>
-          )}
-        </SheetContent>
-      </div>
-    </nav>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

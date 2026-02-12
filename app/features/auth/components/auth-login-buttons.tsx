@@ -52,7 +52,7 @@ function AuthLoginButton({
     >
       <Link to={href}>
         <span>{logo}</span>
-        <span>{label} 계정으로 로그인</span>
+        <span>{label} 계정으로 계속하기</span>
       </Link>
     </Button>
   );
@@ -74,28 +74,28 @@ function SocialLoginButtons() {
   return (
     <div className="flex flex-col gap-3">
       <AuthLoginButton
-        logo={<GoogleLogo className="size-4" />}
-        label="구글"
-        href="/auth/social/start/google"
-        className="border-0 bg-[#3f3f46] text-white hover:bg-[#52525b]"
+        logo={<KakaoLogo className="size-4 scale-125" />}
+        label="카카오"
+        href="/auth/social/start/kakao"
+        className="w-full border-0 bg-[#FEE500] text-[#191919] hover:bg-[#fdd800]"
       />
       <AuthLoginButton
         logo={<AppleLogo className="size-4 scale-150 text-white" />}
         label="애플"
         href="/auth/social/start/apple"
-        className="border-0 bg-[#3f3f46] text-white hover:bg-[#52525b]"
+        className="w-full border-0 bg-black text-white hover:bg-black/90"
       />
       <AuthLoginButton
         logo={<NaverLogo className="size-4" />}
         label="네이버"
         href="/auth/naver"
-        className="border-0 bg-[#03C75A] text-white hover:bg-[#02b351]"
+        className="w-full border-0 bg-[#03C75A] text-white hover:bg-[#02b351]"
       />
       <AuthLoginButton
-        logo={<KakaoLogo className="size-4 scale-125" />}
-        label="카카오"
-        href="/auth/social/start/kakao"
-        className="border-0 bg-[#FEE500] text-[#191919] hover:bg-[#fdd800]"
+        logo={<GoogleLogo className="size-4" />}
+        label="구글"
+        href="/auth/social/start/google"
+        className="w-full border border-gray-300 bg-white text-black hover:bg-gray-50"
       />
     </div>
   );
@@ -112,19 +112,5 @@ function SocialLoginButtons() {
  * ```
  */
 export function SignInButtons() {
-  return <SocialLoginButtons />;
-}
-
-/**
- * Authentication options for the sign-up flow
- *
- * This exported component provides social login options for the sign-up flow.
- *
- * Usage:
- * ```tsx
- * <SignUpButtons />
- * ```
- */
-export function SignUpButtons() {
   return <SocialLoginButtons />;
 }

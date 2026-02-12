@@ -8,25 +8,12 @@
  */
 import type { Route } from "./+types/complete-profile";
 
-import { CheckCircle2Icon } from "lucide-react";
-import React, { useRef, useState } from "react";
-import { Form, data, redirect } from "react-router";
+import { useRef, useState } from "react";
+import { Form, Link, data, redirect } from "react-router";
 import { z } from "zod";
 
 import FormButton from "~/core/components/form-button";
 import FormErrors from "~/core/components/form-error";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "~/core/components/ui/alert";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/core/components/ui/card";
 import { Checkbox } from "~/core/components/ui/checkbox";
 import { Input } from "~/core/components/ui/input";
 import { Label } from "~/core/components/ui/label";
@@ -149,159 +136,156 @@ export default function CompleteProfile({ actionData }: Route.ComponentProps) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center">
-          <CardTitle className="text-2xl font-semibold">
-            프로필을 완성해 주세요
-          </CardTitle>
-          <CardDescription className="text-center text-base">
-            <div>소셜 계정으로 연결됐어요.</div>
-            <div>아래 정보만 확인하면 가입이 완료됩니다.</div>
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <Form
-            className="flex w-full flex-col gap-5"
-            method="post"
-            ref={formRef}
-          >
-            {/* 닉네임 입력 */}
-            <div className="flex flex-col items-start space-y-2">
-              <Label
-                htmlFor="nickname"
-                className="flex flex-col items-start gap-1"
-              >
-                닉네임
-              </Label>
-              <Input
-                id="nickname"
-                name="nickname"
-                required
-                type="text"
-                placeholder="닉네임을 입력하세요"
-              />
-              <small className="text-muted-foreground text-xs">
-                닉네임은 2-20자의 한글/영문/숫자만 가능합니다.
-              </small>
-              {actionData &&
-              "fieldErrors" in actionData &&
-              actionData.fieldErrors?.nickname ? (
-                <FormErrors errors={actionData.fieldErrors.nickname} />
-              ) : null}
-            </div>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-8">
+      <div className="w-full max-w-[350px]">
+        <h1 className="mb-2 text-center text-2xl font-bold text-black">
+          프로필을 완성해 주세요
+        </h1>
+        <div className="mb-8 text-center text-sm text-gray-500">
+          <p>소셜 계정으로 연결됐어요.</p>
+          <p>아래 정보만 확인하면 가입이 완료됩니다.</p>
+        </div>
 
-            {/* 추천인 코드 입력 */}
-            <div className="flex flex-col items-start space-y-2">
-              <Label
-                htmlFor="referralCode"
-                className="flex flex-col items-start gap-1"
-              >
-                추천인 코드
-              </Label>
-              <Input
-                id="referralCode"
-                name="referralCode"
-                type="text"
-                placeholder="추천인 코드를 입력하세요 (선택)"
-              />
-            </div>
-
-            {/* 전체 약관 동의 */}
-            <div className="flex items-center gap-2 border-b pb-2">
-              <Checkbox
-                id="allTerms"
-                checked={allTermsChecked}
-                onCheckedChange={handleAllTermsChange}
-              />
-              <Label
-                htmlFor="allTerms"
-                className="text-muted-foreground cursor-pointer font-medium"
-              >
-                아래 약관에 모두 동의합니다.
-              </Label>
-            </div>
-
-            {/* 개별 약관 체크박스들 */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <Checkbox id="age14" name="age14" required />
-                <Label
-                  htmlFor="age14"
-                  className="text-muted-foreground text-sm"
-                >
-                  만 14세 이상입니다.(필수)
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox id="terms" name="terms" required />
-                <Label
-                  htmlFor="terms"
-                  className="text-muted-foreground text-sm"
-                >
-                  나냥 서비스 이용약관에 동의합니다. (필수)
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox id="privacy" name="privacy" required />
-                <Label
-                  htmlFor="privacy"
-                  className="text-muted-foreground text-sm"
-                >
-                  개인정보 수집 및 이용에 동의합니다. (필수)
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox id="marketing" name="marketing" />
-                <Label
-                  htmlFor="marketing"
-                  className="text-muted-foreground text-sm"
-                >
-                  마케팅 활용 및 광고성 정보 수신에 동의합니다. (선택)
-                </Label>
-              </div>
-            </div>
-
-            {/* 약관 에러 표시 */}
+        <Form
+          className="flex w-full flex-col gap-5"
+          method="post"
+          ref={formRef}
+        >
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="nickname" className="text-sm font-medium text-black">
+              닉네임
+            </Label>
+            <Input
+              id="nickname"
+              name="nickname"
+              required
+              type="text"
+              placeholder="닉네임을 입력하세요"
+              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
+            />
+            <p className="text-xs text-gray-400">
+              닉네임은 2~20자의 한글/영문/숫자만 가능합니다.
+            </p>
             {actionData &&
             "fieldErrors" in actionData &&
-            (actionData.fieldErrors?.age14 ||
-              actionData.fieldErrors?.terms ||
-              actionData.fieldErrors?.privacy) ? (
-              <FormErrors
-                errors={
-                  [
-                    actionData.fieldErrors?.age14?.[0],
-                    actionData.fieldErrors?.terms?.[0],
-                    actionData.fieldErrors?.privacy?.[0],
-                  ].filter(Boolean) as string[]
-                }
-              />
+            actionData.fieldErrors?.nickname ? (
+              <FormErrors errors={actionData.fieldErrors.nickname} />
             ) : null}
+          </div>
 
-            {/* 일반 에러 표시 */}
-            {actionData && "error" in actionData && actionData.error ? (
-              <FormErrors errors={[actionData.error]} />
-            ) : null}
-
-            {/* 성공 메시지 */}
-            {actionData && "success" in actionData && actionData.success ? (
-              <Alert className="bg-green-600/20 text-green-700 dark:bg-green-950/20 dark:text-green-600">
-                <CheckCircle2Icon className="size-4" />
-                <AlertTitle>가입 완료!</AlertTitle>
-                <AlertDescription className="text-green-700 dark:text-green-600">
-                  프로필이 완성되었습니다.
-                </AlertDescription>
-              </Alert>
-            ) : null}
-
-            <FormButton
-              label="가입 완료"
-              className="w-full bg-[#41C7BD] text-white hover:bg-[#41C7BD]/90"
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="referralCode" className="text-sm font-medium text-black">
+              추천인 코드
+            </Label>
+            <Input
+              id="referralCode"
+              name="referralCode"
+              type="text"
+              placeholder="추천인 코드를 입력하세요 (선택)"
+              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
             />
-          </Form>
-        </CardContent>
-      </Card>
+          </div>
+
+          <div className="flex items-center gap-2 border-b border-gray-200 pb-3">
+            <Checkbox
+              id="allTerms"
+              checked={allTermsChecked}
+              onCheckedChange={handleAllTermsChange}
+              className="border-gray-300 data-[state=checked]:border-[#41C7BD] data-[state=checked]:bg-[#41C7BD]"
+            />
+            <Label
+              htmlFor="allTerms"
+              className="cursor-pointer text-sm font-medium text-black"
+            >
+              아래 약관에 모두 동의합니다.
+            </Label>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="age14"
+                name="age14"
+                required
+                className="border-gray-300 data-[state=checked]:border-[#41C7BD] data-[state=checked]:bg-[#41C7BD]"
+              />
+              <Label htmlFor="age14" className="text-sm text-gray-500">
+                만 14세 이상입니다. <span className="text-[#41C7BD]">(필수)</span>
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="terms"
+                name="terms"
+                required
+                className="border-gray-300 data-[state=checked]:border-[#41C7BD] data-[state=checked]:bg-[#41C7BD]"
+              />
+              <Label htmlFor="terms" className="text-sm text-gray-500">
+                <Link
+                  to="/legal/terms-of-service"
+                  className="text-[#41C7BD] hover:underline"
+                >
+                  나냥 서비스 이용약관
+                </Link>
+                에 동의합니다. <span className="text-[#41C7BD]">(필수)</span>
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="privacy"
+                name="privacy"
+                required
+                className="border-gray-300 data-[state=checked]:border-[#41C7BD] data-[state=checked]:bg-[#41C7BD]"
+              />
+              <Label htmlFor="privacy" className="text-sm text-gray-500">
+                <Link
+                  to="/legal/privacy-policy"
+                  className="text-[#41C7BD] hover:underline"
+                >
+                  개인정보 수집 및 이용
+                </Link>
+                에 동의합니다. <span className="text-[#41C7BD]">(필수)</span>
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="marketing"
+                name="marketing"
+                className="border-gray-300 data-[state=checked]:border-[#41C7BD] data-[state=checked]:bg-[#41C7BD]"
+              />
+              <Label htmlFor="marketing" className="text-sm text-gray-500">
+                마케팅 활용 및 광고성 정보 수신에 동의합니다.{" "}
+                <span className="text-gray-400">(선택)</span>
+              </Label>
+            </div>
+          </div>
+
+          {actionData &&
+          "fieldErrors" in actionData &&
+          (actionData.fieldErrors?.age14 ||
+            actionData.fieldErrors?.terms ||
+            actionData.fieldErrors?.privacy) ? (
+            <FormErrors
+              errors={
+                [
+                  actionData.fieldErrors?.age14?.[0],
+                  actionData.fieldErrors?.terms?.[0],
+                  actionData.fieldErrors?.privacy?.[0],
+                ].filter(Boolean) as string[]
+              }
+            />
+          ) : null}
+
+          {actionData && "error" in actionData && actionData.error ? (
+            <FormErrors errors={[actionData.error]} />
+          ) : null}
+
+          <FormButton
+            label="시작하기"
+            className="h-12 w-full bg-[#41C7BD] text-white hover:bg-[#41C7BD]/90"
+          />
+        </Form>
+      </div>
     </div>
   );
 }

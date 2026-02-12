@@ -5,22 +5,25 @@
  */
 import type { Route } from "./+types/home";
 
-import { Link, data } from "react-router";
+import { useState } from "react";
+import { Search } from "lucide-react";
+import { data, Link } from "react-router";
 
+import { ChatSidebar, type ChatSidebarUser } from "~/core/components/chat-sidebar";
 import i18next from "~/core/lib/i18next.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 import type { Database } from "database.types";
 
 import { HeroCarousel, type HeroSlide } from "../components/hero-carousel";
-import type { NoticeData } from "../components/notice-banner";
 import { ScrollSection } from "../components/scroll-section";
 import { VerticalCharacterCard } from "../components/vertical-character-card";
 
 type Character = Database["public"]["Tables"]["characters"]["Row"];
-type AttendanceRecord =
-  Database["public"]["Tables"]["attendance_records"]["Row"];
 
-type CharacterWithCreator = Character & { creator_name: string | null };
+type CharacterWithCreator = Character & {
+  creator_name: string | null;
+  creator_badge_type: string | null;
+};
 
 interface LoaderData {
   title: string;
@@ -28,10 +31,8 @@ interface LoaderData {
   featuredCharacters: CharacterWithCreator[];
   popularCharacters: CharacterWithCreator[];
   newestCharacters: CharacterWithCreator[];
-  attendanceRecord: AttendanceRecord | null;
-  consecutiveDays: number;
-  notices: NoticeData[];
   isLoggedIn: boolean;
+  user: ChatSidebarUser | null;
 }
 
 /**
@@ -58,10 +59,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     featuredCharacters: [],
     popularCharacters: [],
     newestCharacters: [],
-    attendanceRecord: null,
-    consecutiveDays: 0,
-    notices: [],
     isLoggedIn: false,
+    user: null,
   };
 
   try {
@@ -70,16 +69,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       data: { user },
     } = await client.auth.getUser();
 
-    // 오늘 날짜 계산
-    const today = new Date().toISOString().split("T")[0];
-
     // 병렬 쿼리 실행
-    const [
-      featuredResult,
-      popularResult,
-      newestResult,
-      attendanceResult,
-    ] = await Promise.all([
+    const [featuredResult, popularResult, newestResult] = await Promise.all([
       // 1. 추천 캐릭터 (좋아요 순)
       client
         .from("characters")
@@ -106,16 +97,6 @@ export async function loader({ request }: Route.LoaderArgs) {
         .eq("status", "approved")
         .order("created_at", { ascending: false })
         .limit(10),
-
-      // 4. 오늘 출석 기록 (로그인한 경우만)
-      user
-        ? client
-            .from("attendance_records")
-            .select("*")
-            .eq("user_id", user.id)
-            .eq("attendance_date", today)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
     ]);
 
     // 모든 캐릭터의 creator_id 추출
@@ -130,37 +111,28 @@ export async function loader({ request }: Route.LoaderArgs) {
     const { data: profiles } = creatorIds.length > 0
       ? await client
           .from("profiles")
-          .select("profile_id, name")
+          .select("profile_id, name, badge_type")
           .in("profile_id", creatorIds)
       : { data: [] };
 
-    // creator_id → name 매핑
+    // creator_id → { name, badge_type } 매핑
     const profileMap = new Map(
-      (profiles || []).map((p) => [p.profile_id, p.name])
+      (profiles || []).map((p) => [
+        p.profile_id,
+        { name: p.name, badge_type: p.badge_type },
+      ])
     );
 
-    // creator_name 추가
+    // creator_name, creator_badge_type 추가
     const addCreatorName = (chars: Character[]): CharacterWithCreator[] =>
-      chars.map((c) => ({
-        ...c,
-        creator_name: profileMap.get(c.creator_id) || null,
-      }));
-
-    // 연속 출석일 계산
-    const attendanceRecord = attendanceResult.data as AttendanceRecord | null;
-    const consecutiveDays = attendanceRecord?.consecutive_days || 0;
-
-    // 공지사항 Mock 데이터
-    const notices: NoticeData[] = [
-      {
-        id: "1",
-        type: "event",
-        title: "신규 캐릭터 이벤트",
-        content: "새로운 캐릭터를 만들고 보상을 받아보세요!",
-        date: "2024-01-15",
-        link: "/characters/create",
-      },
-    ];
+      chars.map((c) => {
+        const profile = profileMap.get(c.creator_id);
+        return {
+          ...c,
+          creator_name: profile?.name || null,
+          creator_badge_type: profile?.badge_type || null,
+        };
+      });
 
     return data(
       {
@@ -168,10 +140,17 @@ export async function loader({ request }: Route.LoaderArgs) {
         featuredCharacters: addCreatorName(featuredResult.data || []),
         popularCharacters: addCreatorName(popularResult.data || []),
         newestCharacters: addCreatorName(newestResult.data || []),
-        attendanceRecord,
-        consecutiveDays,
-        notices,
         isLoggedIn: !!user,
+        user: user
+          ? {
+              name:
+                user.user_metadata?.nickname ||
+                user.user_metadata?.name ||
+                "Anonymous",
+              email: user.email,
+              avatarUrl: user.user_metadata?.avatar_url || null,
+            }
+          : null,
       },
       { headers }
     );
@@ -186,13 +165,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     featuredCharacters,
     popularCharacters,
     newestCharacters,
-    attendanceRecord,
-    consecutiveDays,
-    notices,
     isLoggedIn,
+    user,
   } = loaderData;
-
-  const isCheckedIn = !!attendanceRecord;
 
   // 히어로 슬라이드 데이터
   const heroSlides: HeroSlide[] = [
@@ -217,176 +192,251 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     },
   ];
 
+  const [tagsExpanded, setTagsExpanded] = useState(false);
+
+  const quickTags = [
+    "전체",
+    "추천",
+    "남성",
+    "여성",
+    "로맨스",
+    "순애",
+    "구원",
+    "추리",
+    "집착",
+    "소꿉친구",
+    "유명인",
+    "판타지",
+    "일상",
+  ];
+
+  const allTags = [
+    "전체",
+    "추천",
+    "남성",
+    "여성",
+    "로맨스",
+    "순애",
+    "구원",
+    "후회",
+    "집착",
+    "피폐",
+    "소꿉친구",
+    "가족",
+    "유명인",
+    "츤데레",
+    "얀데레",
+    "판타지",
+    "천사",
+    "요정",
+    "악마",
+    "엘프",
+    "빌런",
+    "현대판타지",
+    "동양판타지",
+    "대체역사",
+    "무협",
+    "TS물",
+    "BL",
+    "페티쉬",
+    "BDSM",
+    "퍼리",
+    "근육",
+    "버튜버",
+    "애니메이션",
+    "뱀파이어",
+    "밀리터리",
+    "아포칼립스",
+    "무인도",
+    "SF",
+    "로봇",
+    "오피스",
+    "자캐",
+    "신화",
+    "영화드라마",
+    "괴물",
+    "동물",
+    "수인",
+    "동화",
+    "책",
+    "메이드&집사",
+    "수녀",
+    "외계인",
+    "이세계",
+    "마법",
+    "공포",
+    "게임 캐릭터",
+    "히어로",
+    "히로인",
+    "도미넌트",
+    "서큐버스",
+    "NTR",
+    "NTL",
+    "고어",
+    "하렘",
+    "조난",
+    "재난",
+    "일상",
+    "청춘",
+    "드라마",
+    "학생",
+    "힐링",
+    "개그",
+    "새드엔딩",
+    "교육",
+    "생산성",
+    "게임",
+    "스포츠",
+    "시뮬",
+    "추리",
+    "던전",
+    "감옥",
+    "방탈출",
+  ];
+
+  const displayTags = tagsExpanded ? allTags : quickTags;
+
   return (
-    <div className="min-h-screen bg-[#111111]">
-      <div className="mx-auto flex max-w-screen-2xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-        {/* 1. 히어로 캐러셀 */}
-        <HeroCarousel slides={heroSlides} />
+    <div className="-mx-5 -my-16 flex min-h-[calc(100vh-57px)] bg-white md:-my-32">
+      {/* 채팅 사이드바 (md 이상, 로그인/비로그인 모두) */}
+      <div className="sticky top-[57px] hidden h-[calc(100vh-57px)] md:block">
+        <ChatSidebar user={isLoggedIn ? user : null} chats={[]} />
+      </div>
 
-        {/* 2. 공지 배너 */}
-        {notices.length > 0 && (
-          <section className="flex items-center gap-3 rounded-lg bg-[#232323] px-4 py-3">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#14b8a6]/20">
-              <span className="text-lg">📢</span>
+      {/* 메인 콘텐츠 */}
+      <div className="min-w-0 flex-1">
+        <div className="mx-auto flex max-w-screen-2xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
+          {/* 1. 히어로 캐러셀 */}
+          <HeroCarousel slides={heroSlides} />
+
+          {/* 2. AI 추천 검색 */}
+          <section>
+            <div className="flex h-12 w-full items-center gap-3 rounded-xl border border-[#E9EAEB] bg-[#F5F5F5] px-4">
+              <span className="flex-shrink-0 rounded-md bg-[#41C7BD] px-2 py-0.5 text-xs font-bold text-white">
+                AI 추천 대화
+              </span>
+              <p className="min-w-0 flex-1 truncate text-sm text-[#535862]">
+                올해의 &apos;달콤살벌 매력&apos;에 빠져볼까? 지금 바로 시작하세요
+              </p>
+              <Search className="h-5 w-5 flex-shrink-0 text-[#A4A7AE]" />
             </div>
-            <p className="flex-1 truncate text-sm text-white">
-              {notices[0].title}: {notices[0].content}
-            </p>
-            {notices[0].link && (
-              <Link
-                to={notices[0].link}
-                className="flex-shrink-0 text-sm text-[#14b8a6] hover:underline"
-              >
-                자세히 →
-              </Link>
-            )}
           </section>
-        )}
 
-        {/* 3. 출석체크 배너 */}
-        {isLoggedIn && (
-          <Link
-            to="/attendance"
-            className={`flex items-center justify-between rounded-xl px-6 py-5 transition-transform hover:scale-[1.01] ${
-              isCheckedIn
-                ? "border border-[#14b8a6]/30 bg-[#14b8a6]/10"
-                : "bg-gradient-to-r from-[#14b8a6] to-[#0d9488]"
-            }`}
-          >
-            <div>
-              <p
-                className={`text-lg font-bold ${isCheckedIn ? "text-[#14b8a6]" : "text-white"}`}
-              >
-                {isCheckedIn
-                  ? "오늘 출석 완료! 내일도 방문해주세요"
-                  : "매일매일 출석체크"}
-              </p>
-              <p
-                className={`text-sm ${isCheckedIn ? "text-[#9ca3af]" : "text-white/80"}`}
-              >
-                {isCheckedIn
-                  ? `${consecutiveDays}일 연속 출석 중`
-                  : "일일/누적보상 한번에 수령하세요!"}
-              </p>
-            </div>
+          {/* 3. 태그 필터 */}
+          <section>
             <div
-              className={`flex items-center gap-2 ${isCheckedIn ? "text-[#14b8a6]" : "text-white"}`}
+              className={
+                tagsExpanded
+                  ? "flex flex-wrap gap-2"
+                  : "scrollbar-hide flex gap-2 overflow-x-auto"
+              }
             >
-              <span className="text-2xl">{isCheckedIn ? "✅" : "🐱"}</span>
-              <span className="text-lg font-bold">NYANYANG</span>
-            </div>
-          </Link>
-        )}
-
-        {/* 4. 검색 바 + 태그 필터 */}
-        <section className="flex flex-col gap-4">
-          {/* 검색 바 */}
-          <div className="flex gap-2">
-            <button className="flex h-11 items-center gap-1.5 rounded-lg border border-[#3f3f46] bg-[#232323] px-4 text-sm text-white hover:bg-[#2f3032]">
-              <span>전체</span>
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-            <div className="relative flex-1">
-              <input
-                type="text"
-                placeholder="캐릭터명, 태그로 검색"
-                className="h-11 w-full rounded-lg border border-[#3f3f46] bg-[#232323] px-4 text-sm text-white placeholder:text-[#9ca3af] focus:border-[#14b8a6] focus:outline-none"
-                readOnly
-              />
-            </div>
-            <button className="h-11 rounded-lg bg-[#14b8a6] px-6 text-sm font-medium text-white hover:bg-[#0d9488]">
-              검색
-            </button>
-          </div>
-          {/* 태그 필터 */}
-          <div className="scrollbar-hide flex gap-2 overflow-x-auto">
-            {[
-              "전체",
-              "추천",
-              "남성",
-              "여성",
-              "로맨스",
-              "순애",
-              "구원",
-              "추리",
-              "집착",
-              "미래",
-              "소꿉친구",
-              "가족",
-              "유명인",
-              "판타지",
-            ].map((tag, index) => (
+              {displayTags.map((tag, index) => (
+                <button
+                  key={`${tag}-${index}`}
+                  type="button"
+                  className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                    index === 0
+                      ? "bg-[#41C7BD] text-white"
+                      : "bg-[#F5F5F5] text-[#535862] hover:bg-[#E9EAEB]"
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
               <button
-                key={tag}
-                className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  index === 0
-                    ? "bg-[#14b8a6] text-white"
-                    : "bg-[#232323] text-[#9ca3af] hover:bg-[#3f3f46] hover:text-white"
-                }`}
+                type="button"
+                onClick={() => setTagsExpanded(!tagsExpanded)}
+                className="flex flex-shrink-0 items-center gap-1 rounded-full border border-[#E9EAEB] px-4 py-2 text-sm font-medium text-[#A4A7AE] hover:bg-[#F5F5F5]"
               >
-                {tag}
+                <span>#</span>
+                <span>{tagsExpanded ? "접기" : "태그 더보기"}</span>
               </button>
-            ))}
-            <button className="flex flex-shrink-0 items-center gap-1 rounded-full border border-[#3f3f46] px-4 py-2 text-sm font-medium text-[#9ca3af] hover:bg-[#3f3f46] hover:text-white">
-              <span>#</span>
-              <span>태그 더보기</span>
-            </button>
-          </div>
-        </section>
+            </div>
+          </section>
 
-        {/* 5. 추천 캐릭터 섹션 */}
-        {featuredCharacters.length > 0 && (
-          <ScrollSection title="추천 캐릭터" moreLink="/characters?sort=popular">
-            {featuredCharacters.map((character) => (
-              <VerticalCharacterCard
-                key={character.character_id}
-                character={character}
-                creatorName={character.creator_name}
-              />
-            ))}
-          </ScrollSection>
-        )}
+          {/* 4. 떠오르는 신예 창작자들 */}
+          {featuredCharacters.length > 0 && (
+            <ScrollSection
+              title="떠오르는 신예 창작자들"
+              moreLink="/characters?sort=featured"
+            >
+              {featuredCharacters.map((character) => (
+                <VerticalCharacterCard
+                  key={character.character_id}
+                  character={character}
+                  creatorName={character.creator_name}
+                  creatorBadgeType={character.creator_badge_type}
+                />
+              ))}
+            </ScrollSection>
+          )}
 
-        {/* 6. 실시간 인기 섹션 */}
-        {popularCharacters.length > 0 && (
-          <ScrollSection title="🔥 실시간 인기" moreLink="/characters?sort=popular">
+          {/* 5. 실시간 인기 섹션 */}
+          {popularCharacters.length > 0 && (
+            <ScrollSection
+              title="실시간 인기"
+              badge="HOT"
+              moreLink="/characters?sort=popular"
+            >
             {popularCharacters.map((character) => (
               <VerticalCharacterCard
                 key={character.character_id}
                 character={character}
                 creatorName={character.creator_name}
+                creatorBadgeType={character.creator_badge_type}
+                badge="HOT"
               />
             ))}
-          </ScrollSection>
-        )}
+            </ScrollSection>
+          )}
 
-        {/* 7. 크리에이터 신작 섹션 */}
-        {newestCharacters.length > 0 && (
-          <ScrollSection
-            title="크리에이터 신작!"
-            moreLink="/characters?sort=newest"
-          >
-            {newestCharacters.map((character) => (
-              <VerticalCharacterCard
-                key={character.character_id}
-                character={character}
-                creatorName={character.creator_name}
-              />
-            ))}
-          </ScrollSection>
-        )}
+          {/* 6. 크리에이터 신작 섹션 */}
+          {newestCharacters.length > 0 && (
+            <ScrollSection
+              title="크리에이터 신작"
+              badge="NEW"
+              moreLink="/characters?sort=newest"
+            >
+              {newestCharacters.map((character) => (
+                <VerticalCharacterCard
+                  key={character.character_id}
+                  character={character}
+                  creatorName={character.creator_name}
+                  creatorBadgeType={character.creator_badge_type}
+                />
+              ))}
+            </ScrollSection>
+          )}
+
+          {/* 7. 프로모션 배너 — 다크 배경 + 캐릭터 이미지 */}
+          <section>
+            <Link
+              to="/notices"
+              className="group block overflow-hidden rounded-2xl transition-transform hover:scale-[1.01]"
+            >
+              <div className="relative flex h-[140px] items-center bg-gradient-to-r from-[#1a1a2e] to-[#16213e]">
+                <div className="relative z-10 flex-1 px-8">
+                  <p className="text-lg font-bold text-white">나냥 기획전</p>
+                  <p className="mt-1 text-sm text-white/70">
+                    특별한 캐릭터를 만나보세요
+                  </p>
+                  <p className="mt-0.5 text-xs text-white/50">
+                    매력적인 캐릭터와 이벤트가 기다립니다
+                  </p>
+                </div>
+                <div className="absolute right-0 top-0 h-full w-[200px] overflow-hidden">
+                  <img
+                    src="/nft.jpg"
+                    alt="프로모션"
+                    className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a2e] to-transparent" />
+                </div>
+              </div>
+            </Link>
+          </section>
+        </div>
       </div>
     </div>
   );

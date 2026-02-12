@@ -2,13 +2,12 @@
  * User Registration Screen Component (Step 1)
  *
  * This component handles the first step of user registration:
- * - Basic information collection (name, email, password)
+ * - Basic information collection (name, email, password, nickname)
  * - Form validation for all fields
  * - Duplicate email checking
- * - Social authentication providers
  *
  * After validation, user data is stored in a secure cookie
- * and redirected to /auth/verify for phone verification and terms agreement.
+ * and redirected to /auth/verify for terms agreement.
  */
 import type { Route } from "./+types/join";
 
@@ -20,7 +19,6 @@ import FormErrors from "~/core/components/form-error";
 import { Input } from "~/core/components/ui/input";
 import { Label } from "~/core/components/ui/label";
 
-import { SignUpButtons } from "../components/auth-login-buttons";
 import { createJoinSession } from "../lib/join-session.server";
 import { doesUserExist } from "../lib/queries.server";
 
@@ -60,6 +58,13 @@ const joinSchema = z
     confirmPassword: z
       .string()
       .min(8, { message: "비밀번호는 8자 이상이어야 합니다" }),
+    nickname: z
+      .string()
+      .min(2, { message: "닉네임은 최소 2자 이상이어야 합니다" })
+      .max(20, { message: "닉네임은 최대 20자까지 가능합니다" })
+      .regex(/^[가-힣a-zA-Z0-9]+$/, {
+        message: "닉네임은 한글, 영문, 숫자만 사용 가능합니다",
+      }),
     referralCode: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -111,6 +116,7 @@ export async function action({ request }: Route.ActionArgs) {
     name: validData.name,
     email: validData.email,
     password: validData.password,
+    nickname: validData.nickname,
     referralCode: validData.referralCode,
   });
 
@@ -137,21 +143,15 @@ export async function action({ request }: Route.ActionArgs) {
  */
 export default function Join({ actionData }: Route.ComponentProps) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#1a1a1a] px-4 py-8">
-      <div className="w-full max-w-[350px]">
-        {/* 타이틀 */}
-        <h1 className="mb-8 text-center text-3xl font-bold text-white">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-8">
+      <div className="w-full max-w-[360px]">
+        <h1 className="mb-8 text-center text-2xl font-bold text-black">
           회원가입
         </h1>
 
-        {/* 회원가입 폼 */}
-        <Form
-          className="flex w-full flex-col gap-4"
-          method="post"
-        >
-          {/* 이름 입력 */}
+        <Form className="flex w-full flex-col gap-4" method="post">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="name" className="text-sm text-[#9ca3af]">
+            <Label htmlFor="name" className="text-sm font-medium text-black">
               이름
             </Label>
             <Input
@@ -159,8 +159,8 @@ export default function Join({ actionData }: Route.ComponentProps) {
               name="name"
               required
               type="text"
-              placeholder="이름을 입력하세요"
-              className="h-12 border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+              placeholder="이름 입력"
+              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
             />
             {actionData &&
             "fieldErrors" in actionData &&
@@ -169,9 +169,8 @@ export default function Join({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          {/* 이메일 입력 */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email" className="text-sm text-[#9ca3af]">
+            <Label htmlFor="email" className="text-sm font-medium text-black">
               이메일
             </Label>
             <Input
@@ -179,8 +178,8 @@ export default function Join({ actionData }: Route.ComponentProps) {
               name="email"
               required
               type="email"
-              placeholder="이메일을 입력하세요"
-              className="h-12 border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+              placeholder="이메일 입력"
+              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
             />
             {actionData &&
             "fieldErrors" in actionData &&
@@ -189,9 +188,8 @@ export default function Join({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          {/* 비밀번호 입력 */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password" className="text-sm text-[#9ca3af]">
+            <Label htmlFor="password" className="text-sm font-medium text-black">
               비밀번호
             </Label>
             <Input
@@ -199,10 +197,10 @@ export default function Join({ actionData }: Route.ComponentProps) {
               name="password"
               required
               type="password"
-              placeholder="비밀번호를 입력하세요"
-              className="h-12 border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+              placeholder="비밀번호 입력"
+              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
             />
-            <p className="text-xs text-[#6b7280]">
+            <p className="text-xs text-gray-400">
               영문, 숫자를 포함하여 8자 이상 입력해주세요.
             </p>
             {actionData &&
@@ -212,9 +210,8 @@ export default function Join({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          {/* 비밀번호 확인 */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="confirmPassword" className="text-sm text-[#9ca3af]">
+            <Label htmlFor="confirmPassword" className="text-sm font-medium text-black">
               비밀번호 확인
             </Label>
             <Input
@@ -222,8 +219,8 @@ export default function Join({ actionData }: Route.ComponentProps) {
               name="confirmPassword"
               required
               type="password"
-              placeholder="비밀번호를 다시 입력하세요"
-              className="h-12 border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+              placeholder="비밀번호 입력"
+              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
             />
             {actionData &&
             "fieldErrors" in actionData &&
@@ -232,9 +229,30 @@ export default function Join({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          {/* 추천인 코드 */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="referralCode" className="text-sm text-[#9ca3af]">
+            <Label htmlFor="nickname" className="text-sm font-medium text-black">
+              닉네임
+            </Label>
+            <Input
+              id="nickname"
+              name="nickname"
+              required
+              type="text"
+              placeholder="닉네임 입력"
+              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
+            />
+            <p className="text-xs text-gray-400">
+              닉네임은 2~20자의 한글/영문/숫자만 가능합니다.
+            </p>
+            {actionData &&
+            "fieldErrors" in actionData &&
+            actionData.fieldErrors?.nickname ? (
+              <FormErrors errors={actionData.fieldErrors.nickname} />
+            ) : null}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="referralCode" className="text-sm font-medium text-black">
               추천인 코드
             </Label>
             <Input
@@ -242,35 +260,27 @@ export default function Join({ actionData }: Route.ComponentProps) {
               name="referralCode"
               type="text"
               placeholder="추천인 코드 입력"
-              className="h-12 border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
             />
           </div>
 
-          {/* 다음단계로 버튼 */}
           <FormButton
-            label="다음단계로"
-            className="mt-4 h-11 w-full bg-[#14b8a6] text-white hover:bg-[#0d9488]"
+            label="가입 완료"
+            className="mt-4 h-12 w-full bg-[#41C7BD] text-white hover:bg-[#41C7BD]/90"
           />
 
-          {/* 에러 메시지 */}
           {actionData && "error" in actionData && actionData.error ? (
             <FormErrors errors={[actionData.error]} />
           ) : null}
         </Form>
 
-        {/* 소셜 로그인 */}
-        <div className="mt-6">
-          <SignUpButtons />
-        </div>
-
-        {/* 로그인 링크 */}
-        <p className="mt-6 text-center text-sm text-[#9ca3af]">
+        <p className="mt-6 text-center text-sm text-gray-500">
           이미 계정이 있으신가요?{" "}
           <Link
             to="/login"
             viewTransition
             data-testid="form-signin-link"
-            className="font-medium text-[#14b8a6] hover:underline"
+            className="text-[#41C7BD] hover:underline"
           >
             로그인하기
           </Link>
