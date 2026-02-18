@@ -1,8 +1,8 @@
 /**
  * Attendance System Schema
  *
- * This file defines the database schema for the daily attendance check-in system.
- * Users receive points for consecutive daily logins.
+ * This file defines the database schema for the daily and weekly attendance check-in system.
+ * Users receive points for consecutive daily logins and weekly check-ins.
  */
 import { sql } from "drizzle-orm";
 import { date, integer, pgPolicy, pgTable, uuid } from "drizzle-orm/pg-core";
@@ -51,5 +51,30 @@ export const attendanceRecords = pgTable(
       using: sql`${authUid} = ${table.user_id}`,
     }),
     // Note: INSERT should be done by server to prevent cheating
+  ],
+);
+
+/**
+ * Weekly Attendance Records Table
+ *
+ * Tracks weekly attendance check-ins (7-day rolling).
+ * Users can check in once every 7 days for 800 points.
+ */
+export const weeklyAttendanceRecords = pgTable(
+  "weekly_attendance_records",
+  {
+    record_id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    user_id: uuid()
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "cascade" }),
+    points_awarded: integer().notNull().default(800),
+    created_at: timestamps.created_at,
+  },
+  (table) => [
+    pgPolicy("select-own-weekly-attendance", {
+      for: "select",
+      to: authenticatedRole,
+      using: sql`${authUid} = ${table.user_id}`,
+    }),
   ],
 );

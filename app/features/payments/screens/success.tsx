@@ -16,7 +16,8 @@
 
 import type { Route } from "./+types/success";
 
-import { redirect } from "react-router";
+import { useEffect } from "react";
+import { redirect, useNavigate } from "react-router";
 import { z } from "zod";
 
 import { requireAuthentication } from "~/core/lib/guards.server";
@@ -118,6 +119,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   
   // Extract and validate payment parameters from URL
   const url = new URL(request.url);
+  const returnTo = url.searchParams.get("returnTo");
   const result = paramsSchema.safeParse(Object.fromEntries(url.searchParams));
   
   // Redirect to failure page if parameters are invalid
@@ -189,8 +191,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     user_id: user!.id,
   });
   
-  // Return payment data for the success page
-  return { data };
+  // Return payment data for the success page (returnTo: 내부 경로만 허용)
+  return {
+    data,
+    returnTo: returnTo?.startsWith("/") ? returnTo : null,
+  };
 }
 
 /**
@@ -209,6 +214,16 @@ export async function loader({ request }: Route.LoaderArgs) {
  * @returns JSX element representing the payment success page
  */
 export default function Success({ loaderData }: Route.ComponentProps) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const returnTo = loaderData.returnTo;
+    if (returnTo) {
+      const timer = setTimeout(() => navigate(returnTo), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [loaderData.returnTo, navigate]);
+
   return (
     <div className="flex flex-col items-center gap-20">
       {/* Main content grid - single column on mobile, two columns on desktop */}

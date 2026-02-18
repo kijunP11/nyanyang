@@ -13,6 +13,7 @@ interface ModelStatusBannerProps {
   currentModel: string;
   recommendedAlternatives?: string[];
   onSwitchModel?: (model: string) => void;
+  onClick?: () => void;
 }
 
 export function ModelStatusBanner({
@@ -20,11 +21,18 @@ export function ModelStatusBanner({
   currentModel,
   recommendedAlternatives = [],
   onSwitchModel,
+  onClick,
 }: ModelStatusBannerProps) {
   if (status === "stable") return null;
 
   return (
-    <div className="mx-4 mt-2 flex items-center gap-3 rounded-lg border border-[#f59e0b]/30 bg-[#f59e0b]/10 px-4 py-3">
+    <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => e.key === "Enter" && onClick() : undefined}
+      className={`mx-4 mt-2 flex items-center gap-3 rounded-lg border border-[#f59e0b]/30 bg-[#f59e0b]/10 px-4 py-3 ${onClick ? "cursor-pointer transition-opacity hover:opacity-90" : ""}`}
+    >
       <AlertTriangle className="h-4 w-4 flex-shrink-0 text-[#f59e0b]" />
       <div className="flex-1">
         <p className="text-sm font-medium text-[#f59e0b]">
@@ -39,7 +47,10 @@ export function ModelStatusBanner({
           {recommendedAlternatives.map((model) => (
             <button
               key={model}
-              onClick={() => onSwitchModel?.(model)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSwitchModel?.(model);
+              }}
               className="rounded-md bg-[#f59e0b] px-3 py-1 text-xs font-medium text-white hover:bg-[#d97706]"
             >
               {model}

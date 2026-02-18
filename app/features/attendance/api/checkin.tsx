@@ -19,6 +19,7 @@ import drizzle from "~/core/db/drizzle-client.server";
 import { requireAuthentication } from "~/core/lib/guards.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 
+import { createNotification } from "~/features/notifications/lib/create-notification.server";
 import { attendanceRecords } from "../schema";
 import { userPoints, pointTransactions } from "../../points/schema";
 
@@ -296,6 +297,18 @@ export async function action({ request }: Route.ActionArgs) {
       type: "reward",
       reason: `Daily check-in (Day ${consecutiveDays})`,
       reference_id: `attendance_${today}`,
+    });
+
+    await createNotification({
+      user_id: user.id,
+      type: "checkin",
+      title: "출석체크",
+      body: `나냥 젤리 ${pointsAwarded}개가 도착했어요.💜`,
+      subtitle: "출석체크하고 젤리 받아가세요!",
+      metadata: {
+        points_awarded: pointsAwarded,
+        consecutive_days: consecutiveDays,
+      },
     });
 
     return data(

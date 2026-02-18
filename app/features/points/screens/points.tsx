@@ -1,38 +1,49 @@
 /**
  * Points Screen (냥젤리 충전 페이지)
  *
- * 냥젤리 포인트 충전 메인 페이지
- * - 잔액 카드
- * - 탭: 구매하기 / 무료로 받기
- * - 최근 거래 내역
+ * F9 리디자인: 구매하기 탭 + 무료로 받기 탭 (일간/주간 출석 + 배지)
  */
 
 import type { Route } from "./+types/points";
 
-import { eq, desc } from "drizzle-orm";
-import { Gift, Share2, Calendar } from "lucide-react";
+import { and, desc, eq } from "drizzle-orm";
+import { ChevronRight, PawPrint } from "lucide-react";
 import { useState } from "react";
-import { data, Link, useLoaderData } from "react-router";
+import { Link, data, useFetcher, useLoaderData } from "react-router";
 
-import { Button } from "~/core/components/ui/button";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "~/core/components/ui/tabs";
 import drizzle from "~/core/db/drizzle-client.server";
 import { requireAuthentication } from "~/core/lib/guards.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 
+import {
+  attendanceRecords,
+  weeklyAttendanceRecords,
+} from "~/features/attendance/schema";
+
 import PointBalanceCard from "../components/point-balance-card";
-import PointHistoryTable from "../components/point-history-table";
-import PointPackageCard from "../components/point-package-card";
 import { POINT_PACKAGES, type PointPackageId } from "../lib/packages";
-import { userPoints, pointTransactions } from "../schema";
+import { userPoints } from "../schema";
 
 export const meta: Route.MetaFunction = () => [
   { title: `냥젤리 충전 | ${import.meta.env.VITE_APP_NAME}` },
+];
+
+const PAYMENT_METHODS = [
+  { id: "card", label: "신용/체크카드" },
+  { id: "bank", label: "계좌 이체" },
+  { id: "phone", label: "휴대폰 결제" },
+  { id: "gift", label: "문화상품권" },
+] as const;
+
+type PaymentMethodId = (typeof PAYMENT_METHODS)[number]["id"];
+
+const REFUND_POLICY_LINES = [
+  "모든 결제 상품은 결제일로부터 7일 이내 환불을 요청할 수 있습니다.",
+  "7일 이내라도 구매한 냥젤리를 사용한 이력이 있을 경우 환불이 불가능합니다.",
+  "사용 이력이 있는 경우, 남은 냥젤리에 대한 부분 환불은 불가합니다.",
+  "답변 품질이나 개인적인 만족도에 따른 환불 요청은 불가능합니다.",
+  "환불 관련 문의는 앱 결제 시 구글 플레이 또는 애플 고객센터를 통해,\n  웹 결제 시에는 나냥 고객센터를 통해 가능합니다.",
+  "그 외 모든 문의는 나냥 고객센터로 연락해주세요.",
 ];
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -47,47 +58,62 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const db = drizzle;
 
-  // 병렬 fetch: 잔액 + 거래 내역
-  const [pointBalance, transactions] = await Promise.all([
-    db
-      .select()
-      .from(userPoints)
-      .where(eq(userPoints.user_id, user.id))
-      .limit(1)
-      .then(
-        ([r]) => r || { current_balance: 0, total_earned: 0, total_spent: 0 }
-      ),
+  const [pointBalance] = await db
+    .select()
+    .from(userPoints)
+    .where(eq(userPoints.user_id, user.id))
+    .limit(1);
 
-    db
-      .select({
-        transaction_id: pointTransactions.transaction_id,
-        amount: pointTransactions.amount,
-        balance_after: pointTransactions.balance_after,
-        type: pointTransactions.type,
-        reason: pointTransactions.reason,
-        created_at: pointTransactions.created_at,
-      })
-      .from(pointTransactions)
-      .where(eq(pointTransactions.user_id, user.id))
-      .orderBy(desc(pointTransactions.created_at))
-      .limit(10),
-  ]);
+  // 오늘 일간 출석 여부
+  const today = new Date().toISOString().split("T")[0];
+  const [todayRecord] = await db
+    .select()
+    .from(attendanceRecords)
+    .where(
+      and(
+        eq(attendanceRecords.user_id, user.id),
+        eq(attendanceRecords.attendance_date, today),
+      ),
+    )
+    .limit(1);
+
+  // 주간 출석 가능 여부 (마지막 기록 + 7일)
+  const [lastWeekly] = await db
+    .select()
+    .from(weeklyAttendanceRecords)
+    .where(eq(weeklyAttendanceRecords.user_id, user.id))
+    .orderBy(desc(weeklyAttendanceRecords.created_at))
+    .limit(1);
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const weeklyEligible =
+    !lastWeekly || new Date(lastWeekly.created_at) <= sevenDaysAgo;
 
   return data(
-    { user, balance: pointBalance, recentTransactions: transactions },
-    { headers }
+    {
+      balance: pointBalance?.current_balance ?? 0,
+      dailyCheckedIn: !!todayRecord,
+      weeklyEligible,
+    },
+    { headers },
   );
 }
 
 export default function PointsScreen() {
-  const { balance, recentTransactions } = useLoaderData<typeof loader>();
+  const { balance, dailyCheckedIn, weeklyEligible } =
+    useLoaderData<typeof loader>();
+  const [activeTab, setActiveTab] = useState<"purchase" | "free">("purchase");
   const [selectedPackage, setSelectedPackage] =
     useState<PointPackageId>("premium");
+  const [selectedPayment, setSelectedPayment] =
+    useState<PaymentMethodId>("card");
   const [isLoading, setIsLoading] = useState(false);
+  const attendanceFetcher = useFetcher();
+  const weeklyFetcher = useFetcher();
 
   const handlePurchase = async () => {
     if (!selectedPackage || isLoading) return;
-
     setIsLoading(true);
     try {
       const response = await fetch("/api/payments/stripe/checkout", {
@@ -95,9 +121,7 @@ export default function PointsScreen() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ package: selectedPackage }),
       });
-
       const result = await response.json();
-
       if (result.success && result.checkout_url) {
         window.location.href = result.checkout_url;
       } else {
@@ -110,147 +134,297 @@ export default function PointsScreen() {
     }
   };
 
+  const handleCheckin = () => {
+    attendanceFetcher.submit(null, {
+      method: "POST",
+      action: "/api/attendance/checkin",
+    });
+  };
+
+  const handleWeeklyCheckin = () => {
+    weeklyFetcher.submit(null, {
+      method: "POST",
+      action: "/api/attendance/weekly-checkin",
+    });
+  };
+
+  const checkinSuccess =
+    attendanceFetcher.data?.success === true || dailyCheckedIn;
+  const weeklyCheckinSuccess =
+    weeklyFetcher.data?.success === true || !weeklyEligible;
+
   return (
-    <div className="min-h-screen bg-[#111111]">
-      <div className="container mx-auto max-w-2xl px-4 py-8">
-        {/* 타이틀 */}
-        <h1 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-          냥젤리 <span className="text-3xl">🐱</span>
-        </h1>
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto max-w-md px-4 py-10 flex flex-col gap-5">
+        <h1 className="text-xl font-semibold text-black">냥젤리</h1>
 
-        {/* 잔액 카드 */}
-        <div className="mb-6">
-          <PointBalanceCard currentBalance={balance.current_balance} />
-        </div>
+        <PointBalanceCard currentBalance={balance} />
 
-        {/* 탭: 구매하기 / 무료로 받기 */}
-        <Tabs defaultValue="purchase" className="mb-8">
-          <TabsList className="bg-[#232323] border border-[#3f3f46] w-full">
-            <TabsTrigger
-              value="purchase"
-              className="flex-1 data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white"
+        {/* 커스텀 언더라인 탭 */}
+        <div className="flex">
+          <button
+            type="button"
+            onClick={() => setActiveTab("purchase")}
+            className="flex-1 flex flex-col items-center gap-2"
+          >
+            <span
+              className={`text-sm font-semibold ${
+                activeTab === "purchase" ? "text-black" : "text-[#535862]"
+              }`}
             >
               구매하기
-            </TabsTrigger>
-            <TabsTrigger
-              value="free"
-              className="flex-1 data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white"
+            </span>
+            <div
+              className={`h-1 w-full ${
+                activeTab === "purchase" ? "bg-[#414141]" : "bg-[#D9D9D9]"
+              }`}
+            />
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("free")}
+            className="flex-1 flex flex-col items-center gap-2"
+          >
+            <span
+              className={`text-sm font-semibold ${
+                activeTab === "free" ? "text-black" : "text-[#535862]"
+              }`}
             >
               무료로 받기
-            </TabsTrigger>
-          </TabsList>
+            </span>
+            <div
+              className={`h-1 w-full ${
+                activeTab === "free" ? "bg-[#414141]" : "bg-[#D9D9D9]"
+              }`}
+            />
+          </button>
+        </div>
 
-          {/* 구매하기 탭 */}
-          <TabsContent value="purchase" className="mt-6">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              냥젤리 상품 구성
-            </h3>
+        {activeTab === "purchase" && (
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-[14px]">
+              {POINT_PACKAGES.map((pkg) => {
+                const isSelected = selectedPackage === pkg.id;
+                return (
+                  <button
+                    key={pkg.id}
+                    type="button"
+                    onClick={() => setSelectedPackage(pkg.id)}
+                    className={`flex items-center gap-[38px] rounded-lg border p-[14px] transition-colors ${
+                      isSelected
+                        ? "border-[#00C4AF]"
+                        : "border-[#D5D7DA]"
+                    }`}
+                    style={
+                      isSelected
+                        ? {
+                            backgroundImage:
+                              "linear-gradient(-52deg, rgba(0,196,175,0.2) 5.5%, rgba(255,195,229,0.2) 83%)",
+                          }
+                        : undefined
+                    }
+                  >
+                    <div
+                      className={`size-6 rounded-full border-2 flex items-center justify-center ${
+                        isSelected
+                          ? "border-[#00C4AF] bg-[#00C4AF]"
+                          : "border-[#D5D7DA]"
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="size-2.5 rounded-full bg-white" />
+                      )}
+                    </div>
 
-            {/* 상품 그리드 */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              {POINT_PACKAGES.map((pkg) => (
-                <PointPackageCard
-                  key={pkg.id}
-                  pkg={pkg}
-                  selected={selectedPackage === pkg.id}
-                  onSelect={() => setSelectedPackage(pkg.id)}
-                />
-              ))}
+                    <div className="flex flex-1 items-center">
+                      <PawPrint className="size-6 text-[#F5A3C7] shrink-0" />
+                      <div className="flex-1 text-right">
+                        <p className="text-base font-semibold text-[#252B37]">
+                          {pkg.points.toLocaleString()}개
+                        </p>
+                        {pkg.bonusPoints > 0 && (
+                          <p className="text-xs font-bold text-[#36C4B3]">
+                            +{pkg.bonusPoints.toLocaleString()}개
+                          </p>
+                        )}
+                      </div>
+                      <p className="flex-1 text-right text-base font-semibold text-[#28A393]">
+                        {pkg.price.toLocaleString()}원
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* 결제하기 CTA */}
-            <Button
+            <div className="flex flex-col gap-6">
+              <h2 className="text-xl font-semibold text-black">결제 수단</h2>
+              <div className="flex flex-col">
+                {PAYMENT_METHODS.map((method, idx) => (
+                  <div key={method.id}>
+                    {idx > 0 && <div className="h-px bg-[#E9EAEB]" />}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPayment(method.id)}
+                      className="flex items-center gap-[9px] px-[14px] py-[13px] w-full"
+                    >
+                      <div
+                        className={`size-6 rounded-full border-2 flex items-center justify-center ${
+                          selectedPayment === method.id
+                            ? "border-[#00C4AF] bg-[#00C4AF]"
+                            : "border-[#D5D7DA]"
+                        }`}
+                      >
+                        {selectedPayment === method.id && (
+                          <div className="size-2.5 rounded-full bg-white" />
+                        )}
+                      </div>
+                      <span className="text-base font-semibold text-[#252B37]">
+                        {method.label}
+                      </span>
+                    </button>
+                  </div>
+                ))}
+                <div className="h-px bg-[#E9EAEB]" />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-bold text-black">환불 정책</p>
+              <div className="text-xs leading-[18px] text-[#717680]">
+                {REFUND_POLICY_LINES.map((line, i) => (
+                  <p key={i}>- {line}</p>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="button"
               onClick={handlePurchase}
               disabled={!selectedPackage || isLoading}
-              className="w-full bg-[#14b8a6] hover:bg-[#0d9488] text-white py-6 text-lg font-semibold"
+              className="w-full rounded-lg bg-[#36C4B3] border border-[#36C4B3] px-[18px] py-[10px] text-base font-semibold text-white shadow-sm disabled:opacity-50"
             >
-              {isLoading ? "처리 중..." : "결제하기"}
-            </Button>
+              {isLoading ? "처리 중..." : "적용하기"}
+            </button>
+          </div>
+        )}
 
-            <p className="text-xs text-[#9ca3af] text-center mt-4">
-              결제 시 Stripe 결제 페이지로 이동합니다
-            </p>
-          </TabsContent>
-
-          {/* 무료로 받기 탭 */}
-          <TabsContent value="free" className="mt-6">
-            <div className="space-y-4">
-              {/* 출석체크 */}
-              <Link
-                to="/attendance"
-                className="block bg-[#232323] border border-[#3f3f46] rounded-xl p-4 hover:border-[#52525b] transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-[#14b8a6]/10 flex items-center justify-center">
-                    <Calendar className="w-6 h-6 text-[#14b8a6]" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-white">출석체크</h4>
-                    <p className="text-sm text-[#9ca3af]">
-                      매일 출석하고 냥젤리 받기
+        {activeTab === "free" && (
+          <div className="flex flex-col gap-[10px] pb-10">
+            {/* 일간 출석체크 카드 */}
+            <div className="rounded-lg border border-[#00C4AF] bg-[#FFF5FB] p-5">
+              <div className="flex flex-col gap-5">
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-1 flex-col gap-[5px]">
+                    <span
+                      className="inline-flex w-fit items-center rounded px-2 py-1 text-sm text-[#535862]"
+                      style={{
+                        background:
+                          "linear-gradient(90deg, #FFC3E5 0%, #FFC3E5 100%)",
+                      }}
+                    >
+                      매일 출석
+                    </span>
+                    <p className="text-sm text-black">
+                      매일 출석하고 젤리 받기
+                    </p>
+                    <p className="text-base font-semibold text-black">
+                      냥젤리 400개 받기
                     </p>
                   </div>
-                  <span className="text-[#14b8a6]">→</span>
+                  <PawPrint className="size-11 text-[#F5A3C7] opacity-40" />
                 </div>
-              </Link>
-
-              {/* 친구 초대 */}
-              <div className="bg-[#232323] border border-[#3f3f46] rounded-xl p-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-[#14b8a6]/10 flex items-center justify-center">
-                    <Share2 className="w-6 h-6 text-[#14b8a6]" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-white">친구 초대</h4>
-                    <p className="text-sm text-[#9ca3af]">
-                      추천 코드 공유하고 보상 받기
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-[#14b8a6] text-[#14b8a6] hover:bg-[#14b8a6] hover:text-white"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        `${window.location.origin}/join?ref=...`
-                      );
-                      alert("추천 링크가 복사되었습니다!");
-                    }}
-                  >
-                    복사
-                  </Button>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleCheckin}
+                  disabled={
+                    checkinSuccess || attendanceFetcher.state !== "idle"
+                  }
+                  className="w-full rounded-lg border border-white px-[18px] py-[10px] text-base font-semibold text-white shadow-sm disabled:opacity-50"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(-68deg, #00C4AF 5%, #FF6DC0 98%)",
+                  }}
+                >
+                  {checkinSuccess ? "출석 완료!" : "일간 출석체크 하기"}
+                </button>
               </div>
+            </div>
+            <p className="text-xs text-[#717680]">
+              * 매일 오전 12:00 ~ 오후 11:59 출석 가능/ 여러 계정 보유시 1일
+              1계정만 가능
+            </p>
 
-              {/* 이벤트 참여 */}
-              <Link
-                to="/blog"
-                className="block bg-[#232323] border border-[#3f3f46] rounded-xl p-4 hover:border-[#52525b] transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-[#14b8a6]/10 flex items-center justify-center">
-                    <Gift className="w-6 h-6 text-[#14b8a6]" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-white">이벤트 참여</h4>
-                    <p className="text-sm text-[#9ca3af]">
-                      진행 중인 이벤트 확인하기
+            {/* 주간 출석체크 카드 */}
+            <div className="rounded-lg border border-[#00C4AF] bg-[#FFF5FB] p-5">
+              <div className="flex flex-col gap-5">
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-1 flex-col gap-[5px]">
+                    <span
+                      className="inline-flex w-fit items-center rounded px-2 py-1 text-sm text-[#535862]"
+                      style={{
+                        background:
+                          "linear-gradient(90deg, #FFC3E5 0%, #FFC3E5 100%)",
+                      }}
+                    >
+                      주간 출석
+                    </span>
+                    <p className="text-sm text-black">
+                      매주 출석하고 젤리 받기
+                    </p>
+                    <p className="text-base font-semibold text-black">
+                      냥젤리 800개 받기
                     </p>
                   </div>
-                  <span className="text-[#14b8a6]">→</span>
+                  <PawPrint className="size-11 text-[#F5A3C7] opacity-40" />
                 </div>
-              </Link>
+                <button
+                  type="button"
+                  onClick={handleWeeklyCheckin}
+                  disabled={
+                    weeklyCheckinSuccess ||
+                    weeklyFetcher.state !== "idle"
+                  }
+                  className="w-full rounded-lg border border-white px-[18px] py-[10px] text-base font-semibold text-white shadow-sm disabled:opacity-50"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(-68deg, #00C4AF 5%, #FF6DC0 98%)",
+                  }}
+                >
+                  {weeklyCheckinSuccess
+                    ? "출석 완료!"
+                    : "주간 출석체크 하기"}
+                </button>
+              </div>
             </div>
-          </TabsContent>
-        </Tabs>
+            <p className="text-xs text-[#717680]">
+              * 매일 오전 12:00 ~ 오후 11:59 출석 가능/ 여러 계정 보유시 1일
+              1계정만 가능
+            </p>
 
-        {/* 최근 거래 내역 */}
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-4">
-            최근 거래 내역
-          </h3>
-          <PointHistoryTable transactions={recentTransactions} />
-        </div>
+            {/* 달성 배지 링크 */}
+            <Link
+              to="/badges"
+              className="flex items-center justify-between rounded-lg border border-[#00C4AF] bg-[#FFF5FB] p-5"
+            >
+              <div className="flex flex-col gap-[5px]">
+                <span
+                  className="inline-flex w-fit items-center rounded px-2 py-1 text-sm text-[#535862]"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #FFC3E5 0%, #FFC3E5 100%)",
+                  }}
+                >
+                  달성 뱃지
+                </span>
+                <p className="text-sm text-black">
+                  달성 뱃지 획득하고 냥젤리 받기
+                </p>
+              </div>
+              <ChevronRight className="size-5 shrink-0 text-[#717680]" />
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

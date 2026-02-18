@@ -17,6 +17,7 @@ import type { Database } from "database.types";
 import { HeroCarousel, type HeroSlide } from "../components/hero-carousel";
 import { ScrollSection } from "../components/scroll-section";
 import { VerticalCharacterCard } from "../components/vertical-character-card";
+import { CharacterInfoModal } from "~/features/characters/components/character-info-modal";
 
 type Character = Database["public"]["Tables"]["characters"]["Row"];
 
@@ -193,6 +194,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   ];
 
   const [tagsExpanded, setTagsExpanded] = useState(false);
+  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(
+    null
+  );
 
   const quickTags = [
     "전체",
@@ -367,6 +371,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   character={character}
                   creatorName={character.creator_name}
                   creatorBadgeType={character.creator_badge_type}
+                  onClick={() => setSelectedCharacterId(character.character_id)}
                 />
               ))}
             </ScrollSection>
@@ -386,6 +391,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                 creatorName={character.creator_name}
                 creatorBadgeType={character.creator_badge_type}
                 badge="HOT"
+                onClick={() => setSelectedCharacterId(character.character_id)}
               />
             ))}
             </ScrollSection>
@@ -404,6 +410,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   character={character}
                   creatorName={character.creator_name}
                   creatorBadgeType={character.creator_badge_type}
+                  onClick={() => setSelectedCharacterId(character.character_id)}
                 />
               ))}
             </ScrollSection>
@@ -438,6 +445,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           </section>
         </div>
       </div>
+
+      <CharacterInfoModal
+        characterId={selectedCharacterId}
+        onClose={() => setSelectedCharacterId(null)}
+      />
     </div>
   );
 }

@@ -6,12 +6,14 @@
  */
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   integer,
   jsonb,
   pgPolicy,
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 import { authUid, authUsers, authenticatedRole } from "drizzle-orm/supabase";
@@ -193,6 +195,9 @@ export const roomMemories = pgTable(
     message_range_start: integer(), // First message_id this memory covers
     message_range_end: integer(), // Last message_id this memory covers
 
+    // Who created this memory: 'auto' (AI) or 'user'
+    created_by: text().default("auto"),
+
     // Timestamps
     ...timestamps,
   },
@@ -211,4 +216,65 @@ export const roomMemories = pgTable(
     }),
     // Note: INSERT/UPDATE should be done by server (service role) for AI-generated memories
   ],
+);
+
+/**
+ * Chat Room Settings Table
+ * Per-room user settings (font, background, response length, etc.)
+ */
+export const chatRoomSettings = pgTable(
+  "chat_room_settings",
+  {
+    setting_id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    room_id: integer()
+      .notNull()
+      .references(() => chatRooms.room_id, { onDelete: "cascade" }),
+    user_id: uuid()
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "cascade" }),
+
+    font_size: integer().notNull().default(16),
+    background_image_url: text(),
+    background_enabled: boolean().notNull().default(true),
+    character_nickname: text(),
+    multi_image: boolean().notNull().default(false),
+
+    response_length: integer().notNull().default(2000),
+    positivity_bias: boolean().notNull().default(false),
+    anti_impersonation: boolean().notNull().default(true),
+    realtime_output: boolean().notNull().default(true),
+
+    ...timestamps,
+  },
+  (table) => [
+    unique("chat_room_settings_room_user_unique").on(
+      table.room_id,
+      table.user_id
+    ),
+    pgPolicy("select-own-room-settings-policy", {
+      for: "select",
+      to: authenticatedRole,
+      as: "permissive",
+      using: sql`${authUid} = ${table.user_id}`,
+    }),
+    pgPolicy("insert-own-room-settings-policy", {
+      for: "insert",
+      to: authenticatedRole,
+      as: "permissive",
+      withCheck: sql`${authUid} = ${table.user_id}`,
+    }),
+    pgPolicy("update-own-room-settings-policy", {
+      for: "update",
+      to: authenticatedRole,
+      as: "permissive",
+      using: sql`${authUid} = ${table.user_id}`,
+      withCheck: sql`${authUid} = ${table.user_id}`,
+    }),
+    pgPolicy("delete-own-room-settings-policy", {
+      for: "delete",
+      to: authenticatedRole,
+      as: "permissive",
+      using: sql`${authUid} = ${table.user_id}`,
+    }),
+  ]
 );

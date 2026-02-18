@@ -35,8 +35,9 @@ import { getUserProfile } from "../queries";
  * @type {z.ZodObject<{name: z.ZodString, avatar: z.ZodType<File>, marketingConsent: z.ZodBoolean}>}
  */
 const schema = z.object({
-  name: z.string().min(1),
-  avatar: z.instanceof(File),
+  name: z.string().min(2).max(12),
+  bio: z.string().max(500).optional().default(""),
+  avatar: z.instanceof(File).optional(),
   marketingConsent: z.coerce.boolean(),
 });
 
@@ -130,7 +131,7 @@ export async function action({ request }: Route.ActionArgs) {
     validData.avatar instanceof File &&
     validData.avatar.size > 0 &&
     validData.avatar.size < 1024 * 1024 && // 1MB size limit
-    validData.avatar.type.startsWith("image/") // Ensure it's an image file
+    validData.avatar.type.startsWith("image/")
   ) {
     // Upload avatar to Supabase Storage
     const { error: uploadError } = await client.storage
@@ -156,16 +157,18 @@ export async function action({ request }: Route.ActionArgs) {
     .from("profiles")
     .update({
       name: validData.name,
+      bio: validData.bio ?? "",
       marketing_consent: validData.marketingConsent,
       avatar_url: avatarUrl,
     })
     .eq("profile_id", user.id);
-    
+
   // Update user metadata in the auth table
   const { error: updateError } = await client.auth.updateUser({
     data: {
       name: validData.name,
       display_name: validData.name,
+      bio: validData.bio ?? "",
       marketing_consent: validData.marketingConsent,
       avatar_url: avatarUrl,
     },

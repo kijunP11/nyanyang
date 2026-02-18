@@ -75,11 +75,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     data: { user },
   } = await client.auth.getUser();
 
-  // Return only the necessary user information for payment processing
+  const url = new URL(request.url);
+  const returnTo = url.searchParams.get("returnTo");
+
   return {
     userId: user!.id,
     userName: user!.user_metadata.name,
     userEmail: user!.email,
+    returnTo: returnTo?.startsWith("/") ? returnTo : null,
   };
 }
 
@@ -200,8 +203,11 @@ export default function Checkout({ loaderData }: Route.ComponentProps) {
           nftId: "beagle-nft-#123",
         },
 
-        // Redirect URLs for payment completion
-        successUrl: `${window.location.origin}/payments/success`,
+        // Redirect URLs for payment completion (returnTo 있으면 결제 완료 후 복귀)
+        successUrl:
+          loaderData.returnTo != null
+            ? `${window.location.origin}/payments/success?returnTo=${encodeURIComponent(loaderData.returnTo)}`
+            : `${window.location.origin}/payments/success`,
         failUrl: `${window.location.origin}/payments/failure`,
       });
     } catch (error) {

@@ -15,6 +15,7 @@ import drizzle from "~/core/db/drizzle-client.server";
 import { requireAuthentication } from "~/core/lib/guards.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 
+import { createNotification } from "~/features/notifications/lib/create-notification.server";
 import { profiles, userFollows } from "../schema";
 
 const bodySchema = z.object({
@@ -74,6 +75,14 @@ export async function action({ request }: Route.ActionArgs) {
           .update(profiles)
           .set({ following_count: sql`${profiles.following_count} + 1` })
           .where(eq(profiles.profile_id, user.id));
+
+        await createNotification({
+          user_id: validData.user_id,
+          type: "follow",
+          title: "팔로우 알림",
+          body: "누군가 내 작품을 팔로우했어요!",
+          metadata: { follower_id: user.id },
+        });
 
         return data({ success: true, following: true }, { headers });
       } catch (err: any) {

@@ -1,10 +1,11 @@
 /**
  * MyPage Sidebar Card
  *
- * 우측 사이드바 카드. dashboard.tsx에서만 사용.
+ * 우측 사이드바. dashboard.tsx에서만 사용.
+ * Figma F8 스펙: 유저 프로필, 젤리 잔액, 출석 카드, 메뉴 섹션.
  */
 
-import { Link, useFetcher } from "react-router";
+import { Link, useFetcher, useLocation } from "react-router";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/core/components/ui/avatar";
 import { Button } from "~/core/components/ui/button";
@@ -28,6 +29,22 @@ interface MypageSidebarCardProps {
   };
 }
 
+const ACTIVITY_MENU = [
+  { label: "팔로잉 목록", href: "/dashboard/likes?tab=following" },
+  { label: "좋아요 목록", href: "/dashboard/likes?tab=likes" },
+  { label: "내 키워드북", href: "/account/edit?tab=keywords" },
+  { label: "세이프티 수정", href: "/account/edit?tab=safety" },
+  { label: "이미지/캐릭터 생성", href: "/characters/create" },
+];
+
+const CREATOR_MENU = [
+  { label: "크리에이터 도전하기", href: "/characters/create" },
+];
+
+const BENEFIT_MENU = [
+  { label: "출석체크하기", href: "/attendance" },
+];
+
 export default function MypageSidebarCard({
   user,
   profile,
@@ -35,6 +52,7 @@ export default function MypageSidebarCard({
   attendance,
 }: MypageSidebarCardProps) {
   const fetcher = useFetcher();
+  const location = useLocation();
   const isCheckingIn = fetcher.state !== "idle";
 
   const handleCheckIn = () => {
@@ -44,119 +62,135 @@ export default function MypageSidebarCard({
     });
   };
 
+  const isActive = (href: string) => {
+    const [path, query] = href.split("?");
+    if (location.pathname !== path) return false;
+    if (!query) return true;
+    return location.search.includes(query);
+  };
+
   return (
-    <div className="w-[340px] flex flex-col gap-4 sticky top-4">
-      {/* 1. 유저 프로필 영역 */}
-      <div className="bg-[#232323] rounded-xl border border-[#3f3f46] p-4">
+    <div className="sticky top-4 flex w-[400px] flex-col gap-4">
+      {/* 1. 유저 프로필 */}
+      <div className="rounded-xl border border-[#E9EAEB] bg-white p-4 dark:border-[#333741] dark:bg-[#1F242F]">
         <div className="flex items-center gap-3">
           <Avatar className="h-12 w-12">
             <AvatarImage src={user.avatarUrl || undefined} />
-            <AvatarFallback className="bg-[#3f3f46] text-white">
+            <AvatarFallback className="bg-[#E9EAEB] text-[#414651] dark:bg-[#333741] dark:text-white">
               {user.name?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-white truncate">{user.name}</h3>
-            <div className="flex items-center gap-3 text-sm text-[#9ca3af]">
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate font-semibold text-[#181D27] dark:text-white">
+              {user.name}
+            </h3>
+            <div className="flex items-center gap-3 text-sm text-[#535862] dark:text-[#94969C]">
               <span>팔로워 {profile.follower_count}</span>
               <span>팔로잉 {profile.following_count}</span>
             </div>
           </div>
         </div>
+        <Button
+          asChild
+          variant="outline"
+          className="mt-3 w-full border-[#D5D7DA] text-[#414651] hover:bg-[#F5F5F5] dark:border-[#414651] dark:text-[#D5D7DA] dark:hover:bg-[#333741]"
+        >
+          <Link to="/dashboard">마이페이지</Link>
+        </Button>
       </div>
 
       {/* 2. 냥젤리 (포인트) */}
-      <div className="bg-[#232323] rounded-xl border border-[#3f3f46] p-4">
+      <div className="rounded-xl border border-[#E9EAEB] bg-white p-4 dark:border-[#333741] dark:bg-[#1F242F]">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-[#9ca3af]">냥젤리</p>
-            <p className="text-xl font-bold text-white">
-              {points.current_balance.toLocaleString()}
+            <p className="text-sm text-[#535862] dark:text-[#94969C]">냥젤리</p>
+            <p className="text-xl font-bold text-[#181D27] dark:text-white">
+              🐾 {points.current_balance.toLocaleString()}젤리
             </p>
           </div>
           <Button
             asChild
-            className="bg-[#14b8a6] hover:bg-[#0d9488] text-white rounded-lg"
+            className="bg-[#00C4AF] text-white hover:bg-[#00b39e]"
           >
-            <Link to="/points">충전하기</Link>
+            <Link to="/points">충전</Link>
           </Button>
         </div>
       </div>
 
-      {/* 3. 출석 배너 */}
-      <div className="bg-[#232323] rounded-xl border border-[#3f3f46] p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-white font-medium">냥젤리 400개 받기</p>
-            <p className="text-sm text-[#9ca3af]">
-              연속 {attendance.currentStreak}일째 출석 중
-            </p>
-          </div>
-          <Button
-            onClick={handleCheckIn}
-            disabled={attendance.checkedInToday || isCheckingIn}
-            className={
-              attendance.checkedInToday
-                ? "bg-[#3f3f46] text-[#9ca3af] cursor-not-allowed"
-                : "bg-[#14b8a6] hover:bg-[#0d9488] text-white"
-            }
-          >
-            {attendance.checkedInToday ? "출석완료" : "출석하기"}
-          </Button>
-        </div>
+      {/* 3. 출석 카드 */}
+      <div className="overflow-hidden rounded-xl border border-[#E9EAEB] bg-gradient-to-r from-[#00C4AF] to-[#00E5CC] p-4 dark:border-[#333741]">
+        <p className="text-xs font-medium text-white/80">매일 출석</p>
+        <p className="mt-1 text-lg font-bold text-white">
+          냥젤리 400개 받기
+        </p>
+        <p className="mt-0.5 text-xs text-white/70">
+          연속 {attendance.currentStreak}일째 출석 중
+        </p>
+        <Button
+          onClick={handleCheckIn}
+          disabled={attendance.checkedInToday || isCheckingIn}
+          className={`mt-3 w-full ${
+            attendance.checkedInToday
+              ? "cursor-not-allowed bg-white/30 text-white/70"
+              : "bg-white text-[#00C4AF] hover:bg-white/90"
+          }`}
+        >
+          {attendance.checkedInToday ? "출석완료" : "일간 출석체크 하기"}
+        </Button>
       </div>
 
       {/* 4. 활동 메뉴 */}
-      <div className="bg-[#232323] rounded-xl border border-[#3f3f46] p-4">
-        <h4 className="text-sm font-medium text-[#9ca3af] mb-3">활동</h4>
-        <div className="space-y-2">
-          <Link
-            to="/dashboard/likes?tab=following"
-            className="block px-3 py-2 rounded-lg text-white hover:bg-[#3f3f46] transition-colors"
-          >
-            팔로잉
-          </Link>
-          <Link
-            to="/dashboard/likes?tab=likes"
-            className="block px-3 py-2 rounded-lg text-white hover:bg-[#3f3f46] transition-colors"
-          >
-            좋아요
-          </Link>
-          <Link
-            to="/account/edit?tab=safety"
-            className="block px-3 py-2 rounded-lg text-white hover:bg-[#3f3f46] transition-colors"
-          >
-            세이프티
-          </Link>
-          <Link
-            to="/characters/create"
-            className="block px-3 py-2 rounded-lg text-white hover:bg-[#3f3f46] transition-colors"
-          >
-            캐릭터 생성
-          </Link>
+      <div className="rounded-xl border border-[#E9EAEB] bg-white p-4 dark:border-[#333741] dark:bg-[#1F242F]">
+        <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#717680] dark:text-[#94969C]">
+          활동
+        </h4>
+        <div className="space-y-1">
+          {ACTIVITY_MENU.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+                isActive(item.href)
+                  ? "bg-[#E0F7F5] font-medium text-[#00897B] dark:bg-[#00C4AF]/10 dark:text-[#00C4AF]"
+                  : "text-[#414651] hover:bg-[#F5F5F5] dark:text-[#D5D7DA] dark:hover:bg-[#333741]"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* 5. 크리에이터 섹션 */}
-      <div className="bg-[#232323] rounded-xl border border-[#3f3f46] p-4">
-        <h4 className="text-sm font-medium text-[#9ca3af] mb-3">크리에이터</h4>
-        <Link
-          to="/characters/create"
-          className="block px-3 py-2 rounded-lg text-[#14b8a6] hover:bg-[#14b8a6]/10 transition-colors"
-        >
-          크리에이터 도전하기
-        </Link>
+      {/* 5. 크리에이터 */}
+      <div className="rounded-xl border border-[#E9EAEB] bg-white p-4 dark:border-[#333741] dark:bg-[#1F242F]">
+        <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#717680] dark:text-[#94969C]">
+          크리에이터
+        </h4>
+        {CREATOR_MENU.map((item) => (
+          <Link
+            key={item.href}
+            to={item.href}
+            className="block rounded-lg px-3 py-2 text-sm text-[#00C4AF] transition-colors hover:bg-[#E0F7F5] dark:hover:bg-[#00C4AF]/10"
+          >
+            {item.label}
+          </Link>
+        ))}
       </div>
 
-      {/* 6. 혜택 섹션 */}
-      <div className="bg-[#232323] rounded-xl border border-[#3f3f46] p-4">
-        <h4 className="text-sm font-medium text-[#9ca3af] mb-3">혜택</h4>
-        <Link
-          to="/attendance"
-          className="block px-3 py-2 rounded-lg text-white hover:bg-[#3f3f46] transition-colors"
-        >
-          출석체크
-        </Link>
+      {/* 6. 혜택 */}
+      <div className="rounded-xl border border-[#E9EAEB] bg-white p-4 dark:border-[#333741] dark:bg-[#1F242F]">
+        <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#717680] dark:text-[#94969C]">
+          혜택
+        </h4>
+        {BENEFIT_MENU.map((item) => (
+          <Link
+            key={item.href}
+            to={item.href}
+            className="block rounded-lg px-3 py-2 text-sm text-[#414651] transition-colors hover:bg-[#F5F5F5] dark:text-[#D5D7DA] dark:hover:bg-[#333741]"
+          >
+            {item.label}
+          </Link>
+        ))}
       </div>
     </div>
   );

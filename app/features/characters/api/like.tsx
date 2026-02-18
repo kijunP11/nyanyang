@@ -20,6 +20,7 @@ import drizzle from "~/core/db/drizzle-client.server";
 import { requireAuthentication } from "~/core/lib/guards.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 
+import { createNotification } from "~/features/notifications/lib/create-notification.server";
 import { characterLikes, characters } from "../schema";
 
 /**
@@ -105,7 +106,13 @@ export async function action({ request }: Route.ActionArgs) {
 
     // Verify character exists and is accessible
     const [character] = await db
-      .select({ character_id: characters.character_id, like_count: characters.like_count })
+      .select({
+        character_id: characters.character_id,
+        like_count: characters.like_count,
+        creator_id: characters.creator_id,
+        display_name: characters.display_name,
+        name: characters.name,
+      })
       .from(characters)
       .where(eq(characters.character_id, validData.character_id))
       .limit(1);
@@ -127,6 +134,17 @@ export async function action({ request }: Route.ActionArgs) {
           .update(characters)
           .set({ like_count: sql`${characters.like_count} + 1` })
           .where(eq(characters.character_id, validData.character_id));
+
+        if (character.creator_id !== user.id) {
+          await createNotification({
+            user_id: character.creator_id,
+            type: "like",
+            title: "좋아요",
+            body: "누군가 내 스토리에 좋아요를 눌렀어요!",
+            subtitle: character.display_name || character.name,
+            metadata: { character_id: character.character_id },
+          });
+        }
 
         return data({ success: true, liked: true }, { headers });
       } catch (err: any) {

@@ -13,7 +13,7 @@ import { characters, characterLikes } from "../../characters/schema";
 import { profiles, userFollows } from "../schema";
 
 export const paginationSchema = z.object({
-  limit: z.coerce.number().min(1).max(100).optional().default(20),
+  limit: z.coerce.number().min(1).max(100).optional().default(10),
   offset: z.coerce.number().min(0).optional().default(0),
 });
 
@@ -208,6 +208,7 @@ export async function getUserProfileWithCounts(userId: string) {
       profile_id: profiles.profile_id,
       name: profiles.name,
       avatar_url: profiles.avatar_url,
+      bio: profiles.bio,
       follower_count: profiles.follower_count,
       following_count: profiles.following_count,
       verified_at: profiles.verified_at,

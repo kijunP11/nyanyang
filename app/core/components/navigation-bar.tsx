@@ -121,13 +121,13 @@ function AuthButtons() {
       </Link>
       <div className="h-5 w-px bg-black/20 dark:bg-white/20" />
       <ThemeToggle />
-      <button
-        type="button"
+      <Link
+        to="/notifications"
         className="flex size-10 items-center justify-center"
         aria-label="알림"
       >
         <Bell className="size-6 text-black/70 dark:text-[#D5D7DA]" />
-      </button>
+      </Link>
     </div>
   );
 }
@@ -187,7 +187,7 @@ export function NavigationBar({
                 이미지 생성
               </NavLink>
               <NavLink
-                to="/points"
+                to="/badges"
                 viewTransition
                 className={({ isActive }) => getNavLinkClass(isActive)}
               >
@@ -213,13 +213,13 @@ export function NavigationBar({
                       <PawPrint className="size-6" />
                     </Link>
                     <ThemeToggle />
-                    <button
-                      type="button"
+                    <Link
+                      to="/notifications"
                       className="flex size-10 items-center justify-center"
                       aria-label="알림"
                     >
                       <Bell className="size-6 text-black/70 dark:text-[#D5D7DA]" />
-                    </button>
+                    </Link>
                     <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
                   </div>
                 ) : (
@@ -295,7 +295,7 @@ export function NavigationBar({
           </SheetClose>
           <SheetClose asChild>
             <NavLink
-              to="/points"
+              to="/badges"
               viewTransition
               className={({ isActive }) =>
                 isActive
@@ -313,13 +313,15 @@ export function NavigationBar({
           ) : (
             <>
               <ThemeToggle />
-              <button
-                type="button"
-                className="flex size-10 items-center justify-center"
-                aria-label="알림"
-              >
-                <Bell className="size-6 text-black/70 dark:text-[#D5D7DA]" />
-              </button>
+              <SheetClose asChild>
+                <Link
+                  to="/notifications"
+                  className="flex size-10 items-center justify-center"
+                  aria-label="알림"
+                >
+                  <Bell className="size-6 text-black/70 dark:text-[#D5D7DA]" />
+                </Link>
+              </SheetClose>
               {name && (
                 <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
               )}

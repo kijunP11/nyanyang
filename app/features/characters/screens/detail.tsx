@@ -14,6 +14,7 @@ import drizzle from "~/core/db/drizzle-client.server";
 import { requireAuthentication } from "~/core/lib/guards.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 
+import { CommentSection } from "~/features/comments/components/comment-section";
 import { chatRooms } from "../../chat/schema";
 
 /**
@@ -211,6 +212,11 @@ export default function CharacterDetailScreen() {
               </p>
             </div>
           )}
+        </div>
+
+        {/* 댓글 섹션 */}
+        <div className="mt-6 rounded-lg border border-[#3f3f46] bg-[#232323] p-6">
+          <CommentSection characterId={character.character_id} />
         </div>
       </div>
     </div>

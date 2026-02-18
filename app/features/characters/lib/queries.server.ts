@@ -41,6 +41,7 @@ export async function getMyCharacters(
       display_name: characters.display_name,
       description: characters.description,
       avatar_url: characters.avatar_url,
+      appearance: characters.appearance,
       status: characters.status,
       is_public: characters.is_public,
       created_at: characters.created_at,

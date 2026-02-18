@@ -22,15 +22,18 @@ interface CharacterGridCardProps {
   };
   creatorName?: string | null;
   creatorBadgeType?: string | null;
+  onClick?: (characterId: number) => void;
 }
 
 export function CharacterGridCard({
   character,
   creatorName,
   creatorBadgeType,
+  onClick,
 }: CharacterGridCardProps) {
-  return (
-    <Link to={`/chat/${character.character_id}`} className="group">
+  const className = "group";
+  const content = (
+    <>
       {/* 이미지 (3:4 비율) */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-[#F5F5F5]">
         {character.avatar_url ? (
@@ -82,6 +85,24 @@ export function CharacterGridCard({
           />
         </div>
       )}
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={() => onClick(character.character_id)}
+        className={className}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link to={`/chat/${character.character_id}`} className={className}>
+      {content}
     </Link>
   );
 }

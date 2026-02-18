@@ -92,6 +92,51 @@ export type Database = {
         }
         Relationships: []
       }
+      badge_definitions: {
+        Row: {
+          badge_id: number
+          category: string
+          created_at: string
+          description: string
+          icon_url: string | null
+          is_hidden: boolean
+          level: string | null
+          metric_type: string
+          name: string
+          sort_order: number
+          threshold: number | null
+          updated_at: string
+        }
+        Insert: {
+          badge_id?: never
+          category: string
+          created_at?: string
+          description: string
+          icon_url?: string | null
+          is_hidden?: boolean
+          level?: string | null
+          metric_type: string
+          name: string
+          sort_order?: number
+          threshold?: number | null
+          updated_at?: string
+        }
+        Update: {
+          badge_id?: never
+          category?: string
+          created_at?: string
+          description?: string
+          icon_url?: string | null
+          is_hidden?: boolean
+          level?: string | null
+          metric_type?: string
+          name?: string
+          sort_order?: number
+          threshold?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       character_keywords: {
         Row: {
           character_id: number
@@ -387,6 +432,82 @@ export type Database = {
           },
         ]
       }
+      keyword_book_items: {
+        Row: {
+          book_id: number
+          created_at: string
+          description: string | null
+          item_id: number
+          keyword: string
+          updated_at: string
+        }
+        Insert: {
+          book_id: number
+          created_at?: string
+          description?: string | null
+          item_id?: never
+          keyword: string
+          updated_at?: string
+        }
+        Update: {
+          book_id?: number
+          created_at?: string
+          description?: string | null
+          item_id?: never
+          keyword?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "keyword_book_items_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "keyword_books"
+            referencedColumns: ["keyword_book_id"]
+          },
+        ]
+      }
+      keyword_books: {
+        Row: {
+          book_type: string
+          character_id: number | null
+          created_at: string
+          item_count: number
+          keyword_book_id: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_type?: string
+          character_id?: number | null
+          created_at?: string
+          item_count?: number
+          keyword_book_id?: never
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_type?: string
+          character_id?: number | null
+          created_at?: string
+          item_count?: number
+          keyword_book_id?: never
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "keyword_books_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["character_id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           branch_name: string | null
@@ -445,6 +566,48 @@ export type Database = {
             referencedColumns: ["room_id"]
           },
         ]
+      }
+      notices: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          notice_id: number
+          published_at: string | null
+          slug: string
+          status: string
+          tag: string | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          notice_id?: never
+          published_at?: string | null
+          slug: string
+          status?: string
+          tag?: string | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          notice_id?: never
+          published_at?: string | null
+          slug?: string
+          status?: string
+          tag?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       payments: {
         Row: {
@@ -534,6 +697,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           badge_type: string
+          bio: string | null
           created_at: string
           follower_count: number
           following_count: number
@@ -547,6 +711,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           badge_type?: string
+          bio?: string | null
           created_at?: string
           follower_count?: number
           following_count?: number
@@ -560,6 +725,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           badge_type?: string
+          bio?: string | null
           created_at?: string
           follower_count?: number
           following_count?: number
@@ -643,6 +809,44 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "chat_rooms"
             referencedColumns: ["room_id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_id: number
+          claimed_at: string
+          created_at: string
+          is_representative: boolean
+          updated_at: string
+          user_badge_id: number
+          user_id: string
+        }
+        Insert: {
+          badge_id: number
+          claimed_at?: string
+          created_at?: string
+          is_representative?: boolean
+          updated_at?: string
+          user_badge_id?: never
+          user_id: string
+        }
+        Update: {
+          badge_id?: number
+          claimed_at?: string
+          created_at?: string
+          is_representative?: boolean
+          updated_at?: string
+          user_badge_id?: never
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badge_definitions"
+            referencedColumns: ["badge_id"]
           },
         ]
       }

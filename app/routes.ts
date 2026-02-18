@@ -25,6 +25,9 @@ export default [
   ]),
   // API Routes. Routes that export actions and loaders but no UI.
   ...prefix("/api", [
+    ...prefix("/image-generation", [
+      route("/generate", "features/image-generation/api/generate.tsx"),
+    ]),
     ...prefix("/settings", [
       route("/theme", "features/settings/api/set-theme.tsx"),
       route("/locale", "features/settings/api/set-locale.tsx"),
@@ -70,9 +73,13 @@ export default [
       route("/usage", "features/points/api/usage.tsx"),
     ]),
     ...prefix("/chat", [
+      route("/create-room", "features/chat/api/create-room.tsx"),
       route("/message", "features/chat/api/chat.tsx"),
       route("/branch", "features/chat/api/branch.tsx"),
       route("/memory", "features/chat/api/memory.tsx"),
+      route("/summary", "features/chat/api/summary.tsx"),
+      route("/room-settings", "features/chat/api/room-settings.tsx"),
+      route("/upload-background", "features/chat/api/upload-background.tsx"),
     ]),
     ...prefix("/payments", [
       route("/stripe/checkout", "features/payments/api/stripe-checkout.tsx"),
@@ -80,6 +87,24 @@ export default [
     ]),
     ...prefix("/attendance", [
       route("/checkin", "features/attendance/api/checkin.tsx"),
+      route("/weekly-checkin", "features/attendance/api/weekly-checkin.tsx"),
+    ]),
+    ...prefix("/badges", [
+      route("/claim", "features/badges/api/claim.tsx"),
+      route("/representative", "features/badges/api/representative.tsx"),
+    ]),
+    ...prefix("/keywords", [
+      route("/list", "features/keywords/api/list.tsx"),
+      route("/create-book", "features/keywords/api/create-book.tsx"),
+      route("/update-book", "features/keywords/api/update-book.tsx"),
+      route("/delete-book", "features/keywords/api/delete-book.tsx"),
+    ]),
+    ...prefix("/comments", [
+      route("/list", "features/comments/api/list.tsx"),
+      route("/create", "features/comments/api/create.tsx"),
+      route("/delete", "features/comments/api/delete.tsx"),
+      route("/like", "features/comments/api/like.tsx"),
+      route("/upload-image", "features/comments/api/upload-image.tsx"),
     ]),
     ...prefix("/admin", [
       route("/users", "features/admin/api/users.tsx"),
@@ -149,9 +174,15 @@ export default [
     route("/points", "features/points/screens/points.tsx"),
     route("/guide", "features/guide/screens/guide.tsx"),
     route("/attendance", "features/attendance/screens/attendance.tsx"),
+    layout("core/layouts/private.layout.tsx", { id: "private-badges" }, [
+      route("/badges", "features/badges/screens/badges.tsx"),
+    ]),
+    layout("core/layouts/private.layout.tsx", { id: "private-notifications" }, [
+      route("/notifications", "features/notifications/screens/notifications.tsx"),
+    ]),
     // Placeholder routes for upcoming features
     route("/my-content", "features/placeholder/screens/my-content.tsx"),
-    route("/image-generation", "features/placeholder/screens/image-generation.tsx"),
+    route("/image-generation", "features/image-generation/screens/image-generation.tsx"),
     // Blog routes moved under the main navigation layout so the NavigationBar persists
     ...prefix("/blog", [
       index("features/blog/screens/posts.tsx"),
@@ -177,13 +208,38 @@ export default [
         ),
       ]),
     ]),
-    // Admin routes (requires admin authentication)
-    layout("core/layouts/private.layout.tsx", { id: "private-admin" }, [
-      ...prefix("/admin", [
-        index("features/admin/screens/dashboard.tsx"),
-        route("/users", "features/admin/screens/users.tsx"),
-        route("/characters", "features/admin/screens/characters.tsx"),
-      ]),
+  ]),
+
+  // 어드민 — 자체 사이드바 레이아웃 (GNB 없음)
+  layout("features/admin/layouts/admin.layout.tsx", [
+    ...prefix("/admin", [
+      index("features/admin/screens/dashboard.tsx"),
+      route("/users", "features/admin/screens/users.tsx"),
+      route("/characters", "features/admin/screens/characters.tsx"),
+      route("/reports/users", "features/admin/screens/reports.tsx"),
+      route("/permissions", "features/admin/screens/permissions.tsx"),
+      route("/reports/characters", "features/admin/screens/character-reports.tsx"),
+      route("/characters/moderation", "features/admin/screens/character-moderation.tsx"),
+      route("/characters/settings", "features/admin/screens/character-settings.tsx"),
+      route("/reports/chats", "features/admin/screens/chat-reports.tsx"),
+      route("/chat/banned-words", "features/admin/screens/banned-words.tsx"),
+      route("/payments", "features/admin/screens/payment-list.tsx"),
+      route("/payments/refunds", "features/admin/screens/payment-refunds.tsx"),
+      route("/points", "features/admin/screens/points-management.tsx"),
+      route("/stats/usage", "features/admin/screens/stats-usage.tsx"),
+      route("/notices", "features/admin/screens/notices-management.tsx"),
+      route("/settings/accounts", "features/admin/screens/placeholder.tsx", {
+        id: "admin-settings-accounts",
+      }),
+      route("/settings/roles", "features/admin/screens/placeholder.tsx", {
+        id: "admin-settings-roles",
+      }),
+      route("/settings/audit-log", "features/admin/screens/placeholder.tsx", {
+        id: "admin-settings-audit-log",
+      }),
+      route("/settings/security", "features/admin/screens/placeholder.tsx", {
+        id: "admin-settings-security",
+      }),
     ]),
   ]),
 

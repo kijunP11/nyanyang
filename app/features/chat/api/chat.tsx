@@ -27,7 +27,7 @@ import makeServerClient from "~/core/lib/supa-client.server";
 
 import { characters } from "../../characters/schema";
 import { userPoints, pointTransactions } from "../../points/schema";
-import { chatRooms, messages } from "../schema";
+import { chatRooms, chatRoomSettings, messages } from "../schema";
 import {
   shouldCreateSummary,
   createConversationSummary,
@@ -57,6 +57,9 @@ const bodySchema = z.object({
   ]).optional().default("gemini-2.5-flash"),
   regenerate: z.boolean().optional().default(false),
   replace_message_id: z.coerce.number().int().positive().optional(),
+  guidance: z.string().optional(),
+  max_output_tokens: z.number().min(500).max(8000).optional(),
+  anti_impersonation: z.boolean().optional(),
 });
 
 /**
@@ -103,6 +106,7 @@ async function callGemini(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
   model: string,
+  maxOutputTokens = 2000,
 ): Promise<string> {
   const apiKey = process.env.GOOGLE_GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
@@ -122,7 +126,7 @@ async function callGemini(
     contents,
     generationConfig: {
       temperature: 0.6,
-      maxOutputTokens: 2000,
+      maxOutputTokens,
     },
     systemInstruction: {
       parts: [{ text: systemPrompt }],
@@ -269,6 +273,24 @@ export async function action({ request }: Route.ActionArgs) {
       return data({ error: "Forbidden: Not your room" }, { status: 403, headers });
     }
 
+    // Load room settings for max_output_tokens and anti_impersonation
+    const [roomSettings] = await db
+      .select({
+        response_length: chatRoomSettings.response_length,
+        anti_impersonation: chatRoomSettings.anti_impersonation,
+      })
+      .from(chatRoomSettings)
+      .where(
+        and(
+          eq(chatRoomSettings.room_id, validData.room_id),
+          eq(chatRoomSettings.user_id, user.id)
+        )
+      )
+      .limit(1);
+
+    const maxOutputTokens = validData.max_output_tokens ?? roomSettings?.response_length ?? 2000;
+    const antiImpersonation = validData.anti_impersonation ?? roomSettings?.anti_impersonation ?? true;
+
     // Get character details
     const [character] = await db
       .select()
@@ -309,10 +331,11 @@ export async function action({ request }: Route.ActionArgs) {
       return data(
         {
           error: "Insufficient points",
-          current_balance: pointBalance.current_balance,
+          code: "INSUFFICIENT_POINTS",
+          balance: pointBalance.current_balance,
           estimated_cost: estimatedCost,
         },
-        { status: 400, headers }
+        { status: 402, headers }
       );
     }
 
@@ -405,7 +428,13 @@ export async function action({ request }: Route.ActionArgs) {
     const userName = await getUserDisplayName(client, user.id);
 
     // Build comprehensive character prompt
-    const systemPrompt = buildCharacterPrompt(character, userName);
+    let systemPrompt = buildCharacterPrompt(character, userName);
+    if (antiImpersonation) {
+      systemPrompt += "\n\n[중요] 이 캐릭터는 가상의 인물입니다. 실존 인물이나 실제 단체를 사칭하지 마세요.";
+    }
+    if (validData.regenerate && validData.guidance?.trim()) {
+      systemPrompt += `\n\n[재생성 가이드] 사용자가 이런 방향을 원합니다: ${validData.guidance.trim()}`;
+    }
 
     // Build optimized context with memory system
     const aiMessages = await buildContextWithNewMessage(
@@ -420,7 +449,12 @@ export async function action({ request }: Route.ActionArgs) {
 
     // Handle Gemini models separately (non-streaming)
     if (validData.model.startsWith("gemini")) {
-      const geminiResponse = await callGemini(systemPrompt, aiMessages, validData.model);
+      const geminiResponse = await callGemini(
+        systemPrompt,
+        aiMessages,
+        validData.model,
+        maxOutputTokens
+      );
       const estimatedTokens = Math.ceil(geminiResponse.length / 4);
       const actualCost = Math.ceil((estimatedTokens / 1000) * costPerThousand);
 
@@ -465,11 +499,16 @@ export async function action({ request }: Route.ActionArgs) {
         message_count: room.message_count + messageCountIncrement,
       }).where(eq(chatRooms.room_id, validData.room_id));
 
-      // Return as SSE for consistency with frontend
+      const suggestedActions = ["계속", "다른 방향으로", "더 자세히"];
       const stream = new ReadableStream({
         start(controller) {
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ content: geminiResponse })}\n\n`));
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ done: true, tokens: estimatedTokens, cost: actualCost })}\n\n`));
+          const encoder = new TextEncoder();
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: geminiResponse })}\n\n`));
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ done: true, tokens: estimatedTokens, cost: actualCost, suggested_actions: suggestedActions })}\n\n`
+            )
+          );
           controller.close();
         },
       });
@@ -502,7 +541,7 @@ export async function action({ request }: Route.ActionArgs) {
       system: systemPrompt,
       messages: aiMessages,
       temperature: 0.6,
-      maxOutputTokens: 2000,
+      maxOutputTokens,
     });
 
     // Collect full response for database storage
@@ -590,10 +629,10 @@ export async function action({ request }: Route.ActionArgs) {
             }
           });
 
-          // Send completion event
+          const suggestedActions = ["계속", "다른 방향으로", "더 자세히"];
           controller.enqueue(
             new TextEncoder().encode(
-              `data: ${JSON.stringify({ done: true, tokens: totalTokens, cost: actualCost })}\n\n`
+              `data: ${JSON.stringify({ done: true, tokens: totalTokens, cost: actualCost, suggested_actions: suggestedActions })}\n\n`
             )
           );
 

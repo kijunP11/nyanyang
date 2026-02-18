@@ -66,29 +66,36 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const url = new URL(request.url);
   const search = url.searchParams.get("search") || "";
-  const status = (url.searchParams.get("status") || "pending_review") as "draft" | "pending_review" | "approved" | "rejected" | "archived";
+  const status = url.searchParams.get("status") || "all";
   const offset = parseInt(url.searchParams.get("offset") || "0");
   const limit = parseInt(url.searchParams.get("limit") || "20");
 
   const db = drizzle;
 
-  // Get all characters with the query
-  const allCharacters = await db
+  const baseQuery = db
     .select()
     .from(characters)
     .innerJoin(profiles, eq(characters.creator_id, profiles.profile_id))
-    .where(eq(characters.status, status))
     .orderBy(desc(characters.created_at))
     .limit(limit)
     .offset(offset);
 
-  // Map to response format
+  const allCharacters =
+    status === "all"
+      ? await baseQuery
+      : await baseQuery.where(
+          eq(characters.status, status as "draft" | "pending_review" | "approved" | "rejected" | "archived")
+        );
+
   const charactersList = allCharacters.map((row) => ({
     character_id: (row.characters as any).character_id,
     name: row.characters.name,
     display_name: row.characters.display_name,
     description: row.characters.description,
     avatar_url: row.characters.avatar_url,
+    tagline: row.characters.tagline,
+    tags: row.characters.tags,
+    age_rating: row.characters.age_rating,
     category: row.characters.category,
     is_public: row.characters.is_public,
     is_nsfw: row.characters.is_nsfw,
@@ -104,11 +111,16 @@ export async function loader({ request }: Route.LoaderArgs) {
     },
   }));
 
-  // Get total count for status
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(characters)
-    .where(eq(characters.status, status));
+  const countQuery =
+    status === "all"
+      ? db.select({ count: sql<number>`count(*)::int` }).from(characters)
+      : db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(characters)
+          .where(
+            eq(characters.status, status as "draft" | "pending_review" | "approved" | "rejected" | "archived")
+          );
+  const [countResult] = await countQuery;
 
   return data(
     {

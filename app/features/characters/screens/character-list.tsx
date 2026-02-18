@@ -6,6 +6,7 @@
  */
 import type { Route } from "./+types/character-list";
 
+import { useState } from "react";
 import { data, Link, useSearchParams } from "react-router";
 
 import {
@@ -20,6 +21,7 @@ import {
   type HeroSlide,
 } from "../../home/components/hero-carousel";
 import { CharacterGridCard } from "../components/character-grid-card";
+import { CharacterInfoModal } from "../components/character-info-modal";
 
 type Character = Database["public"]["Tables"]["characters"]["Row"];
 
@@ -157,6 +159,9 @@ const TABS = [
 export default function CharacterList({ loaderData }: Route.ComponentProps) {
   const { characters, heroSlides, tab, isLoggedIn, user } = loaderData;
   const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(
+    null
+  );
 
   const handleTabChange = (tabKey: string) => {
     const params = new URLSearchParams(searchParams);
@@ -220,12 +225,18 @@ export default function CharacterList({ loaderData }: Route.ComponentProps) {
                   character={character}
                   creatorName={character.creator_name}
                   creatorBadgeType={character.creator_badge_type}
+                  onClick={() => setSelectedCharacterId(character.character_id)}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      <CharacterInfoModal
+        characterId={selectedCharacterId}
+        onClose={() => setSelectedCharacterId(null)}
+      />
     </div>
   );
 }

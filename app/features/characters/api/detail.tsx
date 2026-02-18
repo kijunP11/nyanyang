@@ -12,7 +12,7 @@
 
 import type { Route } from "./+types/detail";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 import { data } from "react-router";
 import { z } from "zod";
 
@@ -20,6 +20,8 @@ import drizzle from "~/core/db/drizzle-client.server";
 import { requireAuthentication } from "~/core/lib/guards.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 
+import { chatRooms } from "../../chat/schema";
+import { userFollows } from "../../users/schema";
 import { characterLikes, characters } from "../schema";
 
 /**
@@ -122,6 +124,41 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
     const isLiked = !!like;
 
+    // Existing chat room with this character (most recent)
+    const [existingRoom] = await db
+      .select({ room_id: chatRooms.room_id })
+      .from(chatRooms)
+      .where(
+        and(
+          eq(chatRooms.user_id, user.id),
+          eq(chatRooms.character_id, validParams.id)
+        )
+      )
+      .orderBy(desc(chatRooms.updated_at))
+      .limit(1);
+
+    const isCreator = character.creator_id === user.id;
+
+    // Check if current user follows the character's creator
+    const [followRow] = await db
+      .select({ follow_id: userFollows.follow_id })
+      .from(userFollows)
+      .where(
+        and(
+          eq(userFollows.follower_id, user.id),
+          eq(userFollows.following_id, character.creator_id)
+        )
+      )
+      .limit(1);
+    const isFollowing = !!followRow;
+
+    // Creator display name from profiles (optional)
+    const { data: profile } = await client
+      .from("profiles")
+      .select("name")
+      .eq("profile_id", character.creator_id)
+      .single();
+
     // Increment view count (fire and forget, don't await)
     db.update(characters)
       .set({ view_count: character.view_count + 1 })
@@ -134,6 +171,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         character: {
           ...character,
           isLiked,
+          isFollowing,
+          existingRoomId: existingRoom?.room_id ?? null,
+          isCreator,
+          creatorName: profile?.name ?? null,
         },
       },
       { headers }

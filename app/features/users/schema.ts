@@ -40,6 +40,7 @@ export const profiles = pgTable(
       }),
     name: text().notNull(),
     avatar_url: text(),
+    bio: text(),
     marketing_consent: boolean("marketing_consent").notNull().default(false),
     // 추천인 코드 (고유값)
     referral_code: text().unique(),

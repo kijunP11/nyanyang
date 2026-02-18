@@ -1,359 +1,277 @@
 /**
- * Admin Characters Management Screen
- *
- * Character moderation with approve, reject, and delete functionality.
+ * Admin 캐릭터 목록 / 검색 — Figma 테이블 리디자인
  */
-
 import type { Route } from "./+types/characters";
 
-import { useLoaderData, useNavigate, useSearchParams } from "react-router";
+import { Pencil, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { data, useLoaderData, useNavigate, useSearchParams } from "react-router";
 
-import { requireAdmin } from "../lib/guards.server";
+import { Avatar, AvatarFallback, AvatarImage } from "~/core/components/ui/avatar";
 import makeServerClient from "~/core/lib/supa-client.server";
+import { requireAdmin } from "../lib/guards.server";
 
-/**
- * Loader: Fetch characters from API
- */
 export async function loader({ request }: Route.LoaderArgs) {
   const [client, headers] = makeServerClient(request);
   await requireAdmin(client);
 
-  const {
-    data: { user },
-  } = await client.auth.getUser();
-
-  if (!user) {
-    throw new Response("Unauthorized", { status: 401 });
-  }
-
-  // Get search params
   const url = new URL(request.url);
   const search = url.searchParams.get("search") || "";
-  const status = url.searchParams.get("status") || "pending";
   const offset = url.searchParams.get("offset") || "0";
   const limit = url.searchParams.get("limit") || "20";
 
-  // Fetch characters from API
-  const charactersResponse = await fetch(
-    `/api/admin/characters?search=${encodeURIComponent(search)}&status=${status}&offset=${offset}&limit=${limit}`,
-    {
-      headers: Object.fromEntries(request.headers.entries()),
-    }
+  const res = await fetch(
+    new URL(
+      `/api/admin/characters?status=all&search=${encodeURIComponent(search)}&offset=${offset}&limit=${limit}`,
+      request.url
+    ).toString(),
+    { headers: Object.fromEntries(request.headers.entries()) }
   );
 
-  if (!charactersResponse.ok) {
+  if (!res.ok) {
     throw new Response("Failed to load characters", { status: 500 });
   }
-
-  const charactersData = await charactersResponse.json();
-
-  return {
-    characters: charactersData.characters,
-    pagination: charactersData.pagination,
-    currentStatus: charactersData.status,
-    headers,
-  };
+  const result = await res.json();
+  return data(
+    { characters: result.characters, pagination: result.pagination },
+    { headers }
+  );
 }
 
-/**
- * Admin Characters Management Component
- */
+const STATUS_FILTERS = [
+  { label: "전체", value: "" },
+  { label: "공개", value: "public", dotColor: "bg-green-500" },
+  { label: "비공개", value: "private", dotColor: "bg-gray-400" },
+  { label: "숨김", value: "hidden", dotColor: "bg-orange-500" },
+  { label: "블라인드", value: "blind", dotColor: "bg-red-500" },
+] as const;
+
+function getDisplayStatus(char: any): {
+  label: string;
+  color: string;
+  dot: string;
+} {
+  if (char.status === "rejected")
+    return { label: "블라인드", color: "text-red-600", dot: "bg-red-500" };
+  if (char.status === "archived")
+    return { label: "숨김", color: "text-orange-600", dot: "bg-orange-500" };
+  if (char.status === "approved" && char.is_public)
+    return { label: "공개", color: "text-green-600", dot: "bg-green-500" };
+  return { label: "비공개", color: "text-gray-500", dot: "bg-gray-400" };
+}
+
 export default function AdminCharacters() {
-  const { characters, pagination, currentStatus } = useLoaderData<typeof loader>();
+  const { characters: chars, pagination } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") || ""
+  );
+  const currentFilter = searchParams.get("filter") || "";
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate(`/admin/characters?search=${encodeURIComponent(searchInput)}&status=${currentStatus}`);
+    navigate(
+      `/admin/characters?search=${encodeURIComponent(searchInput)}&filter=${currentFilter}`
+    );
   };
 
-  const handleStatusChange = (newStatus: string) => {
-    navigate(`/admin/characters?status=${newStatus}`);
-  };
-
-  const handleApprove = async (characterId: number, displayName: string) => {
-    const note = prompt(`${displayName} 캐릭터를 승인합니다. 메모 (선택사항):`);
-
-    if (!confirm(`${displayName} 캐릭터를 승인하시겠습니까?`)) return;
-
-    try {
-      const response = await fetch("/api/admin/characters", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ character_id: characterId, moderation_note: note || undefined }),
-      });
-
-      if (response.ok) {
-        alert("캐릭터가 승인되었습니다.");
-        window.location.reload();
-      } else {
-        const error = await response.json();
-        alert(`오류: ${error.error}`);
-      }
-    } catch (err) {
-      alert("승인 처리 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleReject = async (characterId: number, displayName: string) => {
-    const note = prompt(`${displayName} 캐릭터를 거부하는 이유를 입력하세요:`);
-    if (!note) return;
-
-    if (!confirm(`${displayName} 캐릭터를 거부하시겠습니까?`)) return;
-
-    try {
-      const response = await fetch("/api/admin/characters", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ character_id: characterId, moderation_note: note }),
-      });
-
-      if (response.ok) {
-        alert("캐릭터가 거부되었습니다.");
-        window.location.reload();
-      } else {
-        const error = await response.json();
-        alert(`오류: ${error.error}`);
-      }
-    } catch (err) {
-      alert("거부 처리 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleDelete = async (characterId: number, displayName: string) => {
-    const reason = prompt(`${displayName} 캐릭터를 삭제하는 이유를 입력하세요:`);
-    if (!reason) return;
-
-    if (!confirm(`${displayName} 캐릭터를 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
-
-    try {
-      const response = await fetch("/api/admin/characters", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ character_id: characterId, reason }),
-      });
-
-      if (response.ok) {
-        alert("캐릭터가 삭제되었습니다.");
-        window.location.reload();
-      } else {
-        const error = await response.json();
-        alert(`오류: ${error.error}`);
-      }
-    } catch (err) {
-      alert("삭제 처리 중 오류가 발생했습니다.");
-    }
-  };
+  const currentPage =
+    Math.floor(pagination.offset / pagination.limit) + 1;
+  const totalPages = Math.ceil(pagination.total / pagination.limit);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">캐릭터 관리</h1>
-          <p className="text-muted-foreground">
-            캐릭터 검토, 승인/거부, 삭제 기능
-          </p>
-        </div>
+    <div className="max-w-[1200px] p-8">
+      <h1 className="mb-1 text-xl font-bold text-[#181D27]">
+        캐릭터 목록 / 검색
+      </h1>
+      <p className="mb-6 text-sm text-[#535862]">
+        등록된 캐릭터를 조회하고 공개 상태 및 제재 여부를 관리할 수 있습니다.
+      </p>
 
-        {/* Status Tabs */}
-        <div className="mb-6 flex gap-2 border-b">
-          <button
-            onClick={() => handleStatusChange("pending")}
-            className={`px-4 py-2 font-medium transition-colors ${
-              currentStatus === "pending"
-                ? "border-b-2 border-primary text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            승인 대기
-          </button>
-          <button
-            onClick={() => handleStatusChange("approved")}
-            className={`px-4 py-2 font-medium transition-colors ${
-              currentStatus === "approved"
-                ? "border-b-2 border-primary text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            승인됨
-          </button>
-          <button
-            onClick={() => handleStatusChange("rejected")}
-            className={`px-4 py-2 font-medium transition-colors ${
-              currentStatus === "rejected"
-                ? "border-b-2 border-primary text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            거부됨
-          </button>
-        </div>
-
-        {/* Search */}
-        <form onSubmit={handleSearch} className="mb-6">
-          <div className="flex gap-2">
+      <div className="mb-6 flex items-center gap-4">
+        <form onSubmit={handleSearch} className="max-w-[520px] flex-1">
+          <div className="flex items-center gap-2 rounded-lg border border-[#D5D7DA] bg-white px-4 py-2.5">
+            <Search className="size-5 text-[#717680]" />
             <input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="캐릭터 이름 또는 설명으로 검색..."
-              className="flex-1 rounded-md border bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="캐릭터 이름 · 제작자 · 태그로 검색"
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#717680]"
             />
-            <button
-              type="submit"
-              className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            >
-              검색
-            </button>
           </div>
         </form>
-
-        {/* Stats */}
-        <div className="mb-6 flex gap-4 text-sm text-muted-foreground">
-          <span>총 {pagination.total.toLocaleString()}개</span>
-          <span>
-            {pagination.offset + 1} - {Math.min(pagination.offset + pagination.limit, pagination.total)}
-          </span>
-        </div>
-
-        {/* Characters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          {characters.map((character: any) => (
-            <div key={character.character_id} className="rounded-lg border bg-card overflow-hidden">
-              {/* Character Image */}
-              {character.avatar_url ? (
-                <img
-                  src={character.avatar_url}
-                  alt={character.display_name}
-                  className="w-full h-48 object-cover"
-                />
-              ) : (
-                <div className="w-full h-48 bg-primary/10 flex items-center justify-center">
-                  <span className="text-6xl font-semibold">
-                    {character.display_name[0]}
-                  </span>
-                </div>
+        <div className="ml-auto flex gap-2">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() =>
+                navigate(
+                  `/admin/characters?search=${searchInput}&filter=${f.value}`
+                )
+              }
+              className={`flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                currentFilter === f.value
+                  ? "border-[#181D27] bg-white text-[#181D27]"
+                  : "border-[#D5D7DA] text-[#535862] hover:bg-[#F9FAFB]"
+              }`}
+            >
+              {"dotColor" in f && f.dotColor && (
+                <span className={`size-2 rounded-full ${f.dotColor}`} />
               )}
-
-              {/* Character Info */}
-              <div className="p-4">
-                <h3 className="font-bold text-lg mb-1">{character.display_name}</h3>
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                  {character.description}
-                </p>
-
-                {/* Metadata */}
-                <div className="flex gap-2 mb-3 text-xs flex-wrap">
-                  {character.category && (
-                    <span className="px-2 py-1 rounded-full bg-primary/10">
-                      {character.category}
-                    </span>
-                  )}
-                  {character.is_nsfw && (
-                    <span className="px-2 py-1 rounded-full bg-red-500/10 text-red-600">
-                      NSFW
-                    </span>
-                  )}
-                  {character.is_public ? (
-                    <span className="px-2 py-1 rounded-full bg-green-500/10 text-green-600">
-                      공개
-                    </span>
-                  ) : (
-                    <span className="px-2 py-1 rounded-full bg-gray-500/10">
-                      비공개
-                    </span>
-                  )}
-                </div>
-
-                {/* Stats */}
-                <div className="flex justify-between text-xs text-muted-foreground mb-3">
-                  <span>채팅: {character.chat_count}</span>
-                  <span>메시지: {character.message_count}</span>
-                  <span>좋아요: {character.like_count}</span>
-                </div>
-
-                {/* Creator */}
-                <div className="text-xs text-muted-foreground mb-3">
-                  제작자: {character.creator.display_name} ({character.creator.email})
-                </div>
-
-                {/* Moderation Note */}
-                {character.moderation_note && (
-                  <div className="text-xs p-2 rounded bg-accent mb-3">
-                    메모: {character.moderation_note}
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  {currentStatus === "pending" && (
-                    <>
-                      <button
-                        onClick={() => handleApprove(character.character_id, character.display_name)}
-                        className="flex-1 px-3 py-2 text-sm rounded-md bg-green-500 text-white hover:bg-green-600"
-                      >
-                        승인
-                      </button>
-                      <button
-                        onClick={() => handleReject(character.character_id, character.display_name)}
-                        className="flex-1 px-3 py-2 text-sm rounded-md bg-orange-500 text-white hover:bg-orange-600"
-                      >
-                        거부
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={() => handleDelete(character.character_id, character.display_name)}
-                    className="flex-1 px-3 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600"
-                  >
-                    삭제
-                  </button>
-                </div>
-              </div>
-            </div>
+              {f.label}
+            </button>
           ))}
         </div>
+      </div>
 
-        {/* Empty State */}
-        {characters.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">캐릭터가 없습니다.</p>
+      <div className="rounded-xl border border-[#E9EAEB] bg-white">
+        <div className="border-b border-[#E9EAEB] px-6 py-4">
+          <h2 className="text-base font-semibold text-[#181D27]">목록</h2>
+        </div>
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-[#E9EAEB]">
+              <th className="w-12 px-4 py-3">
+                <input
+                  type="checkbox"
+                  className="rounded border-[#D5D7DA]"
+                />
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-[#717680]">
+                캐릭터 이름
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-[#717680]">
+                제작자
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-[#717680]">
+                태그
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-[#717680]">
+                상태
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-[#717680]">
+                신고 여부
+              </th>
+              <th className="w-24 px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody>
+            {chars.map((char: any) => {
+              const ds = getDisplayStatus(char);
+              const tagsArray = Array.isArray(char.tags)
+                ? char.tags
+                : typeof char.tags === "string"
+                  ? (() => {
+                      try {
+                        return JSON.parse(char.tags);
+                      } catch {
+                        return [];
+                      }
+                    })()
+                  : [];
+              return (
+                <tr
+                  key={char.character_id}
+                  className="border-b border-[#E9EAEB] last:border-0"
+                >
+                  <td className="px-4 py-4">
+                    <input
+                      type="checkbox"
+                      className="rounded border-[#D5D7DA]"
+                    />
+                  </td>
+                  <td className="px-4 py-4 text-sm font-medium text-[#181D27]">
+                    {char.display_name}
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-8">
+                        <AvatarImage src={char.avatar_url ?? undefined} />
+                        <AvatarFallback className="text-xs">
+                          {char.creator?.display_name?.[0] ?? "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium text-[#181D27]">
+                          {char.creator?.display_name}
+                        </p>
+                        <p className="text-xs text-[#535862]">
+                          {(char.creator as any)?.email ?? "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-sm text-[#535862]">
+                    {tagsArray.length
+                      ? tagsArray.map((t: string) => `#${t}`).join(" ")
+                      : "—"}
+                  </td>
+                  <td className="px-4 py-4">
+                    <span
+                      className={`inline-flex items-center gap-1.5 text-sm font-medium ${ds.color}`}
+                    >
+                      <span
+                        className={`size-1.5 rounded-full ${ds.dot}`}
+                      />
+                      {ds.label}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-sm text-[#535862]">없음</td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="text-[#717680] hover:text-[#181D27]"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                      <button
+                        type="button"
+                        className="text-[#717680] hover:text-[#181D27]"
+                      >
+                        <Pencil className="size-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <div className="flex items-center justify-between border-t border-[#E9EAEB] px-6 py-3">
+          <span className="text-sm text-[#535862]">
+            {currentPage}/{totalPages} 페이지
+          </span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                navigate(
+                  `/admin/characters?search=${searchInput}&filter=${currentFilter}&offset=${Math.max(0, pagination.offset - pagination.limit)}`
+                )
+              }
+              disabled={pagination.offset === 0}
+              className="rounded-lg border border-[#D5D7DA] px-4 py-2 text-sm disabled:opacity-40"
+            >
+              이전
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                navigate(
+                  `/admin/characters?search=${searchInput}&filter=${currentFilter}&offset=${pagination.offset + pagination.limit}`
+                )
+              }
+              disabled={!pagination.hasMore}
+              className="rounded-lg border border-[#D5D7DA] px-4 py-2 text-sm disabled:opacity-40"
+            >
+              다음
+            </button>
           </div>
-        )}
-
-        {/* Pagination */}
-        {pagination.total > pagination.limit && (
-          <div className="flex justify-center gap-2">
-            {pagination.offset > 0 && (
-              <button
-                onClick={() =>
-                  navigate(
-                    `/admin/characters?search=${searchInput}&status=${currentStatus}&offset=${Math.max(0, pagination.offset - pagination.limit)}&limit=${pagination.limit}`
-                  )
-                }
-                className="px-4 py-2 rounded-md border bg-card hover:bg-accent"
-              >
-                이전
-              </button>
-            )}
-            {pagination.hasMore && (
-              <button
-                onClick={() =>
-                  navigate(
-                    `/admin/characters?search=${searchInput}&status=${currentStatus}&offset=${pagination.offset + pagination.limit}&limit=${pagination.limit}`
-                  )
-                }
-                className="px-4 py-2 rounded-md border bg-card hover:bg-accent"
-              >
-                다음
-              </button>
-            )}
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

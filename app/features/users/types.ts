@@ -10,6 +10,7 @@ export interface DashboardProfile {
   profile_id: string;
   name: string | null;
   avatar_url: string | null;
+  bio: string | null;
   follower_count: number;
   following_count: number;
   verified_at: Date | null;
@@ -20,10 +21,17 @@ export interface DashboardAttendance {
   currentStreak: number;
 }
 
+export interface DashboardPoints {
+  current_balance: number;
+  total_earned: number;
+  total_spent: number;
+}
+
 export interface DashboardLayoutContext {
   user: User | null;
   profile: DashboardProfile | null;
   attendanceData: DashboardAttendance;
+  points: DashboardPoints;
 }
 
 /**

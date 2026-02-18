@@ -72,6 +72,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       user_id: profiles.profile_id,
       display_name: profiles.name,
       avatar_url: profiles.avatar_url,
+      verified_at: profiles.verified_at,
       created_at: profiles.created_at,
       updated_at: profiles.updated_at,
       points: {
