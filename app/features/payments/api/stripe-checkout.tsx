@@ -170,8 +170,8 @@ export async function action({ request }: Route.ActionArgs) {
         },
       ],
       mode: "payment",
-      success_url: `${import.meta.env.VITE_SITE_URL}/payments/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${import.meta.env.VITE_SITE_URL}/payments/failure`,
+      success_url: `${process.env.VITE_SUPABASE_URL || "http://localhost:5173"}/payments/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.VITE_SUPABASE_URL || "http://localhost:5173"}/payments/failure`,
       metadata: {
         user_id: user.id,
         package: validData.package,
