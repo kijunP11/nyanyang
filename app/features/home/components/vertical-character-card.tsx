@@ -38,7 +38,7 @@ export function VerticalCharacterCard({
   const content = (
     <>
       {/* 이미지 (3:4 비율) */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-[#F5F5F5]">
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-[#F5F5F5] dark:bg-[#1F242F]">
         {character.avatar_url ? (
           <img
             src={character.avatar_url}
@@ -47,7 +47,7 @@ export function VerticalCharacterCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <User className="h-10 w-10 text-[#A4A7AE]" />
+            <User className="h-10 w-10 text-[#A4A7AE] dark:text-[#717680]" />
           </div>
         )}
         {/* NSFW 배지 */}
@@ -74,13 +74,13 @@ export function VerticalCharacterCard({
         )}
       </div>
       {/* 이름 */}
-      <h3 className="mt-2 truncate text-sm font-semibold text-[#181D27] group-hover:text-[#41C7BD]">
+      <h3 className="mt-2 truncate text-sm font-semibold text-[#181D27] group-hover:text-[#41C7BD] dark:text-white">
         {character.name}
       </h3>
       {/* 창작자 */}
       {creatorName && (
         <div className="flex items-center gap-1">
-          <p className="truncate text-xs text-[#535862]">{creatorName}</p>
+          <p className="truncate text-xs text-[#535862] dark:text-[#94969C]">{creatorName}</p>
           <CreatorBadge
             badgeType={
               creatorBadgeType as "none" | "popular" | "official" | undefined
@@ -94,7 +94,7 @@ export function VerticalCharacterCard({
           {character.tags.slice(0, 2).map((tag) => (
             <span
               key={tag}
-              className="rounded bg-[#F5F5F5] px-1.5 py-0.5 text-[10px] text-[#535862]"
+              className="rounded bg-[#F5F5F5] px-1.5 py-0.5 text-[10px] text-[#535862] dark:bg-[#333741] dark:text-[#94969C]"
             >
               {tag}
             </span>

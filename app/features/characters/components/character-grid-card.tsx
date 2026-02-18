@@ -35,7 +35,7 @@ export function CharacterGridCard({
   const content = (
     <>
       {/* 이미지 (3:4 비율) */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-[#F5F5F5]">
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-[#F5F5F5] dark:bg-[#1F242F]">
         {character.avatar_url ? (
           <img
             src={character.avatar_url}
@@ -44,7 +44,7 @@ export function CharacterGridCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <User className="h-10 w-10 text-[#A4A7AE]" />
+            <User className="h-10 w-10 text-[#A4A7AE] dark:text-[#717680]" />
           </div>
         )}
         {/* NSFW 배지 */}
@@ -65,19 +65,19 @@ export function CharacterGridCard({
         )}
       </div>
       {/* 이름 */}
-      <h3 className="mt-2 truncate text-sm font-semibold text-[#181D27] group-hover:text-[#41C7BD]">
+      <h3 className="mt-2 truncate text-sm font-semibold text-[#181D27] group-hover:text-[#41C7BD] dark:text-white">
         {character.name}
       </h3>
       {/* 설명 (2줄) */}
       {character.description && (
-        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[#535862]">
+        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[#535862] dark:text-[#94969C]">
           {character.description}
         </p>
       )}
       {/* 크리에이터 */}
       {creatorName && (
         <div className="mt-1 flex items-center gap-1">
-          <p className="truncate text-xs text-[#535862]">@{creatorName}</p>
+          <p className="truncate text-xs text-[#535862] dark:text-[#94969C]">@{creatorName}</p>
           <CreatorBadge
             badgeType={
               creatorBadgeType as "none" | "popular" | "official" | undefined

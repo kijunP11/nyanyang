@@ -174,7 +174,7 @@ export default function CharacterList({ loaderData }: Route.ComponentProps) {
   };
 
   return (
-    <div className="-mx-5 -my-16 flex min-h-[calc(100vh-57px)] bg-white md:-my-32">
+    <div className="-mx-5 -my-16 flex min-h-[calc(100vh-57px)] bg-white dark:bg-[#181D27] md:-my-32">
       {/* 채팅 사이드바 (md 이상) */}
       <div className="sticky top-[57px] hidden h-[calc(100vh-57px)] md:block">
         <ChatSidebar user={isLoggedIn ? user : null} chats={[]} />
@@ -186,7 +186,7 @@ export default function CharacterList({ loaderData }: Route.ComponentProps) {
           {heroSlides.length > 0 && <HeroCarousel slides={heroSlides} />}
 
           <section>
-            <h2 className="mb-4 text-xl font-bold text-[#181D27]">
+            <h2 className="mb-4 text-xl font-bold text-[#181D27] dark:text-white">
               캐릭터 랭킹
             </h2>
             <div className="flex gap-2">
@@ -198,7 +198,7 @@ export default function CharacterList({ loaderData }: Route.ComponentProps) {
                   className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                     tab === t.key
                       ? "bg-[#41C7BD] text-white"
-                      : "bg-[#F5F5F5] text-[#535862] hover:bg-[#E9EAEB]"
+                      : "bg-[#F5F5F5] text-[#535862] hover:bg-[#E9EAEB] dark:bg-[#1F242F] dark:text-[#94969C] dark:hover:bg-[#333741]"
                   }`}
                 >
                   {t.label}
@@ -209,7 +209,7 @@ export default function CharacterList({ loaderData }: Route.ComponentProps) {
 
           {characters.length === 0 ? (
             <div className="py-16 text-center">
-              <p className="text-lg text-[#535862]">캐릭터가 없습니다</p>
+              <p className="text-lg text-[#535862] dark:text-[#94969C]">캐릭터가 없습니다</p>
               <Link
                 to="/characters/create"
                 className="mt-4 inline-block rounded-lg bg-[#41C7BD] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#41C7BD]/90"

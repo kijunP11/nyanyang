@@ -61,7 +61,7 @@ export function ScrollSection({
       {/* 헤더 */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold text-[#181D27]">{title}</h2>
+          <h2 className="text-xl font-bold text-[#181D27] dark:text-white">{title}</h2>
           {badge && (
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-bold text-white ${
@@ -75,7 +75,7 @@ export function ScrollSection({
         {moreLink && (
           <Link
             to={moreLink}
-            className="text-sm text-[#A4A7AE] hover:text-[#535862]"
+            className="text-sm text-[#A4A7AE] hover:text-[#535862] dark:text-[#717680] dark:hover:text-[#94969C]"
           >
             전체보기
           </Link>
@@ -96,7 +96,7 @@ export function ScrollSection({
         {showArrow && (
           <button
             onClick={scrollRight}
-            className="absolute -right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#E9EAEB] bg-white/90 text-[#535862] shadow-sm backdrop-blur transition-colors hover:border-[#41C7BD] hover:text-[#41C7BD]"
+            className="absolute -right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#E9EAEB] bg-white/90 text-[#535862] shadow-sm backdrop-blur transition-colors hover:border-[#41C7BD] hover:text-[#41C7BD] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#94969C]"
           >
             <ChevronRight className="h-5 w-5" />
           </button>

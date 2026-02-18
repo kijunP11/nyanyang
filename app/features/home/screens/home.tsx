@@ -301,7 +301,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const displayTags = tagsExpanded ? allTags : quickTags;
 
   return (
-    <div className="-mx-5 -my-16 flex min-h-[calc(100vh-57px)] bg-white md:-my-32">
+    <div className="-mx-5 -my-16 flex min-h-[calc(100vh-57px)] bg-white dark:bg-[#181D27] md:-my-32">
       {/* 채팅 사이드바 (md 이상, 로그인/비로그인 모두) */}
       <div className="sticky top-[57px] hidden h-[calc(100vh-57px)] md:block">
         <ChatSidebar user={isLoggedIn ? user : null} chats={[]} />
@@ -315,14 +315,14 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
           {/* 2. AI 추천 검색 */}
           <section>
-            <div className="flex h-12 w-full items-center gap-3 rounded-xl border border-[#E9EAEB] bg-[#F5F5F5] px-4">
+            <div className="flex h-12 w-full items-center gap-3 rounded-xl border border-[#E9EAEB] bg-[#F5F5F5] px-4 dark:border-[#333741] dark:bg-[#1F242F]">
               <span className="flex-shrink-0 rounded-md bg-[#41C7BD] px-2 py-0.5 text-xs font-bold text-white">
                 AI 추천 대화
               </span>
-              <p className="min-w-0 flex-1 truncate text-sm text-[#535862]">
+              <p className="min-w-0 flex-1 truncate text-sm text-[#535862] dark:text-[#94969C]">
                 올해의 &apos;달콤살벌 매력&apos;에 빠져볼까? 지금 바로 시작하세요
               </p>
-              <Search className="h-5 w-5 flex-shrink-0 text-[#A4A7AE]" />
+              <Search className="h-5 w-5 flex-shrink-0 text-[#A4A7AE] dark:text-[#717680]" />
             </div>
           </section>
 
@@ -342,7 +342,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     index === 0
                       ? "bg-[#41C7BD] text-white"
-                      : "bg-[#F5F5F5] text-[#535862] hover:bg-[#E9EAEB]"
+                      : "bg-[#F5F5F5] text-[#535862] hover:bg-[#E9EAEB] dark:bg-[#1F242F] dark:text-[#94969C] dark:hover:bg-[#333741]"
                   }`}
                 >
                   {tag}
@@ -351,7 +351,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               <button
                 type="button"
                 onClick={() => setTagsExpanded(!tagsExpanded)}
-                className="flex flex-shrink-0 items-center gap-1 rounded-full border border-[#E9EAEB] px-4 py-2 text-sm font-medium text-[#A4A7AE] hover:bg-[#F5F5F5]"
+                className="flex flex-shrink-0 items-center gap-1 rounded-full border border-[#E9EAEB] px-4 py-2 text-sm font-medium text-[#A4A7AE] hover:bg-[#F5F5F5] dark:border-[#333741] dark:text-[#717680] dark:hover:bg-[#1F242F]"
               >
                 <span>#</span>
                 <span>{tagsExpanded ? "접기" : "태그 더보기"}</span>
