@@ -65,11 +65,11 @@ export default function Notifications() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#181D27]">
+    <div className="min-h-screen bg-white">
       <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-10">
-        <h1 className="text-xl font-semibold text-black dark:text-white">알림</h1>
+        <h1 className="text-xl font-semibold text-black">알림</h1>
 
-        <div className="flex border-b border-[#E9EAEB] dark:border-[#333741]">
+        <div className="flex border-b border-[#E9EAEB]">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -77,8 +77,8 @@ export default function Notifications() {
               onClick={() => handleTabChange(tab.id)}
               className={`px-4 pb-2 text-sm font-semibold transition-colors ${
                 activeTab === tab.id
-                  ? "border-b-2 border-black text-black dark:border-white dark:text-white"
-                  : "text-[#717680] hover:text-black dark:hover:text-white"
+                  ? "border-b-2 border-black text-black"
+                  : "text-[#717680] hover:text-black"
               }`}
             >
               {tab.label}
@@ -88,10 +88,10 @@ export default function Notifications() {
 
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 py-20">
-            <div className="flex size-16 items-center justify-center rounded-full bg-[#F5F5F5] dark:bg-[#1F242F]">
-              <MessageCircle className="size-8 text-[#A4A7AE] dark:text-[#717680]" />
+            <div className="flex size-16 items-center justify-center rounded-full bg-[#F5F5F5]">
+              <MessageCircle className="size-8 text-[#A4A7AE]" />
             </div>
-            <p className="text-sm font-medium text-[#535862] dark:text-[#94969C]">
+            <p className="text-sm font-medium text-[#535862]">
               받은 알림이 없습니다.
             </p>
           </div>
