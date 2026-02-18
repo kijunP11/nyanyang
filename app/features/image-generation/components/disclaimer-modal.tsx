@@ -67,13 +67,15 @@ export function DisclaimerModal() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleAgree}
-          className="w-full rounded-lg bg-[#41C7BD] py-3 text-base font-semibold text-white transition-colors hover:bg-[#38b5ab]"
-        >
-          동의하고 캐릭터 제작하기
-        </button>
+        <div>
+          <button
+            type="button"
+            onClick={handleAgree}
+            className="w-full rounded-lg bg-[#41C7BD] py-3 text-base font-semibold text-white transition-colors hover:bg-[#38b5ab]"
+          >
+            동의하고 캐릭터 제작하기
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   );
