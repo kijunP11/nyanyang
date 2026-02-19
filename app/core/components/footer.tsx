@@ -76,7 +76,7 @@ export default function Footer() {
           <span className="hover:underline cursor-pointer">채용문의</span>
           <span className="mx-3 text-[#A4A7AE] dark:text-[#414651]">|</span>
           <a
-            href="https://discord.gg/nyanyang"
+            href="https://discord.gg/VSWdPrXJ"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center hover:opacity-80"
