@@ -117,64 +117,56 @@ export default function Checkout({ loaderData }: Route.ComponentProps) {
   const widgets = useRef<TossPaymentsWidgets | null>(null);
   const initedToss = useRef<boolean>(false);
 
-  // State for tracking payment agreement status and payment readiness
   const [agreementStatus, setAgreementStatus] = useState<boolean>(true);
   const [canPay, setCanPay] = useState<boolean>(false);
+  const [initError, setInitError] = useState<string | null>(null);
 
-  /**
-   * Effect for initializing Toss Payments SDK and rendering payment widgets
-   *
-   * This effect runs once on component mount and performs the following steps:
-   * 1. Loads the Toss Payments SDK with the client key
-   * 2. Initializes the payment widgets with the user's ID as the customer key
-   * 3. Sets the payment amount (10,000 KRW)
-   * 4. Renders the payment method selection and agreement widgets
-   * 5. Sets up event listeners for agreement status changes
-   */
   useEffect(() => {
     async function initToss() {
-      // Prevent multiple initializations
       if (initedToss.current) return;
       initedToss.current = true;
 
-      // Load Toss Payments SDK with client key from environment variables
-      const toss = await loadTossPayments(
-        import.meta.env.VITE_TOSS_PAYMENTS_CLIENT_KEY,
-      );
+      try {
+        const clientKey = import.meta.env.VITE_TOSS_PAYMENTS_CLIENT_KEY;
+        if (!clientKey) {
+          throw new Error("VITE_TOSS_PAYMENTS_CLIENT_KEY가 설정되지 않았습니다");
+        }
 
-      // Initialize widgets with user ID as customer key for tracking
-      widgets.current = await toss.widgets({
-        customerKey: loaderData.userId,
-      });
+        const toss = await loadTossPayments(clientKey);
 
-      // Set the payment amount from validated package price
-      await widgets.current.setAmount({
-        value: loaderData.package.price,
-        currency: "KRW",
-      });
+        widgets.current = await toss.widgets({
+          customerKey: loaderData.userId,
+        });
 
-      // Render payment method selection and agreement widgets in parallel
-      const [paymentMethods, agreement] = await Promise.all([
-        widgets.current.renderPaymentMethods({
-          selector: "#toss-payment-methods",
-          variantKey: "DEFAULT",
-        }),
-        widgets.current.renderAgreement({
-          selector: "#toss-payment-agreement",
-          variantKey: "AGREEMENT",
-        }),
-      ]);
+        await widgets.current.setAmount({
+          value: loaderData.package.price,
+          currency: "KRW",
+        });
 
-      // Listen for changes in agreement status to enable/disable payment button
-      agreement.on("agreementStatusChange", ({ agreedRequiredTerms }) => {
-        setAgreementStatus(agreedRequiredTerms);
-      });
+        const [, agreement] = await Promise.all([
+          widgets.current.renderPaymentMethods({
+            selector: "#toss-payment-methods",
+            variantKey: "DEFAULT",
+          }),
+          widgets.current.renderAgreement({
+            selector: "#toss-payment-agreement",
+            variantKey: "AGREEMENT",
+          }),
+        ]);
 
-      // Enable the payment button once everything is loaded
-      setCanPay(true);
+        agreement.on("agreementStatusChange", ({ agreedRequiredTerms }) => {
+          setAgreementStatus(agreedRequiredTerms);
+        });
+
+        setCanPay(true);
+      } catch (error) {
+        console.error("Toss 결제 초기화 실패:", error);
+        setInitError(
+          error instanceof Error ? error.message : "결제 수단을 불러오지 못했습니다",
+        );
+      }
     }
 
-    // Initialize Toss Payments
     initToss();
   }, []);
   /**
@@ -255,13 +247,19 @@ export default function Checkout({ loaderData }: Route.ComponentProps) {
           </p>
         </div>
 
-        {/* Loading indicator */}
+        {/* Loading / Error indicator */}
         {!canPay ? (
           <div className="flex w-full flex-col items-center justify-center gap-2 py-6">
-            <Loader2Icon className="text-muted-foreground size-10 animate-spin" />
-            <span className="text-muted-foreground text-lg">
-              결제 수단을 불러오는 중...
-            </span>
+            {initError ? (
+              <p className="text-destructive text-sm text-center">{initError}</p>
+            ) : (
+              <>
+                <Loader2Icon className="text-muted-foreground size-10 animate-spin" />
+                <span className="text-muted-foreground text-lg">
+                  결제 수단을 불러오는 중...
+                </span>
+              </>
+            )}
           </div>
         ) : null}
 
