@@ -26,6 +26,7 @@ import { Button } from "~/core/components/ui/button";
 import { requireAuthentication } from "~/core/lib/guards.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 import { cn } from "~/core/lib/utils";
+import { POINT_PACKAGES } from "~/features/points/lib/packages";
 
 /**
  * Meta function for setting page metadata
@@ -78,11 +79,26 @@ export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const returnTo = url.searchParams.get("returnTo");
 
+  const packageId = url.searchParams.get("package");
+  const selectedPackage = POINT_PACKAGES.find((p) => p.id === packageId);
+  if (!selectedPackage) {
+    throw redirect(
+      `/payments/failure?code=invalid-package&message=${encodeURIComponent("유효하지 않은 패키지입니다")}`,
+    );
+  }
+
   return {
     userId: user!.id,
     userName: user!.user_metadata.name,
     userEmail: user!.email,
     returnTo: returnTo?.startsWith("/") ? returnTo : null,
+    package: {
+      id: selectedPackage.id,
+      price: selectedPackage.price,
+      points: selectedPackage.points,
+      bonusPoints: selectedPackage.bonusPoints,
+      label: selectedPackage.label,
+    },
   };
 }
 
@@ -131,9 +147,9 @@ export default function Checkout({ loaderData }: Route.ComponentProps) {
         customerKey: loaderData.userId,
       });
 
-      // Set the payment amount and currency
+      // Set the payment amount from validated package price
       await widgets.current.setAmount({
-        value: 10_000,
+        value: loaderData.package.price,
         currency: "KRW",
       });
 
@@ -185,22 +201,12 @@ export default function Checkout({ loaderData }: Route.ComponentProps) {
         // Display payment in an iframe rather than a popup
         windowTarget: "iframe",
 
-        // Generate a unique order ID
-        // 🚨⚠️ In a production app, this should come from your database
-        // If you had a 'shopping cart' you would bring the order id from the shopping cart
         orderId: crypto.randomUUID(),
-
-        // Order details
-        orderName: `Supabase Beagle NFT`,
-
-        // Customer information from authenticated user
+        orderName: `냥젤리 ${loaderData.package.points.toLocaleString()}개`,
         customerEmail: loaderData.userEmail,
         customerName: loaderData.userName,
-
-        // Additional metadata about the order
-        // 🚨⚠️ This would typically contain product IDs or other order details
         metadata: {
-          nftId: "beagle-nft-#123",
+          packageId: loaderData.package.id,
         },
 
         // Redirect URLs for payment completion (returnTo 있으면 결제 완료 후 복귀)
@@ -225,77 +231,68 @@ export default function Checkout({ loaderData }: Route.ComponentProps) {
    *    - Terms and conditions agreement widget
    *    - Payment button (disabled until agreement is accepted)
    */
+  const pkg = loaderData.package;
+  const totalJelly = pkg.points + pkg.bonusPoints;
+
   return (
-    <div className="flex flex-col items-center gap-20">
-      {/* Main product and payment grid - single column on mobile, two columns on desktop */}
-      <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2">
-        {/* Product image section */}
-        <div>
-          <img
-            src="/nft.jpg"
-            alt="nft"
-            className="h-full w-full rounded-2xl object-cover"
-          />
+    <div className="flex flex-col items-center gap-10">
+      <div className="flex w-full max-w-lg flex-col gap-6">
+        {/* 패키지 정보 */}
+        <div className="flex flex-col gap-2 rounded-2xl border border-border bg-background p-6">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            냥젤리 {pkg.label} 패키지
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            {pkg.points.toLocaleString()}젤리
+            {pkg.bonusPoints > 0 && (
+              <span className="text-[#41C7BD]">
+                {" "}+ 보너스 {pkg.bonusPoints.toLocaleString()}젤리
+              </span>
+            )}
+          </p>
+          <p className="text-lg font-bold">
+            총 {totalJelly.toLocaleString()}젤리
+          </p>
         </div>
 
-        {/* Product details and payment section */}
-        <div className="flex flex-col items-start gap-10">
-          {/* Product title */}
-          <h1 className="text-center text-4xl font-semibold tracking-tight lg:text-5xl">
-            Beagle NFT
-          </h1>
-
-          {/* Demo information */}
-          <p className="text-muted-foreground text-lg font-medium">
-            This is a page to demo the Toss Payments integration.
-            <br />
-            You aren't actually buying anything.
-          </p>
-
-          {/* Loading indicator while payment widgets initialize */}
-          {!canPay ? (
-            <div className="flex w-full flex-col items-center justify-center gap-2">
-              <Loader2Icon className="text-muted-foreground size-10 animate-spin" />
-              <span className="text-muted-foreground text-lg">
-                결제 수단을 불러오는 중...
-              </span>
-            </div>
-          ) : null}
-
-          {/* Payment widgets container - fades in when ready */}
-          <div
-            className={cn(
-              "flex w-full flex-col gap-5 transition-opacity duration-300",
-              canPay ? "opacity-100" : "opacity-0",
-            )}
-          >
-            {/* Container for Toss payment widgets */}
-            <div className="border-border w-full overflow-hidden rounded-2xl border md:p-4">
-              {/* Payment methods widget - rendered by Toss SDK */}
-              <div
-                id="toss-payment-methods"
-                className="bg-background overflow-hidden rounded-t-2xl"
-              />
-
-              {/* Payment agreement widget - rendered by Toss SDK */}
-              <div
-                id="toss-payment-agreement"
-                className="bg-background overflow-hidden rounded-b-2xl"
-              />
-            </div>
-
-            {/* Payment button - disabled until agreement is accepted */}
-            {canPay ? (
-              <Button
-                className="w-full rounded-2xl py-7.5 text-lg dark:bg-white"
-                size={"lg"}
-                onClick={handleClick}
-                disabled={!agreementStatus}
-              >
-                Buy for 10,000원
-              </Button>
-            ) : null}
+        {/* Loading indicator */}
+        {!canPay ? (
+          <div className="flex w-full flex-col items-center justify-center gap-2 py-6">
+            <Loader2Icon className="text-muted-foreground size-10 animate-spin" />
+            <span className="text-muted-foreground text-lg">
+              결제 수단을 불러오는 중...
+            </span>
           </div>
+        ) : null}
+
+        {/* Toss 결제 위젯 */}
+        <div
+          className={cn(
+            "flex w-full flex-col gap-5 transition-opacity duration-300",
+            canPay ? "opacity-100" : "opacity-0",
+          )}
+        >
+          <div className="border-border w-full overflow-hidden rounded-2xl border">
+            <div
+              id="toss-payment-methods"
+              className="bg-background overflow-hidden rounded-t-2xl"
+            />
+            <div
+              id="toss-payment-agreement"
+              className="bg-background overflow-hidden rounded-b-2xl"
+            />
+          </div>
+
+          {canPay ? (
+            <Button
+              className="w-full rounded-2xl py-7.5 text-lg dark:bg-white"
+              size={"lg"}
+              onClick={handleClick}
+              disabled={!agreementStatus}
+            >
+              {pkg.price.toLocaleString()}원 결제하기
+            </Button>
+          ) : null}
         </div>
       </div>
     </div>

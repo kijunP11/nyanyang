@@ -16,13 +16,18 @@
 
 import type { Route } from "./+types/success";
 
+import { eq, sql } from "drizzle-orm";
+import { CheckCircle2 } from "lucide-react";
 import { useEffect } from "react";
 import { redirect, useNavigate } from "react-router";
 import { z } from "zod";
 
+import drizzle from "~/core/db/drizzle-client.server";
 import { requireAuthentication } from "~/core/lib/guards.server";
-import { adminClient } from "~/core/lib/supa-admin-client.server";
 import makeServerClient from "~/core/lib/supa-client.server";
+import { payments } from "~/features/payments/schema";
+import { POINT_PACKAGES } from "~/features/points/lib/packages";
+import { pointTransactions, userPoints } from "~/features/points/schema";
 
 /**
  * Meta function for setting page metadata
@@ -77,7 +82,7 @@ const paymentResponseSchema = z.object({
     url: z.string(),
   }),
   totalAmount: z.number(),
-  metadata: z.record(z.string()),
+  metadata: z.object({ packageId: z.string() }).passthrough(),
 });
 
 /**
@@ -167,34 +172,88 @@ export async function loader({ request }: Route.LoaderArgs) {
     );
   }
   
-  // CRITICAL SECURITY CHECK: Validate payment amount
-  // This prevents attackers from manipulating the payment amount
-  // 🚨⚠️ In a production app, you would compare against the expected amount from your database
-  if (paymentResponse.data.totalAmount !== 10_000) {
+  // 패키지 검증: metadata의 packageId로 서버 상수 조회
+  const packageId = paymentResponse.data.metadata.packageId;
+  const selectedPackage = POINT_PACKAGES.find((p) => p.id === packageId);
+  if (!selectedPackage) {
     throw redirect(
-      `/payments/failure?code=${encodeURIComponent("validation-error")}&message=${encodeURIComponent("Invalid amount")}`,
+      `/payments/failure?code=invalid-package&message=${encodeURIComponent("유효하지 않은 패키지입니다")}`,
     );
   }
-  
-  // Record the verified payment in the database
-  await adminClient.from("payments").insert({
-    payment_key: paymentResponse.data.paymentKey,
-    order_id: paymentResponse.data.orderId,
-    order_name: paymentResponse.data.orderName,
-    total_amount: paymentResponse.data.totalAmount,
-    receipt_url: paymentResponse.data.receipt.url,
-    status: paymentResponse.data.status,
-    approved_at: paymentResponse.data.approvedAt,
-    requested_at: paymentResponse.data.requestedAt,
-    metadata: paymentResponse.data.metadata,
-    raw_data: data,
-    user_id: user!.id,
+
+  // 금액 검증: Toss 응답 금액이 패키지 가격과 일치하는지 확인
+  if (paymentResponse.data.totalAmount !== selectedPackage.price) {
+    throw redirect(
+      `/payments/failure?code=amount-mismatch&message=${encodeURIComponent("결제 금액이 일치하지 않습니다")}`,
+    );
+  }
+
+  const totalJelly = selectedPackage.points + selectedPackage.bonusPoints;
+  const safeReturnTo = returnTo?.startsWith("/") ? returnTo : null;
+
+  // 중복 적립 방지: 동일 order_id가 이미 처리된 경우
+  const [existingPayment] = await drizzle
+    .select({ payment_id: payments.payment_id })
+    .from(payments)
+    .where(eq(payments.order_id, paymentResponse.data.orderId))
+    .limit(1);
+
+  if (existingPayment) {
+    return {
+      returnTo: safeReturnTo,
+      totalJelly,
+      packageLabel: selectedPackage.label,
+    };
+  }
+
+  // Drizzle 트랜잭션: payments 삽입 + user_points upsert + point_transactions 기록
+  await drizzle.transaction(async (tx) => {
+    await tx.insert(payments).values({
+      payment_key: paymentResponse.data.paymentKey,
+      order_id: paymentResponse.data.orderId,
+      order_name: paymentResponse.data.orderName,
+      total_amount: paymentResponse.data.totalAmount,
+      receipt_url: paymentResponse.data.receipt.url,
+      status: paymentResponse.data.status,
+      approved_at: new Date(paymentResponse.data.approvedAt),
+      requested_at: new Date(paymentResponse.data.requestedAt),
+      metadata: paymentResponse.data.metadata,
+      raw_data: data,
+      user_id: user!.id,
+    });
+
+    const [updatedPoints] = await tx
+      .insert(userPoints)
+      .values({
+        user_id: user!.id,
+        current_balance: totalJelly,
+        total_earned: totalJelly,
+        total_spent: 0,
+      })
+      .onConflictDoUpdate({
+        target: userPoints.user_id,
+        set: {
+          current_balance: sql`${userPoints.current_balance} + ${totalJelly}`,
+          total_earned: sql`${userPoints.total_earned} + ${totalJelly}`,
+          updated_at: new Date(),
+        },
+      })
+      .returning();
+
+    await tx.insert(pointTransactions).values({
+      user_id: user!.id,
+      amount: totalJelly,
+      balance_after: updatedPoints.current_balance,
+      type: "charge",
+      reason: `냥젤리 구매: ${selectedPackage.label} (${selectedPackage.points.toLocaleString()} + 보너스 ${selectedPackage.bonusPoints.toLocaleString()})`,
+      reference_id: `payment:${paymentResponse.data.orderId}`,
+    });
   });
-  
-  // Return payment data for the success page (returnTo: 내부 경로만 허용)
+
   return {
-    data,
-    returnTo: returnTo?.startsWith("/") ? returnTo : null,
+    returnTo: safeReturnTo,
+    totalJelly,
+    packageLabel: selectedPackage.label,
   };
 }
 
@@ -225,38 +284,32 @@ export default function Success({ loaderData }: Route.ComponentProps) {
   }, [loaderData.returnTo, navigate]);
 
   return (
-    <div className="flex flex-col items-center gap-20">
-      {/* Main content grid - single column on mobile, two columns on desktop */}
-      <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2">
-        {/* Product image section */}
-        <div>
-          <img
-            src="/nft-2.jpg"
-            alt="nft"
-            className="w-full rounded-2xl object-cover"
-          />
+    <div className="flex flex-col items-center gap-10 py-20">
+      <div className="flex max-w-md flex-col items-center gap-6 text-center">
+        <div className="flex size-20 items-center justify-center rounded-full bg-[#E8FAF8]">
+          <CheckCircle2 className="size-10 text-[#41C7BD]" />
         </div>
-        
-        {/* Payment confirmation section */}
-        <div className="flex flex-col items-start gap-10 overflow-x-scroll">
-          {/* Success message */}
-          <h1 className="text-center text-4xl font-semibold tracking-tight lg:text-5xl">
-            Payment Complete
-          </h1>
-          
-          {/* Explanation text */}
-          <p className="text-muted-foreground text-lg font-medium">
-            We have verified the payment with the Toss API.
-            <br />
-            <br />
-            Here is the data we got from Toss.
+
+        <h1 className="text-2xl font-semibold tracking-tight">
+          젤리 충전 완료
+        </h1>
+
+        <p className="text-muted-foreground text-lg">
+          <span className="text-foreground font-bold">
+            {loaderData.totalJelly.toLocaleString()}젤리
+          </span>
+          가 충전되었습니다.
+        </p>
+
+        <p className="text-muted-foreground text-sm">
+          {loaderData.packageLabel} 패키지
+        </p>
+
+        {loaderData.returnTo && (
+          <p className="text-muted-foreground text-sm">
+            3초 후 이전 페이지로 이동합니다...
           </p>
-          
-          {/* Raw payment data (for demonstration purposes) */}
-          <pre className="break-all">
-            {JSON.stringify(loaderData.data, null, 2)}
-          </pre>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import type { Route } from "./+types/points";
 import { and, desc, eq } from "drizzle-orm";
 import { ChevronRight, PawPrint } from "lucide-react";
 import { useState } from "react";
-import { Link, data, useFetcher, useLoaderData } from "react-router";
+import { Link, data, useFetcher, useLoaderData, useNavigate } from "react-router";
 
 import drizzle from "~/core/db/drizzle-client.server";
 import { requireAuthentication } from "~/core/lib/guards.server";
@@ -103,35 +103,22 @@ export async function loader({ request }: Route.LoaderArgs) {
 export default function PointsScreen() {
   const { balance, dailyCheckedIn, weeklyEligible } =
     useLoaderData<typeof loader>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"purchase" | "free">("purchase");
   const [selectedPackage, setSelectedPackage] =
     useState<PointPackageId>("premium");
   const [selectedPayment, setSelectedPayment] =
     useState<PaymentMethodId>("card");
-  const [isLoading, setIsLoading] = useState(false);
   const attendanceFetcher = useFetcher();
   const weeklyFetcher = useFetcher();
 
-  const handlePurchase = async () => {
-    if (!selectedPackage || isLoading) return;
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/payments/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ package: selectedPackage }),
-      });
-      const result = await response.json();
-      if (result.success && result.checkout_url) {
-        window.location.href = result.checkout_url;
-      } else {
-        alert(result.error || "결제 세션 생성에 실패했습니다.");
-      }
-    } catch {
-      alert("결제 요청 중 오류가 발생했습니다.");
-    } finally {
-      setIsLoading(false);
-    }
+  const handlePurchase = () => {
+    if (!selectedPackage) return;
+    const params = new URLSearchParams({
+      package: selectedPackage,
+      payment: selectedPayment,
+    });
+    navigate(`/payments/checkout?${params.toString()}`);
   };
 
   const handleCheckin = () => {
@@ -301,10 +288,10 @@ export default function PointsScreen() {
             <button
               type="button"
               onClick={handlePurchase}
-              disabled={!selectedPackage || isLoading}
+              disabled={!selectedPackage}
               className="w-full rounded-lg bg-[#36C4B3] border border-[#36C4B3] px-[18px] py-[10px] text-base font-semibold text-white shadow-sm disabled:opacity-50"
             >
-              {isLoading ? "처리 중..." : "적용하기"}
+              {POINT_PACKAGES.find((p) => p.id === selectedPackage)?.price.toLocaleString() ?? ""}원 결제하기
             </button>
           </div>
         )}
