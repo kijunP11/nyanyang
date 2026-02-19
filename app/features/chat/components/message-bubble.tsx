@@ -47,8 +47,8 @@ export function MessageBubble({
               className="h-8 w-8 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#3f3f46]">
-              <span className="text-xs font-semibold text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 dark:bg-[#3f3f46]">
+              <span className="text-xs font-semibold text-gray-900 dark:text-white">
                 {(character.display_name ?? "?")[0]}
               </span>
             </div>
@@ -60,10 +60,10 @@ export function MessageBubble({
       <div className={`flex flex-col ${isUser ? "items-end" : ""}`}>
         <div
           className={`max-w-[280px] rounded-2xl px-4 py-3 ${
-            isUser ? "bg-[#14b8a6] text-white" : "bg-[#2f3032] text-white"
+            isUser ? "bg-[#14b8a6] text-white" : "bg-gray-200 text-gray-900 dark:bg-[#2f3032] dark:text-white"
           }`}
         >
-          <div className="prose prose-sm max-w-none text-sm text-white prose-p:text-white prose-strong:text-white prose-em:text-white">
+          <div className={`prose prose-sm max-w-none text-sm ${isUser ? "text-white prose-p:text-white prose-strong:text-white prose-em:text-white" : "text-gray-900 prose-p:text-gray-900 prose-strong:text-gray-900 prose-em:text-gray-900 dark:text-white dark:prose-p:text-white dark:prose-strong:text-white dark:prose-em:text-white"}`}>
             <ReactMarkdown
               components={{
                 img: ({ src, alt, ...props }) => (
@@ -83,7 +83,7 @@ export function MessageBubble({
           </div>
         </div>
         <div className="mt-1 flex items-center gap-2">
-          <span className="text-xs text-[#9ca3af]">
+          <span className="text-xs text-gray-500 dark:text-[#9ca3af]">
             {new Date(message.created_at).toLocaleTimeString("ko-KR", {
               hour: "2-digit",
               minute: "2-digit",
@@ -92,7 +92,7 @@ export function MessageBubble({
           {isRealMessage && (
             <button
               onClick={() => onRollback(message.message_id)}
-              className="flex items-center gap-1 text-xs text-[#9ca3af] opacity-0 transition-opacity hover:text-[#14b8a6] group-hover:opacity-100"
+              className="flex items-center gap-1 text-xs text-gray-500 opacity-0 transition-opacity hover:text-[#14b8a6] group-hover:opacity-100 dark:text-[#9ca3af]"
               title="이 메시지로 되돌리기"
             >
               <RotateCcw className="h-3 w-3" />
@@ -102,7 +102,7 @@ export function MessageBubble({
           {!isUser && isRealMessage && (
             <button
               onClick={() => onRegenerate(message.message_id)}
-              className="flex items-center gap-1 text-xs text-[#9ca3af] opacity-0 transition-opacity hover:text-[#14b8a6] group-hover:opacity-100"
+              className="flex items-center gap-1 text-xs text-gray-500 opacity-0 transition-opacity hover:text-[#14b8a6] group-hover:opacity-100 dark:text-[#9ca3af]"
               title="재생성"
               disabled={isStreaming}
             >

@@ -68,11 +68,11 @@ export function ChatHeaderBar({
   }, [showMenu]);
 
   return (
-    <div className="relative flex items-center justify-between bg-[#232323]/90 px-4 py-3">
+    <div className="relative flex items-center justify-between bg-white/95 dark:bg-[#232323]/90 px-4 py-3">
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -84,16 +84,16 @@ export function ChatHeaderBar({
             className="h-14 w-14 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#3f3f46]">
-            <span className="text-lg font-semibold text-white">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-200 dark:bg-[#3f3f46]">
+            <span className="text-lg font-semibold text-gray-900 dark:text-white">
               {(character.display_name ?? "?")[0]}
             </span>
           </div>
         )}
 
         <div>
-          <h2 className="font-semibold text-white">{character.display_name}</h2>
-          <p className="text-sm text-[#9ca3af]">{roomTitle || "알수없음"}</p>
+          <h2 className="font-semibold text-gray-900 dark:text-white">{character.display_name}</h2>
+          <p className="text-sm text-gray-500 dark:text-[#9ca3af]">{roomTitle || "알수없음"}</p>
         </div>
       </div>
 
@@ -114,7 +114,7 @@ export function ChatHeaderBar({
         </span>
         <button
           onClick={() => setShowMenu(!showMenu)}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -123,10 +123,10 @@ export function ChatHeaderBar({
       {showMenu && (
         <div
           ref={menuRef}
-          className="absolute right-4 top-full z-50 mt-2 w-56 rounded-lg bg-[#232323] p-2 shadow-lg"
+          className="absolute right-4 top-full z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-[#3f3f46] dark:bg-[#232323]"
         >
-          <div className="mb-2 border-b border-[#3f3f46] pb-2">
-            <p className="px-3 py-1 text-xs text-[#9ca3af]">AI 모델</p>
+          <div className="mb-2 border-b border-gray-200 pb-2 dark:border-[#3f3f46]">
+            <p className="px-3 py-1 text-xs text-gray-500 dark:text-[#9ca3af]">AI 모델</p>
             <ModelSelector
               selectedModel={selectedModel}
               onModelChange={(model) => {
@@ -143,7 +143,7 @@ export function ChatHeaderBar({
                 onConversationSettingsClick();
                 setShowMenu(false);
               }}
-              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-white hover:bg-white/10"
+              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
             >
               <Settings className="h-4 w-4" />
               대화 설정
@@ -156,7 +156,7 @@ export function ChatHeaderBar({
                 onCustomizingClick();
                 setShowMenu(false);
               }}
-              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-white hover:bg-white/10"
+              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
             >
               <Palette className="h-4 w-4" />
               커스터마이징
@@ -169,7 +169,7 @@ export function ChatHeaderBar({
                 onSettingsPanelClick();
                 setShowMenu(false);
               }}
-              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-white hover:bg-white/10"
+              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
             >
               <PanelRight className="h-4 w-4" />
               설정 패널
@@ -182,15 +182,15 @@ export function ChatHeaderBar({
               onMemoryClick();
               setShowMenu(false);
             }}
-            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-white hover:bg-white/10"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
           >
             <Brain className="h-4 w-4" />
             메모리 관리
           </button>
 
           {branches.length > 1 && (
-            <div className="mt-2 border-t border-[#3f3f46] pt-2">
-              <p className="px-3 py-1 text-xs text-[#9ca3af]">대화 분기</p>
+            <div className="mt-2 border-t border-gray-200 pt-2 dark:border-[#3f3f46]">
+              <p className="px-3 py-1 text-xs text-gray-500 dark:text-[#9ca3af]">대화 분기</p>
               {branches.map((branch) => (
                 <button
                   key={branch.branch_name}
@@ -201,11 +201,11 @@ export function ChatHeaderBar({
                   className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-sm ${
                     branch.is_active
                       ? "bg-[#14b8a6]/20 text-[#14b8a6]"
-                      : "text-white hover:bg-white/10"
+                      : "text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
                   }`}
                 >
                   <span>{branch.branch_name}</span>
-                  <span className="text-xs text-[#9ca3af]">{branch.message_count}개</span>
+                  <span className="text-xs text-gray-500 dark:text-[#9ca3af]">{branch.message_count}개</span>
                 </button>
               ))}
             </div>

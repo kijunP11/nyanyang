@@ -20,16 +20,16 @@ export function ChatInputBar({ onSend, disabled }: ChatInputBarProps) {
   };
 
   return (
-    <div className="bg-[#232323] px-4 py-3">
+    <div className="bg-gray-100 px-4 py-3 dark:bg-[#232323]">
       <div className="flex items-center gap-2">
         <button
-          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#3f3f46] text-white hover:bg-[#52525b]"
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#3f3f46] dark:text-white dark:hover:bg-[#52525b]"
           title="첨부"
         >
           <Plus className="h-5 w-5" />
         </button>
 
-        <div className="flex flex-1 items-center gap-2 rounded-full bg-[#3f3f46] px-4 py-2">
+        <div className="flex flex-1 items-center gap-2 rounded-full bg-gray-200 px-4 py-2 dark:bg-[#3f3f46]">
           <input
             type="text"
             value={inputValue}
@@ -42,17 +42,17 @@ export function ChatInputBar({ onSend, disabled }: ChatInputBarProps) {
             }}
             placeholder="메시지를 입력하세요..."
             disabled={disabled}
-            className="flex-1 bg-transparent text-sm text-white placeholder:text-[#9ca3af] focus:outline-none disabled:opacity-50"
+            className="flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none disabled:opacity-50 dark:text-white dark:placeholder:text-[#9ca3af]"
           />
           <button
             onClick={() => setInputValue((prev) => prev + "*지문*")}
-            className="rounded-md px-2 py-1 text-xs text-[#9ca3af] hover:bg-white/10 hover:text-white"
+            className="rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-300 hover:text-gray-900 dark:text-[#9ca3af] dark:hover:bg-white/10 dark:hover:text-white"
           >
             *지문*
           </button>
           <button
             onClick={() => setInputValue((prev) => prev + '"대사"')}
-            className="rounded-md px-2 py-1 text-xs text-[#9ca3af] hover:bg-white/10 hover:text-white"
+            className="rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-300 hover:text-gray-900 dark:text-[#9ca3af] dark:hover:bg-white/10 dark:hover:text-white"
           >
             "대사"
           </button>

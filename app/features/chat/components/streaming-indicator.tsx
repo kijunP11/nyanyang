@@ -26,8 +26,8 @@ function CharacterAvatar({ character }: { character: CharacterInfo }) {
     );
   }
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#3f3f46]">
-      <span className="text-xs font-semibold text-white">
+    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 dark:bg-[#3f3f46]">
+      <span className="text-xs font-semibold text-gray-900 dark:text-white">
         {(character.display_name ?? "?")[0]}
       </span>
     </div>
@@ -47,8 +47,8 @@ export function StreamingIndicator({
         <div className="flex-shrink-0">
           <CharacterAvatar character={character} />
         </div>
-        <div className="max-w-[280px] rounded-2xl bg-[#2f3032] px-4 py-3">
-          <div className="prose prose-sm max-w-none text-sm text-white prose-p:text-white">
+        <div className="max-w-[280px] rounded-2xl bg-gray-200 px-4 py-3 dark:bg-[#2f3032]">
+          <div className="prose prose-sm max-w-none text-sm text-gray-900 prose-p:text-gray-900 dark:text-white dark:prose-p:text-white">
             <ReactMarkdown
               components={{
                 img: ({ node, ...props }) => (
@@ -60,7 +60,7 @@ export function StreamingIndicator({
               {streamingMessage}
             </ReactMarkdown>
           </div>
-          <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-white" />
+          <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-[#14b8a6] dark:bg-white" />
         </div>
       </div>
     );
@@ -71,11 +71,11 @@ export function StreamingIndicator({
       <div className="flex-shrink-0">
         <CharacterAvatar character={character} />
       </div>
-      <div className="rounded-2xl bg-[#2f3032] px-4 py-3">
+      <div className="rounded-2xl bg-gray-200 px-4 py-3 dark:bg-[#2f3032]">
         <div className="flex gap-1">
-          <span className="h-2 w-2 animate-bounce rounded-full bg-white" style={{ animationDelay: "0ms" }} />
-          <span className="h-2 w-2 animate-bounce rounded-full bg-white" style={{ animationDelay: "150ms" }} />
-          <span className="h-2 w-2 animate-bounce rounded-full bg-white" style={{ animationDelay: "300ms" }} />
+          <span className="h-2 w-2 animate-bounce rounded-full bg-[#14b8a6] dark:bg-white" style={{ animationDelay: "0ms" }} />
+          <span className="h-2 w-2 animate-bounce rounded-full bg-[#14b8a6] dark:bg-white" style={{ animationDelay: "150ms" }} />
+          <span className="h-2 w-2 animate-bounce rounded-full bg-[#14b8a6] dark:bg-white" style={{ animationDelay: "300ms" }} />
         </div>
       </div>
     </div>

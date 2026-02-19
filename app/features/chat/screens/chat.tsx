@@ -278,10 +278,10 @@ export default function ChatScreen() {
             }}
           />
         ) : null}
-        <div className="absolute inset-0 z-0 bg-black/50" />
+        <div className="absolute inset-0 z-0 bg-white/60 dark:bg-black/50" />
 
         <div className="relative z-10 flex min-w-0 flex-1">
-          <div className="mx-auto flex h-full w-full max-w-[600px] flex-col bg-black/60">
+          <div className="mx-auto flex h-full w-full max-w-[600px] flex-col bg-white/95 dark:bg-black/60">
             <ChatHeaderBar
               character={characterInfo}
               roomTitle={room.title}
@@ -299,7 +299,7 @@ export default function ChatScreen() {
               onJellyClick={() => setShowPurchaseSheet(true)}
             />
 
-          <div className="bg-[#3f3f46]/80 px-4 py-2 text-center text-xs text-[#9ca3af]">
+          <div className="bg-gray-200/90 dark:bg-[#3f3f46]/80 px-4 py-2 text-center text-xs text-gray-600 dark:text-[#9ca3af]">
             이 캐릭터는 유저가 기입한 정보를 토대로 제작된 AI 챗봇입니다. 동명의 실존인물 혹은 단체와는 관련이 없습니다.
           </div>
 
@@ -522,20 +522,20 @@ function EmptyState({
           className="mb-4 h-24 w-24 rounded-full object-cover"
         />
       ) : (
-        <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-[#3f3f46]">
-          <span className="text-3xl font-semibold text-white">
+        <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gray-200 dark:bg-[#3f3f46]">
+          <span className="text-3xl font-semibold text-gray-900 dark:text-white">
             {(character.display_name ?? "?")[0]}
           </span>
         </div>
       )}
-      <h3 className="mb-2 text-xl font-semibold text-white">{character.display_name}</h3>
-      <p className="mb-6 text-sm text-[#9ca3af]">{roomTitle}</p>
+      <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">{character.display_name}</h3>
+      <p className="mb-6 text-sm text-gray-500 dark:text-[#9ca3af]">{roomTitle}</p>
       {greetingMessage && (
-        <div className="max-w-[320px] rounded-2xl bg-[#2f3032] px-4 py-3 text-center">
-          <p className="text-sm leading-relaxed text-white">{greetingMessage}</p>
+        <div className="max-w-[320px] rounded-2xl bg-gray-200 px-4 py-3 text-center dark:bg-[#2f3032]">
+          <p className="text-sm leading-relaxed text-gray-900 dark:text-white">{greetingMessage}</p>
         </div>
       )}
-      <p className="mt-6 text-xs text-[#6b7280]">아래에 메시지를 입력해서 대화를 시작해보세요</p>
+      <p className="mt-6 text-xs text-gray-500 dark:text-[#6b7280]">아래에 메시지를 입력해서 대화를 시작해보세요</p>
     </div>
   );
 }

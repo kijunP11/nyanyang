@@ -33,7 +33,7 @@ function SettingRow({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm text-[#d1d5db]">{label}</span>
+      <span className="text-sm text-gray-700 dark:text-[#d1d5db]">{label}</span>
       <Switch checked={checked} onCheckedChange={onChange} />
     </div>
   );
@@ -56,13 +56,13 @@ export function ChatSettingsPanel({
       : 2;
 
   return (
-    <div className="w-80 overflow-y-auto border-l border-[#3f3f46] bg-[#1a1a1a] text-white">
-      <div className="flex items-center justify-between border-b border-[#3f3f46] px-4 py-3">
-        <h3 className="text-sm font-semibold">채팅 설정</h3>
+    <div className="w-80 overflow-y-auto border-l border-gray-200 bg-gray-50 dark:border-[#3f3f46] dark:bg-[#1a1a1a] dark:text-white">
+      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-[#3f3f46]">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">채팅 설정</h3>
         <button
           type="button"
           onClick={onClose}
-          className="rounded p-1 hover:bg-white/10"
+          className="rounded p-1 text-gray-600 hover:bg-gray-200 dark:text-white dark:hover:bg-white/10"
           aria-label="닫기"
         >
           <X className="h-4 w-4" />
@@ -70,8 +70,8 @@ export function ChatSettingsPanel({
       </div>
 
       <div className="space-y-4 p-4">
-        <div className="rounded-lg bg-[#232323] p-3">
-          <p className="text-xs text-[#9ca3af]">잔여 크레딧</p>
+        <div className="rounded-lg bg-gray-200 p-3 dark:bg-[#232323]">
+          <p className="text-xs text-gray-500 dark:text-[#9ca3af]">잔여 크레딧</p>
           <p className="text-lg font-bold text-[#14b8a6]">
             {jellyBalance.toLocaleString()} 젤리
           </p>
@@ -90,9 +90,9 @@ export function ChatSettingsPanel({
         />
 
         <div>
-          <p className="mb-2 text-sm text-[#d1d5db]">글씨 크기</p>
+          <p className="mb-2 text-sm text-gray-700 dark:text-[#d1d5db]">글씨 크기</p>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#6b7280]">가</span>
+            <span className="text-xs text-gray-500 dark:text-[#6b7280]">가</span>
             <Slider
               value={[fontSizeIndex]}
               onValueChange={([idx]) =>
@@ -103,12 +103,12 @@ export function ChatSettingsPanel({
               step={1}
               className="flex-1"
             />
-            <span className="text-base font-bold">가</span>
+            <span className="text-base font-bold text-gray-900 dark:text-white">가</span>
           </div>
         </div>
 
         <div>
-          <p className="mb-2 text-sm text-[#d1d5db]">응답 길이</p>
+          <p className="mb-2 text-sm text-gray-700 dark:text-[#d1d5db]">응답 길이</p>
           <Slider
             value={[settings.response_length]}
             onValueChange={([val]) => onUpdateSetting("response_length", val)}
@@ -116,7 +116,7 @@ export function ChatSettingsPanel({
             max={8000}
             step={500}
           />
-          <p className="mt-1 text-xs text-[#6b7280]">
+          <p className="mt-1 text-xs text-gray-500 dark:text-[#6b7280]">
             {settings.response_length} tokens
           </p>
           {onOpenMaxOutput && (
@@ -149,7 +149,7 @@ export function ChatSettingsPanel({
         <button
           type="button"
           onClick={onOpenMemory}
-          className="flex w-full items-center gap-2 rounded-lg border border-[#3f3f46] px-3 py-2 text-sm hover:bg-white/10"
+          className="flex w-full items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 hover:bg-gray-200 dark:border-[#3f3f46] dark:text-white dark:hover:bg-white/10"
         >
           <Brain className="h-4 w-4" />
           요약 관리

@@ -25,7 +25,7 @@ export function SuggestedActions({
           key={action}
           onClick={() => onSelect(action)}
           disabled={disabled}
-          className="rounded-full border border-[#3f3f46] bg-[#232323] px-3 py-1.5 text-xs text-[#d1d5db] transition-colors hover:border-[#14b8a6] hover:text-[#14b8a6] disabled:opacity-50"
+          className="rounded-full border border-gray-300 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 transition-colors hover:border-[#14b8a6] hover:text-[#14b8a6] disabled:opacity-50 dark:border-[#3f3f46] dark:bg-[#232323] dark:text-[#d1d5db]"
         >
           {action}
         </button>
