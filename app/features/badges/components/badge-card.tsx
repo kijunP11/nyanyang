@@ -39,7 +39,7 @@ export function BadgeCard({
     : definition.description;
 
   return (
-    <div className="flex gap-3 rounded-lg border border-[#E9EAEB] p-4">
+    <div className="flex gap-3 rounded-lg border border-[#E9EAEB] p-4 dark:border-[#3f3f46]">
       <BadgeIcon
         iconUrl={definition.icon_url}
         category={definition.category}
@@ -51,10 +51,10 @@ export function BadgeCard({
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="text-base font-semibold text-black">
+            <p className="text-base font-semibold text-black dark:text-white">
               {definition.name}
               {definition.level && (
-                <span className="ml-1 text-sm font-normal text-[#717680]">
+                <span className="ml-1 text-sm font-normal text-[#717680] dark:text-[#9ca3af]">
                   {definition.level}
                 </span>
               )}
@@ -68,17 +68,17 @@ export function BadgeCard({
           )}
         </div>
 
-        <p className="mt-0.5 text-sm text-[#717680]">{description}</p>
+        <p className="mt-0.5 text-sm text-[#717680] dark:text-[#9ca3af]">{description}</p>
 
         {!isEarned && (
           <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 overflow-hidden rounded-full bg-[#E9EAEB] h-2">
+            <div className="flex-1 overflow-hidden rounded-full bg-[#E9EAEB] h-2 dark:bg-[#3f3f46]">
               <div
                 className="h-full rounded-full bg-[#00C4AF] transition-all"
                 style={{ width: `${progress.percentage}%` }}
               />
             </div>
-            <span className="shrink-0 text-xs text-[#717680]">
+            <span className="shrink-0 text-xs text-[#717680] dark:text-[#9ca3af]">
               {progress.current}/{progress.target}
             </span>
           </div>
@@ -104,7 +104,7 @@ export function BadgeCard({
               <button
                 type="button"
                 onClick={() => onSetRepresentative(definition.badge_id)}
-                className="rounded-lg border border-[#D5D7DA] bg-white px-3 py-1.5 text-xs font-semibold text-[#414651] transition-colors hover:bg-[#F5F5F5]"
+                className="rounded-lg border border-[#D5D7DA] bg-white px-3 py-1.5 text-xs font-semibold text-[#414651] transition-colors hover:bg-[#F5F5F5] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-[#d1d5db] dark:hover:bg-[#3f3f46]"
               >
                 {status === "representative"
                   ? "대표 뱃지"
@@ -113,7 +113,7 @@ export function BadgeCard({
             </div>
           )}
           {isLocked && !isClaimable && (
-            <span className="text-xs text-[#A4A7AE]">미달성</span>
+            <span className="text-xs text-[#A4A7AE] dark:text-[#6b7280]">미달성</span>
           )}
         </div>
       </div>

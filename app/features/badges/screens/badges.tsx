@@ -195,9 +195,9 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
   const visibleBadges = definitions.filter((d) => !d.is_hidden);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-[#181D27]">
       <div className="mx-auto max-w-md px-4 py-10 flex flex-col gap-6">
-        <h1 className="text-xl font-semibold text-black">활동 배지</h1>
+        <h1 className="text-xl font-semibold text-black dark:text-white">활동 배지</h1>
 
         <RepresentativeBadgeCard
           representativeBadge={
@@ -214,7 +214,7 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
           }}
         />
 
-        <h2 className="text-base font-semibold text-black">도전 과제</h2>
+        <h2 className="text-base font-semibold text-black dark:text-white">도전 과제</h2>
 
         <div className="flex flex-col gap-3">
           {visibleBadges.map((def) => {
