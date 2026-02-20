@@ -151,7 +151,7 @@ export function NavigationBar({
   return (
     <Sheet>
       <nav className="h-[57px] w-full border-b border-black/20 bg-white dark:border-white/20 dark:bg-[#181D27]">
-        <div className="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-between px-5 md:px-10">
+        <div className="mx-auto flex h-full w-full max-w-[1440px] items-center justify-between px-5">
           <div className="flex h-full items-center gap-[82px]">
             <Link to="/" className="flex shrink-0 items-center">
               <img src="/logo3.png" alt="NYANYANG" className="h-[30px]" />

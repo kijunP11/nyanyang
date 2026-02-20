@@ -136,12 +136,12 @@ export default function CompleteProfile({ actionData }: Route.ComponentProps) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-8">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#FAFAFA] px-4 py-8">
       <div className="w-full max-w-[350px]">
         <h1 className="mb-2 text-center text-2xl font-bold text-black">
           프로필을 완성해 주세요
         </h1>
-        <div className="mb-8 text-center text-sm text-gray-500">
+        <div className="mb-8 text-center text-sm text-[#717680]">
           <p>소셜 계정으로 연결됐어요.</p>
           <p>아래 정보만 확인하면 가입이 완료됩니다.</p>
         </div>
@@ -151,8 +151,8 @@ export default function CompleteProfile({ actionData }: Route.ComponentProps) {
           method="post"
           ref={formRef}
         >
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="nickname" className="text-sm font-medium text-black">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="nickname" className="text-sm font-medium text-[#414651]">
               닉네임
             </Label>
             <Input
@@ -161,10 +161,10 @@ export default function CompleteProfile({ actionData }: Route.ComponentProps) {
               required
               type="text"
               placeholder="닉네임을 입력하세요"
-              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
+              className="h-11 border-[#D5D7DA] bg-white text-base text-black shadow-xs placeholder:text-[#717680] focus:border-[#36C4B3]"
             />
-            <p className="text-xs text-gray-400">
-              닉네임은 2~20자의 한글/영문/숫자만 가능합니다.
+            <p className="text-sm text-[#535862]">
+              닉네임은 2–20자의 한글/영문/숫자만 가능합니다.
             </p>
             {actionData &&
             "fieldErrors" in actionData &&
@@ -173,8 +173,8 @@ export default function CompleteProfile({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="referralCode" className="text-sm font-medium text-black">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="referralCode" className="text-sm font-medium text-[#414651]">
               추천인 코드
             </Label>
             <Input
@@ -182,20 +182,20 @@ export default function CompleteProfile({ actionData }: Route.ComponentProps) {
               name="referralCode"
               type="text"
               placeholder="추천인 코드를 입력하세요 (선택)"
-              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
+              className="h-11 border-[#D5D7DA] bg-white text-base text-black shadow-xs placeholder:text-[#717680] focus:border-[#36C4B3]"
             />
           </div>
 
-          <div className="flex items-center gap-2 border-b border-gray-200 pb-3">
+          <div className="flex items-center gap-2 border-b border-[#E9EAEB] pb-3">
             <Checkbox
               id="allTerms"
               checked={allTermsChecked}
               onCheckedChange={handleAllTermsChange}
-              className="border-gray-300 data-[state=checked]:border-[#41C7BD] data-[state=checked]:bg-[#41C7BD]"
+              className="border-[#D5D7DA] data-[state=checked]:border-[#36C4B3] data-[state=checked]:bg-[#E9FAF7]"
             />
             <Label
               htmlFor="allTerms"
-              className="cursor-pointer text-sm font-medium text-black"
+              className="cursor-pointer text-sm font-medium text-[#414651]"
             >
               아래 약관에 모두 동의합니다.
             </Label>
@@ -207,10 +207,10 @@ export default function CompleteProfile({ actionData }: Route.ComponentProps) {
                 id="age14"
                 name="age14"
                 required
-                className="border-gray-300 data-[state=checked]:border-[#41C7BD] data-[state=checked]:bg-[#41C7BD]"
+                className="border-[#D5D7DA] data-[state=checked]:border-[#36C4B3] data-[state=checked]:bg-[#E9FAF7]"
               />
-              <Label htmlFor="age14" className="text-sm text-gray-500">
-                만 14세 이상입니다. <span className="text-[#41C7BD]">(필수)</span>
+              <Label htmlFor="age14" className="text-sm font-medium text-[#414651]">
+                만 14세 이상입니다. <span className="font-bold text-[#28A393]">(필수)</span>
               </Label>
             </div>
             <div className="flex items-center gap-2">
@@ -218,16 +218,16 @@ export default function CompleteProfile({ actionData }: Route.ComponentProps) {
                 id="terms"
                 name="terms"
                 required
-                className="border-gray-300 data-[state=checked]:border-[#41C7BD] data-[state=checked]:bg-[#41C7BD]"
+                className="border-[#D5D7DA] data-[state=checked]:border-[#36C4B3] data-[state=checked]:bg-[#E9FAF7]"
               />
-              <Label htmlFor="terms" className="text-sm text-gray-500">
+              <Label htmlFor="terms" className="text-sm font-medium text-[#414651]">
                 <Link
                   to="/legal/terms-of-service"
-                  className="text-[#41C7BD] hover:underline"
+                  className="text-[#414651] underline"
                 >
                   나냥 서비스 이용약관
                 </Link>
-                에 동의합니다. <span className="text-[#41C7BD]">(필수)</span>
+                에 동의합니다. <span className="font-bold text-[#28A393]">(필수)</span>
               </Label>
             </div>
             <div className="flex items-center gap-2">
@@ -235,27 +235,27 @@ export default function CompleteProfile({ actionData }: Route.ComponentProps) {
                 id="privacy"
                 name="privacy"
                 required
-                className="border-gray-300 data-[state=checked]:border-[#41C7BD] data-[state=checked]:bg-[#41C7BD]"
+                className="border-[#D5D7DA] data-[state=checked]:border-[#36C4B3] data-[state=checked]:bg-[#E9FAF7]"
               />
-              <Label htmlFor="privacy" className="text-sm text-gray-500">
+              <Label htmlFor="privacy" className="text-sm font-medium text-[#414651]">
                 <Link
                   to="/legal/privacy-policy"
-                  className="text-[#41C7BD] hover:underline"
+                  className="text-[#414651] underline"
                 >
                   개인정보 수집 및 이용
                 </Link>
-                에 동의합니다. <span className="text-[#41C7BD]">(필수)</span>
+                에 동의합니다. <span className="font-bold text-[#28A393]">(필수)</span>
               </Label>
             </div>
             <div className="flex items-center gap-2">
               <Checkbox
                 id="marketing"
                 name="marketing"
-                className="border-gray-300 data-[state=checked]:border-[#41C7BD] data-[state=checked]:bg-[#41C7BD]"
+                className="border-[#D5D7DA] data-[state=checked]:border-[#36C4B3] data-[state=checked]:bg-[#E9FAF7]"
               />
-              <Label htmlFor="marketing" className="text-sm text-gray-500">
+              <Label htmlFor="marketing" className="text-sm font-medium text-[#414651]">
                 마케팅 활용 및 광고성 정보 수신에 동의합니다.{" "}
-                <span className="text-gray-400">(선택)</span>
+                <span className="text-[#414651]">(선택)</span>
               </Label>
             </div>
           </div>
@@ -281,8 +281,8 @@ export default function CompleteProfile({ actionData }: Route.ComponentProps) {
           ) : null}
 
           <FormButton
-            label="시작하기"
-            className="h-12 w-full bg-[#41C7BD] text-white hover:bg-[#41C7BD]/90"
+            label="가입 완료"
+            className="h-12 w-full rounded-lg bg-[#36C4B3] text-base font-semibold text-white shadow-xs hover:bg-[#36C4B3]/90"
           />
         </Form>
       </div>

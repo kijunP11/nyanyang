@@ -16,14 +16,14 @@ function DiscordIcon({ className }: { className?: string }) {
 export default function Footer() {
   return (
     <footer className="mt-auto bg-white pt-16 pb-20 dark:bg-[#181D27]">
-      <div className="mx-auto w-full max-w-screen-2xl px-5 md:px-10">
+      <div className="mx-auto w-full max-w-[1440px] px-5">
         {/* Logo */}
         <div className="mb-6">
           <img src="/logo3.png" alt="NYANYANG" className="h-[30px]" />
         </div>
 
         {/* Company Info */}
-        <div className="mb-4 space-y-1 text-base text-[#717680] dark:text-[#D5D7DA]">
+        <div className="mb-4 space-y-2 text-base text-[#717680] dark:text-[#D5D7DA]">
           <p>
             나냥 | 대표자 김보현 | 02-000-0000 | 사업자 등록번호
             000-00-00000
@@ -32,15 +32,12 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <p className="mb-8 text-base text-[#717680]">
+        <p className="mb-8 text-base text-[#717680] dark:text-[#D5D7DA]">
           &copy; 2025 Nanyang. All rights reserved.
         </p>
 
-        {/* Divider */}
-        <div className="mb-6 h-px bg-[#E9EAEB] dark:bg-[#333741]" />
-
         {/* Bottom Links */}
-        <div className="flex flex-wrap items-center gap-y-3 text-sm text-[#535862] dark:text-[#D5D7DA]">
+        <div className="flex flex-wrap items-center gap-y-3 text-sm tracking-[-0.35px] text-[#535862] dark:text-[#D5D7DA]">
           <Link
             to="/legal/privacy-policy"
             viewTransition

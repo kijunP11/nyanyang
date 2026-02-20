@@ -203,18 +203,18 @@ function LoggedOutCTA() {
     <div className="flex flex-1 flex-col">
       <div className="flex-1" />
       <div className="px-4 pb-6">
-        <div className="rounded-xl border border-[#E9EAEB] p-4 dark:border-[#333741]">
-          <p className="mb-4 text-sm leading-relaxed text-[#535862] dark:text-[#94969C]">
+        <div className="rounded-xl bg-[#F5F5F5] p-4 dark:bg-[#252B37]">
+          <p className="mb-4 text-sm leading-relaxed text-[#181D27] dark:text-[#94969C]">
             로그인하고 개성 넘치는 캐릭터들과 더 깊은 대화를 즐겨보세요!
           </p>
 
           {/* Social Login Buttons */}
-          <div className="mb-3 flex items-center justify-center gap-3">
+          <div className="mb-3 flex items-center justify-center gap-4">
             {/* Kakao */}
             <Link
               to="/auth/social/start/kakao"
               viewTransition
-              className="flex size-11 items-center justify-center rounded-full bg-[#FEE500] transition-opacity hover:opacity-90"
+              className="flex size-12 items-center justify-center rounded-full bg-[#FFE812] transition-opacity hover:opacity-90"
               aria-label="카카오톡으로 로그인"
             >
               <svg
@@ -229,7 +229,7 @@ function LoggedOutCTA() {
             <Link
               to="/auth/social/start/google"
               viewTransition
-              className="flex size-11 items-center justify-center rounded-full border border-[#D5D7DA] bg-white transition-opacity hover:opacity-90 dark:border-[#414651] dark:bg-[#1F242F]"
+              className="flex size-12 items-center justify-center rounded-full border border-[#D5D7DA] bg-white transition-opacity hover:opacity-90 dark:border-[#414651] dark:bg-[#1F242F]"
               aria-label="구글로 로그인"
             >
               <svg className="size-5" viewBox="0 0 24 24">
@@ -257,7 +257,7 @@ function LoggedOutCTA() {
           <Link
             to="/login"
             viewTransition
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#D5D7DA] px-4 py-2.5 text-sm font-medium text-[#414651] transition-colors hover:bg-[#F5F5F5] dark:border-[#414651] dark:text-[#D5D7DA] dark:hover:bg-[#1F242F]"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#D5D7DA] px-4 py-2.5 text-sm font-semibold text-[#414651] shadow-xs transition-colors hover:bg-[#F5F5F5] dark:border-[#414651] dark:text-[#D5D7DA] dark:hover:bg-[#1F242F]"
           >
             <Mail className="size-4" />
             이메일로 시작하기
@@ -276,9 +276,9 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
   const hasChats = chats.length > 0;
 
   return (
-    <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-[#E9EAEB] bg-white dark:border-[#333741] dark:bg-[#181D27]">
+    <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-[#E2E8F0] bg-[#FDFDFD] dark:border-[#333741] dark:bg-[#181D27]">
       {/* Header */}
-      <div className="flex h-[57px] items-center px-4">
+      <div className="flex h-[57px] items-center border-b border-[#E2E8F0] px-4 dark:border-[#333741]">
         <h2 className="text-base font-bold text-[#181D27] dark:text-white">
           채팅
         </h2>
@@ -301,15 +301,15 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
           <div className="flex-1" />
           {/* Empty CTA 카드 */}
           <div className="px-4 pb-4">
-            <div className="rounded-xl border border-[#E9EAEB] p-4 dark:border-[#333741]">
-              <p className="mb-3 text-sm leading-relaxed text-[#535862] dark:text-[#94969C]">
+            <div className="rounded-xl bg-[#F5F5F5] p-4 dark:bg-[#252B37]">
+              <p className="mb-3 text-sm leading-relaxed text-[#181D27] dark:text-[#94969C]">
                 아직 첫 대화를 시작하지 않으셨네요! 마음에 드는 캐릭터와 첫 대화를
                 시작해보세요 :)
               </p>
               <Link
                 to="/characters"
                 viewTransition
-                className="flex w-full items-center justify-center rounded-lg border border-[#D5D7DA] px-4 py-2.5 text-sm font-medium text-[#414651] transition-colors hover:bg-[#F5F5F5] dark:border-[#414651] dark:text-[#D5D7DA] dark:hover:bg-[#1F242F]"
+                className="flex w-full items-center justify-center rounded-lg border border-[#D5D7DA] px-4 py-2.5 text-sm font-semibold text-[#414651] shadow-xs transition-colors hover:bg-[#F5F5F5] dark:border-[#414651] dark:text-[#D5D7DA] dark:hover:bg-[#1F242F]"
               >
                 탐색하기
               </Link>

@@ -47,7 +47,7 @@ function AuthLoginButton({
 }) {
   return (
     <Button
-      className={`inline-flex h-11 items-center justify-center gap-2 ${className}`}
+      className={`inline-flex h-11 items-center justify-center gap-3 text-base font-semibold ${className}`}
       asChild
     >
       <Link to={href}>
@@ -72,30 +72,30 @@ function AuthLoginButton({
  */
 function SocialLoginButtons() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2.5">
       <AuthLoginButton
-        logo={<KakaoLogo className="size-4 scale-125" />}
+        logo={<KakaoLogo className="size-6" />}
         label="카카오"
         href="/auth/social/start/kakao"
-        className="w-full border-0 bg-[#FEE500] text-[#191919] hover:bg-[#fdd800]"
+        className="w-full border-0 bg-[#FEE601] text-black hover:bg-[#fdd800]"
       />
       <AuthLoginButton
-        logo={<AppleLogo className="size-4 scale-150 text-white" />}
+        logo={<AppleLogo className="size-6 text-white" />}
         label="애플"
         href="/auth/social/start/apple"
-        className="w-full border-0 bg-black text-white hover:bg-black/90"
+        className="w-full border-0 bg-black text-white shadow-xs hover:bg-black/90"
       />
       <AuthLoginButton
-        logo={<NaverLogo className="size-4" />}
+        logo={<NaverLogo className="size-6" />}
         label="네이버"
         href="/auth/naver"
-        className="w-full border-0 bg-[#03C75A] text-white hover:bg-[#02b351]"
+        className="w-full border-0 bg-[#03C75A] text-white shadow-xs hover:bg-[#02b351]"
       />
       <AuthLoginButton
-        logo={<GoogleLogo className="size-4" />}
+        logo={<GoogleLogo className="size-6" />}
         label="구글"
         href="/auth/social/start/google"
-        className="w-full border border-gray-300 bg-white text-black hover:bg-gray-50"
+        className="w-full border border-[#D5D7DA] bg-white text-[#414651] shadow-xs hover:bg-gray-50"
       />
     </div>
   );

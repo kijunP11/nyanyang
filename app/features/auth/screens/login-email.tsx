@@ -96,19 +96,19 @@ export default function LoginEmail({ actionData }: Route.ComponentProps) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#FAFAFA] px-4">
       <div className="w-full max-w-[350px]">
-        <h1 className="mb-8 text-center text-2xl font-bold text-black">
+        <h1 className="mb-8 text-center text-[28px] font-medium leading-[40px] text-[#181D27]">
           이메일 로그인
         </h1>
 
         <Form
-          className="flex w-full flex-col gap-4"
+          className="flex w-full flex-col gap-5"
           method="post"
           ref={formRef}
         >
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email" className="text-sm font-medium text-black">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="email" className="text-sm font-medium text-[#414651]">
               이메일
             </Label>
             <Input
@@ -117,7 +117,7 @@ export default function LoginEmail({ actionData }: Route.ComponentProps) {
               required
               type="email"
               placeholder="이메일 입력"
-              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
+              className="h-11 border-[#D5D7DA] bg-white text-base text-black shadow-xs placeholder:text-[#717680] focus:border-[#36C4B3]"
             />
             {actionData &&
             "fieldErrors" in actionData &&
@@ -126,10 +126,10 @@ export default function LoginEmail({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <Label
               htmlFor="password"
-              className="text-sm font-medium text-black"
+              className="text-sm font-medium text-[#414651]"
             >
               비밀번호
             </Label>
@@ -140,7 +140,7 @@ export default function LoginEmail({ actionData }: Route.ComponentProps) {
                 required
                 type={showPassword ? "text" : "password"}
                 placeholder="비밀번호 입력"
-                className="h-12 border-gray-300 bg-white pr-10 text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
+                className="h-11 border-[#D5D7DA] bg-white pr-10 text-base text-black shadow-xs placeholder:text-[#717680] focus:border-[#36C4B3]"
               />
               <button
                 type="button"
@@ -163,7 +163,7 @@ export default function LoginEmail({ actionData }: Route.ComponentProps) {
 
           <FormButton
             label="로그인"
-            className="mt-2 h-12 w-full bg-[#41C7BD] text-white hover:bg-[#41C7BD]/90"
+            className="mt-2 h-12 w-full rounded-lg bg-[#36C4B3] text-base font-semibold text-white shadow-xs hover:bg-[#36C4B3]/90"
           />
 
           {actionData && "error" in actionData ? (
@@ -194,22 +194,22 @@ export default function LoginEmail({ actionData }: Route.ComponentProps) {
           ) : null}
         </Form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-4 text-right">
           <Link
             to="/auth/account-recovery"
-            className="text-sm text-gray-400 underline"
+            className="text-xs font-semibold text-[#A4A7AE] underline"
             viewTransition
           >
             이메일 / 비밀번호 찾기
           </Link>
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-[#535862]">
           소셜 계정이 없으신가요?{" "}
           <Link
             to="/join"
             viewTransition
-            className="text-[#41C7BD] hover:underline"
+            className="font-semibold text-[#28A393] underline"
           >
             이메일로 회원가입
           </Link>
