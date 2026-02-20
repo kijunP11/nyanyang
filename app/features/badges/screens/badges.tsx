@@ -13,8 +13,9 @@ import { requireAuthentication } from "~/core/lib/guards.server";
 
 import { getAllBadgeDefinitions, getUserBadges } from "../lib/queries.server";
 import {
-  evaluateAllBadges,
-  fetchBadgeProgress,
+  evaluateAllBadgesWithMetrics,
+  fetchBadgeMetrics,
+  fetchBadgeProgressWithMetrics,
 } from "../lib/badge-checker.server";
 
 import type { BadgeDefinition, BadgeStatus } from "../types";
@@ -38,13 +39,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw new Response("Unauthorized", { status: 401 });
   }
 
-  const [definitions, claimedBadges, badgeStatusesMap, progressMap] =
-    await Promise.all([
-      getAllBadgeDefinitions(),
-      getUserBadges(user.id),
-      evaluateAllBadges(user.id),
-      fetchBadgeProgress(user.id),
-    ]);
+  const [definitions, claimedBadges, metrics] = await Promise.all([
+    getAllBadgeDefinitions(),
+    getUserBadges(user.id),
+    fetchBadgeMetrics(user.id),
+  ]);
+
+  const badgeStatusesMap = evaluateAllBadgesWithMetrics(definitions, metrics);
+  const progressMap = fetchBadgeProgressWithMetrics(definitions, metrics);
 
   const representativeBadge =
     claimedBadges.find((b) => b.is_representative) ?? null;

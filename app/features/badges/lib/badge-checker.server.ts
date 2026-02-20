@@ -298,6 +298,14 @@ export async function evaluateAllBadges(
     fetchBadgeMetrics(userId),
   ]);
 
+  return evaluateAllBadgesWithMetrics(defs, metrics);
+}
+
+/** 이미 조회한 definitions + metrics로 조건 충족 여부 계산 (DB 호출 없음) */
+export function evaluateAllBadgesWithMetrics(
+  defs: { badge_id: number; metric_type: string; threshold: number | null }[],
+  metrics: BadgeMetrics
+): Map<number, boolean> {
   const result = new Map<number, boolean>();
   for (const def of defs) {
     const checker = THRESHOLD_CHECKERS[def.metric_type];
@@ -378,6 +386,14 @@ export async function fetchBadgeProgress(
     fetchBadgeMetrics(userId),
   ]);
 
+  return fetchBadgeProgressWithMetrics(defs, metrics);
+}
+
+/** 이미 조회한 definitions + metrics로 진행도 계산 (DB 호출 없음) */
+export function fetchBadgeProgressWithMetrics(
+  defs: { badge_id: number; metric_type: string; threshold: number | null }[],
+  metrics: BadgeMetrics
+): Map<number, BadgeProgress> {
   const result = new Map<number, BadgeProgress>();
   for (const def of defs) {
     const { current, target } = getMetricProgress(
