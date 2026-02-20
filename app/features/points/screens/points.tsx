@@ -141,9 +141,9 @@ export default function PointsScreen() {
     weeklyFetcher.data?.success === true || !weeklyEligible;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-[#181D27]">
       <div className="mx-auto max-w-md px-4 py-10 flex flex-col gap-5">
-        <h1 className="text-xl font-semibold text-black">냥젤리</h1>
+        <h1 className="text-xl font-semibold text-black dark:text-white">냥젤리</h1>
 
         <PointBalanceCard currentBalance={balance} />
 
@@ -156,14 +156,14 @@ export default function PointsScreen() {
           >
             <span
               className={`text-sm font-semibold ${
-                activeTab === "purchase" ? "text-black" : "text-[#535862]"
+                activeTab === "purchase" ? "text-black dark:text-white" : "text-[#535862] dark:text-[#94969C]"
               }`}
             >
               구매하기
             </span>
             <div
               className={`h-1 w-full ${
-                activeTab === "purchase" ? "bg-[#414141]" : "bg-[#D9D9D9]"
+                activeTab === "purchase" ? "bg-[#414141] dark:bg-white" : "bg-[#D9D9D9] dark:bg-[#3f3f46]"
               }`}
             />
           </button>
@@ -174,14 +174,14 @@ export default function PointsScreen() {
           >
             <span
               className={`text-sm font-semibold ${
-                activeTab === "free" ? "text-black" : "text-[#535862]"
+                activeTab === "free" ? "text-black dark:text-white" : "text-[#535862] dark:text-[#94969C]"
               }`}
             >
               무료로 받기
             </span>
             <div
               className={`h-1 w-full ${
-                activeTab === "free" ? "bg-[#414141]" : "bg-[#D9D9D9]"
+                activeTab === "free" ? "bg-[#414141] dark:bg-white" : "bg-[#D9D9D9] dark:bg-[#3f3f46]"
               }`}
             />
           </button>
@@ -200,7 +200,7 @@ export default function PointsScreen() {
                     className={`flex items-center gap-[38px] rounded-lg border p-[14px] transition-colors ${
                       isSelected
                         ? "border-[#00C4AF]"
-                        : "border-[#D5D7DA]"
+                        : "border-[#D5D7DA] dark:border-[#3f3f46]"
                     }`}
                     style={
                       isSelected
@@ -215,7 +215,7 @@ export default function PointsScreen() {
                       className={`size-6 rounded-full border-2 flex items-center justify-center ${
                         isSelected
                           ? "border-[#00C4AF] bg-[#00C4AF]"
-                          : "border-[#D5D7DA]"
+                          : "border-[#D5D7DA] dark:border-[#3f3f46]"
                       }`}
                     >
                       {isSelected && (
@@ -226,7 +226,7 @@ export default function PointsScreen() {
                     <div className="flex flex-1 items-center">
                       <PawPrint className="size-6 text-[#F5A3C7] shrink-0" />
                       <div className="flex-1 text-right">
-                        <p className="text-base font-semibold text-[#252B37]">
+                        <p className="text-base font-semibold text-[#252B37] dark:text-white">
                           {pkg.points.toLocaleString()}개
                         </p>
                         {pkg.bonusPoints > 0 && (
@@ -245,11 +245,11 @@ export default function PointsScreen() {
             </div>
 
             <div className="flex flex-col gap-6">
-              <h2 className="text-xl font-semibold text-black">결제 수단</h2>
+              <h2 className="text-xl font-semibold text-black dark:text-white">결제 수단</h2>
               <div className="flex flex-col">
                 {PAYMENT_METHODS.map((method, idx) => (
                   <div key={method.id}>
-                    {idx > 0 && <div className="h-px bg-[#E9EAEB]" />}
+                    {idx > 0 && <div className="h-px bg-[#E9EAEB] dark:bg-[#3f3f46]" />}
                     <button
                       type="button"
                       onClick={() => setSelectedPayment(method.id)}
@@ -259,26 +259,26 @@ export default function PointsScreen() {
                         className={`size-6 rounded-full border-2 flex items-center justify-center ${
                           selectedPayment === method.id
                             ? "border-[#00C4AF] bg-[#00C4AF]"
-                            : "border-[#D5D7DA]"
+                            : "border-[#D5D7DA] dark:border-[#3f3f46]"
                         }`}
                       >
                         {selectedPayment === method.id && (
                           <div className="size-2.5 rounded-full bg-white" />
                         )}
                       </div>
-                      <span className="text-base font-semibold text-[#252B37]">
+                      <span className="text-base font-semibold text-[#252B37] dark:text-white">
                         {method.label}
                       </span>
                     </button>
                   </div>
                 ))}
-                <div className="h-px bg-[#E9EAEB]" />
+                <div className="h-px bg-[#E9EAEB] dark:bg-[#3f3f46]" />
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <p className="text-xs font-bold text-black">환불 정책</p>
-              <div className="text-xs leading-[18px] text-[#717680]">
+              <p className="text-xs font-bold text-black dark:text-white">환불 정책</p>
+              <div className="text-xs leading-[18px] text-[#717680] dark:text-[#9ca3af]">
                 {REFUND_POLICY_LINES.map((line, i) => (
                   <p key={i}>- {line}</p>
                 ))}
@@ -299,12 +299,12 @@ export default function PointsScreen() {
         {activeTab === "free" && (
           <div className="flex flex-col gap-[10px] pb-10">
             {/* 일간 출석체크 카드 */}
-            <div className="rounded-lg border border-[#00C4AF] bg-[#FFF5FB] p-5">
+            <div className="rounded-lg border border-[#00C4AF] bg-[#FFF5FB] p-5 dark:bg-[#1F242F]">
               <div className="flex flex-col gap-5">
                 <div className="flex items-start justify-between">
                   <div className="flex flex-1 flex-col gap-[5px]">
                     <span
-                      className="inline-flex w-fit items-center rounded px-2 py-1 text-sm text-[#535862]"
+                      className="inline-flex w-fit items-center rounded px-2 py-1 text-sm text-[#535862] dark:text-[#94969C]"
                       style={{
                         background:
                           "linear-gradient(90deg, #FFC3E5 0%, #FFC3E5 100%)",
@@ -312,10 +312,10 @@ export default function PointsScreen() {
                     >
                       매일 출석
                     </span>
-                    <p className="text-sm text-black">
+                    <p className="text-sm text-black dark:text-white">
                       매일 출석하고 젤리 받기
                     </p>
-                    <p className="text-base font-semibold text-black">
+                    <p className="text-base font-semibold text-black dark:text-white">
                       냥젤리 400개 받기
                     </p>
                   </div>
@@ -337,18 +337,18 @@ export default function PointsScreen() {
                 </button>
               </div>
             </div>
-            <p className="text-xs text-[#717680]">
+            <p className="text-xs text-[#717680] dark:text-[#9ca3af]">
               * 매일 오전 12:00 ~ 오후 11:59 출석 가능/ 여러 계정 보유시 1일
               1계정만 가능
             </p>
 
             {/* 주간 출석체크 카드 */}
-            <div className="rounded-lg border border-[#00C4AF] bg-[#FFF5FB] p-5">
+            <div className="rounded-lg border border-[#00C4AF] bg-[#FFF5FB] p-5 dark:bg-[#1F242F]">
               <div className="flex flex-col gap-5">
                 <div className="flex items-start justify-between">
                   <div className="flex flex-1 flex-col gap-[5px]">
                     <span
-                      className="inline-flex w-fit items-center rounded px-2 py-1 text-sm text-[#535862]"
+                      className="inline-flex w-fit items-center rounded px-2 py-1 text-sm text-[#535862] dark:text-[#94969C]"
                       style={{
                         background:
                           "linear-gradient(90deg, #FFC3E5 0%, #FFC3E5 100%)",
@@ -356,10 +356,10 @@ export default function PointsScreen() {
                     >
                       주간 출석
                     </span>
-                    <p className="text-sm text-black">
+                    <p className="text-sm text-black dark:text-white">
                       매주 출석하고 젤리 받기
                     </p>
-                    <p className="text-base font-semibold text-black">
+                    <p className="text-base font-semibold text-black dark:text-white">
                       냥젤리 800개 받기
                     </p>
                   </div>
@@ -384,7 +384,7 @@ export default function PointsScreen() {
                 </button>
               </div>
             </div>
-            <p className="text-xs text-[#717680]">
+            <p className="text-xs text-[#717680] dark:text-[#9ca3af]">
               * 매일 오전 12:00 ~ 오후 11:59 출석 가능/ 여러 계정 보유시 1일
               1계정만 가능
             </p>
@@ -392,11 +392,11 @@ export default function PointsScreen() {
             {/* 달성 배지 링크 */}
             <Link
               to="/badges"
-              className="flex items-center justify-between rounded-lg border border-[#00C4AF] bg-[#FFF5FB] p-5"
+              className="flex items-center justify-between rounded-lg border border-[#00C4AF] bg-[#FFF5FB] p-5 dark:bg-[#1F242F]"
             >
               <div className="flex flex-col gap-[5px]">
                 <span
-                  className="inline-flex w-fit items-center rounded px-2 py-1 text-sm text-[#535862]"
+                  className="inline-flex w-fit items-center rounded px-2 py-1 text-sm text-[#535862] dark:text-[#94969C]"
                   style={{
                     background:
                       "linear-gradient(90deg, #FFC3E5 0%, #FFC3E5 100%)",
@@ -404,11 +404,11 @@ export default function PointsScreen() {
                 >
                   달성 뱃지
                 </span>
-                <p className="text-sm text-black">
+                <p className="text-sm text-black dark:text-white">
                   달성 뱃지 획득하고 냥젤리 받기
                 </p>
               </div>
-              <ChevronRight className="size-5 shrink-0 text-[#717680]" />
+              <ChevronRight className="size-5 shrink-0 text-[#717680] dark:text-[#9ca3af]" />
             </Link>
           </div>
         )}
