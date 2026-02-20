@@ -58,7 +58,7 @@ export function StepPersonality() {
     <div className="space-y-6">
       {/* Role */}
       <div className="space-y-2">
-        <Label htmlFor="role" className="text-white">
+        <Label htmlFor="role" className="text-gray-900 dark:text-white">
           역할
         </Label>
         <Select
@@ -67,16 +67,16 @@ export function StepPersonality() {
         >
           <SelectTrigger
             id="role"
-            className="border-[#3f3f46] bg-[#232323] text-white focus:border-[#14b8a6]"
+            className="border-gray-200 bg-white text-gray-900 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white"
           >
             <SelectValue placeholder="역할을 선택하세요" />
           </SelectTrigger>
-          <SelectContent className="border-[#3f3f46] bg-[#232323]">
+          <SelectContent className="border-gray-200 bg-white dark:border-[#3f3f46] dark:bg-[#232323]">
             {ROLE_OPTIONS.map((option) => (
               <SelectItem
                 key={option.value}
                 value={option.value}
-                className="text-white focus:bg-[#3f3f46] focus:text-white"
+                className="text-gray-900 focus:bg-gray-100 dark:text-white dark:focus:bg-[#3f3f46] dark:focus:text-white"
               >
                 {option.label}
               </SelectItem>
@@ -87,7 +87,7 @@ export function StepPersonality() {
 
       {/* Appearance */}
       <div className="space-y-2">
-        <Label htmlFor="appearance" className="text-white">
+        <Label htmlFor="appearance" className="text-gray-900 dark:text-white">
           외모 (선택)
         </Label>
         <Textarea
@@ -96,13 +96,13 @@ export function StepPersonality() {
           onChange={(e) => updateField("appearance", e.target.value)}
           placeholder="예: 짧은 머리, 안경, 캐주얼한 복장"
           rows={2}
-          className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+          className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280]"
         />
       </div>
 
       {/* Personality */}
       <div className="space-y-2">
-        <Label htmlFor="personality" className="text-white">
+        <Label htmlFor="personality" className="text-gray-900 dark:text-white">
           성격 <span className="text-red-500">*</span>
         </Label>
         <Textarea
@@ -111,7 +111,7 @@ export function StepPersonality() {
           onChange={(e) => updateField("personality", e.target.value)}
           placeholder="캐릭터의 성격을 자세히 설명해주세요"
           rows={3}
-          className={`border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6] ${
+          className={`border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280] ${
             errors.personality ? "border-red-500" : ""
           }`}
         />
@@ -122,7 +122,7 @@ export function StepPersonality() {
 
       {/* Speech Style */}
       <div className="space-y-2">
-        <Label htmlFor="speech_style" className="text-white">
+        <Label htmlFor="speech_style" className="text-gray-900 dark:text-white">
           말투 (선택)
         </Label>
         <Input
@@ -130,7 +130,7 @@ export function StepPersonality() {
           value={formData.speech_style}
           onChange={(e) => updateField("speech_style", e.target.value)}
           placeholder="예: 반말, 친근한 톤"
-          className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+          className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280]"
         />
       </div>
 

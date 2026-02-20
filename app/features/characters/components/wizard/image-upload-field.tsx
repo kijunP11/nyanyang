@@ -105,13 +105,13 @@ export function ImageUploadField({
 
   return (
     <div className="space-y-2">
-      <Label className="text-white">{label}</Label>
+      <Label className="text-gray-900 dark:text-white">{label}</Label>
       <div
         className={`relative ${containerClass} border-2 border-dashed transition-colors ${
           isDragging
-            ? "border-[#14b8a6] bg-[#2a2a2a]"
-            : "border-[#3f3f46] bg-[#232323]"
-        } flex cursor-pointer items-center justify-center overflow-hidden hover:border-[#6b7280]`}
+            ? "border-[#14b8a6] bg-gray-100 dark:bg-[#2a2a2a]"
+            : "border-gray-300 bg-gray-100 dark:border-[#3f3f46] dark:bg-[#232323]"
+        } flex cursor-pointer items-center justify-center overflow-hidden hover:border-gray-400 dark:hover:border-[#6b7280]`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -133,7 +133,7 @@ export function ImageUploadField({
             </button>
           </>
         ) : (
-          <div className="flex flex-col items-center gap-2 text-[#9ca3af]">
+          <div className="flex flex-col items-center gap-2 text-gray-500 dark:text-[#9ca3af]">
             {aspectRatio === "banner" ? (
               <ImageIcon className="h-8 w-8" />
             ) : (

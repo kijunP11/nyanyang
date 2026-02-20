@@ -42,7 +42,7 @@ export function StepProfile() {
 
       {/* Name */}
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-white">
+        <Label htmlFor="name" className="text-gray-900 dark:text-white">
           캐릭터 이름 <span className="text-red-500">*</span>
         </Label>
         <Input
@@ -51,7 +51,7 @@ export function StepProfile() {
           onChange={(e) => updateField("name", e.target.value)}
           placeholder="예: 냐냥이"
           maxLength={50}
-          className={`border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6] ${
+          className={`border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280] ${
             errors.name ? "border-red-500" : ""
           }`}
         />
@@ -60,7 +60,7 @@ export function StepProfile() {
 
       {/* Display Name */}
       <div className="space-y-2">
-        <Label htmlFor="display_name" className="text-white">
+        <Label htmlFor="display_name" className="text-gray-900 dark:text-white">
           표시 이름
         </Label>
         <Input
@@ -69,13 +69,13 @@ export function StepProfile() {
           onChange={(e) => updateField("display_name", e.target.value)}
           placeholder="화면에 표시될 이름 (비워두면 캐릭터 이름 사용)"
           maxLength={50}
-          className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+          className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280]"
         />
       </div>
 
       {/* Tagline */}
       <div className="space-y-2">
-        <Label htmlFor="tagline" className="text-white">
+        <Label htmlFor="tagline" className="text-gray-900 dark:text-white">
           한 줄 소개
         </Label>
         <Input
@@ -84,14 +84,14 @@ export function StepProfile() {
           onChange={(e) => updateField("tagline", e.target.value)}
           placeholder="예: 친근한 대학 선배"
           maxLength={50}
-          className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+          className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280]"
         />
-        <p className="text-sm text-[#6b7280]">캐릭터를 한 문장으로 표현해주세요</p>
+        <p className="text-sm text-gray-500 dark:text-[#6b7280]">캐릭터를 한 문장으로 표현해주세요</p>
       </div>
 
       {/* Description */}
       <div className="space-y-2">
-        <Label htmlFor="description" className="text-white">
+        <Label htmlFor="description" className="text-gray-900 dark:text-white">
           설명 <span className="text-red-500">*</span>
         </Label>
         <Textarea
@@ -100,7 +100,7 @@ export function StepProfile() {
           onChange={(e) => updateField("description", e.target.value)}
           placeholder="캐릭터에 대한 간단한 설명을 작성해주세요"
           rows={3}
-          className={`border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6] ${
+          className={`border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280] ${
             errors.description ? "border-red-500" : ""
           }`}
         />

@@ -26,8 +26,8 @@ export function CharacterPreviewCard({ formData }: CharacterPreviewCardProps) {
 
   return (
     <div className="space-y-3">
-      <Label className="text-white">캐릭터 미리보기</Label>
-      <div className="rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
+      <Label className="text-gray-900 dark:text-white">캐릭터 미리보기</Label>
+      <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-[#3f3f46] dark:bg-[#232323]">
         {/* Avatar and Basic Info */}
         <div className="flex gap-4">
           {/* Avatar */}
@@ -38,7 +38,7 @@ export function CharacterPreviewCard({ formData }: CharacterPreviewCardProps) {
               className="h-20 w-20 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#3f3f46] text-[#9ca3af]">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-gray-500 dark:bg-[#3f3f46] dark:text-[#9ca3af]">
               <span className="text-2xl">
                 {formData.name ? formData.name[0].toUpperCase() : "?"}
               </span>
@@ -47,11 +47,11 @@ export function CharacterPreviewCard({ formData }: CharacterPreviewCardProps) {
 
           {/* Basic Info */}
           <div className="flex-1 min-w-0">
-            <h3 className="truncate text-lg font-bold text-white">
+            <h3 className="truncate text-lg font-bold text-gray-900 dark:text-white">
               {formData.name || "(이름 없음)"}
             </h3>
             {formData.tagline && (
-              <p className="truncate text-sm text-[#9ca3af]">
+              <p className="truncate text-sm text-gray-600 dark:text-[#9ca3af]">
                 {formData.tagline}
               </p>
             )}
@@ -61,7 +61,7 @@ export function CharacterPreviewCard({ formData }: CharacterPreviewCardProps) {
               {formData.is_public ? (
                 <Badge className="bg-[#14b8a6]/20 text-[#14b8a6]">공개</Badge>
               ) : (
-                <Badge className="bg-[#6b7280]/20 text-[#6b7280]">비공개</Badge>
+                <Badge className="bg-gray-200 text-gray-600 dark:bg-[#6b7280]/20 dark:text-[#6b7280]">비공개</Badge>
               )}
               {formData.is_nsfw && (
                 <Badge className="bg-red-500/20 text-red-400">NSFW</Badge>
@@ -69,7 +69,7 @@ export function CharacterPreviewCard({ formData }: CharacterPreviewCardProps) {
               {categoryLabel && (
                 <Badge
                   variant="outline"
-                  className="border-[#3f3f46] text-[#9ca3af]"
+                  className="border-gray-300 text-gray-600 dark:border-[#3f3f46] dark:text-[#9ca3af]"
                 >
                   {categoryLabel}
                 </Badge>
@@ -80,8 +80,8 @@ export function CharacterPreviewCard({ formData }: CharacterPreviewCardProps) {
 
         {/* Description */}
         {formData.description && (
-          <div className="mt-4 border-t border-[#3f3f46] pt-4">
-            <p className="line-clamp-3 text-sm text-[#9ca3af]">
+          <div className="mt-4 border-t border-gray-200 pt-4 dark:border-[#3f3f46]">
+            <p className="line-clamp-3 text-sm text-gray-600 dark:text-[#9ca3af]">
               {formData.description}
             </p>
           </div>
@@ -94,13 +94,13 @@ export function CharacterPreviewCard({ formData }: CharacterPreviewCardProps) {
               <Badge
                 key={tag}
                 variant="secondary"
-                className="bg-[#3f3f46] text-[#9ca3af]"
+                className="bg-gray-200 text-gray-600 dark:bg-[#3f3f46] dark:text-[#9ca3af]"
               >
                 #{tag}
               </Badge>
             ))}
             {formData.tags.length > 6 && (
-              <Badge variant="secondary" className="bg-[#3f3f46] text-[#9ca3af]">
+              <Badge variant="secondary" className="bg-gray-200 text-gray-600 dark:bg-[#3f3f46] dark:text-[#9ca3af]">
                 +{formData.tags.length - 6}
               </Badge>
             )}
@@ -109,10 +109,10 @@ export function CharacterPreviewCard({ formData }: CharacterPreviewCardProps) {
 
         {/* Greeting Message Preview */}
         {formData.greeting_message && (
-          <div className="mt-4 border-t border-[#3f3f46] pt-4">
-            <Label className="text-xs text-[#6b7280]">첫 인사말</Label>
-            <div className="mt-2 rounded-lg bg-[#1a1a1a] p-3">
-              <p className="line-clamp-3 text-sm text-white">
+          <div className="mt-4 border-t border-gray-200 pt-4 dark:border-[#3f3f46]">
+            <Label className="text-xs text-gray-500 dark:text-[#6b7280]">첫 인사말</Label>
+            <div className="mt-2 rounded-lg bg-gray-100 p-3 dark:bg-[#1a1a1a]">
+              <p className="line-clamp-3 text-sm text-gray-900 dark:text-white">
                 {formData.greeting_message}
               </p>
             </div>
@@ -121,8 +121,8 @@ export function CharacterPreviewCard({ formData }: CharacterPreviewCardProps) {
 
         {/* Banner Preview (if exists) */}
         {formData.banner_url && (
-          <div className="mt-4 border-t border-[#3f3f46] pt-4">
-            <Label className="text-xs text-[#6b7280]">배너</Label>
+          <div className="mt-4 border-t border-gray-200 pt-4 dark:border-[#3f3f46]">
+            <Label className="text-xs text-gray-500 dark:text-[#6b7280]">배너</Label>
             <img
               src={formData.banner_url}
               alt="배너"

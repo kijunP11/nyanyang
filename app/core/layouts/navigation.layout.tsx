@@ -25,7 +25,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 export default function NavigationLayout({ loaderData }: Route.ComponentProps) {
   const { userPromise } = loaderData;
   return (
-    <div className="flex min-h-screen flex-col justify-between">
+    <div className="flex min-h-screen flex-col justify-between bg-white dark:bg-[#181D27]">
       <Suspense
         fallback={
           <>

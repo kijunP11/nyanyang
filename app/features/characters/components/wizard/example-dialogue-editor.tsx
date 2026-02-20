@@ -31,38 +31,38 @@ function DialogueItem({
   onRemove: () => void;
 }) {
   return (
-    <div className="space-y-3 rounded-lg border border-[#3f3f46] bg-[#2a2a2a] p-4">
+    <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-100 p-4 dark:border-[#3f3f46] dark:bg-[#2a2a2a]">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-[#9ca3af]">예시 대화</span>
+        <span className="text-sm font-medium text-gray-600 dark:text-[#9ca3af]">예시 대화</span>
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={onRemove}
-          className="h-8 w-8 p-0 text-[#9ca3af] hover:bg-[#3f3f46] hover:text-red-400"
+          className="h-8 w-8 p-0 text-gray-500 hover:bg-gray-200 hover:text-red-400 dark:text-[#9ca3af] dark:hover:bg-[#3f3f46]"
         >
           <TrashIcon className="h-4 w-4" />
         </Button>
       </div>
 
       <div className="space-y-2">
-        <Label className="text-xs text-[#6b7280]">사용자 메시지</Label>
+        <Label className="text-xs text-gray-500 dark:text-[#6b7280]">사용자 메시지</Label>
         <Input
           value={dialogue.user}
           onChange={(e) => onUpdate({ user: e.target.value })}
           placeholder="사용자가 보내는 메시지"
-          className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+          className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280]"
         />
       </div>
 
       <div className="space-y-2">
-        <Label className="text-xs text-[#6b7280]">캐릭터 응답</Label>
+        <Label className="text-xs text-gray-500 dark:text-[#6b7280]">캐릭터 응답</Label>
         <Textarea
           value={dialogue.character}
           onChange={(e) => onUpdate({ character: e.target.value })}
           placeholder="캐릭터가 응답하는 메시지"
           rows={2}
-          className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+          className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280]"
         />
       </div>
     </div>
@@ -81,13 +81,13 @@ export function ExampleDialogueEditor({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-white">예시 대화 (선택)</Label>
+        <Label className="text-gray-900 dark:text-white">예시 대화 (선택)</Label>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={onAdd}
-          className="border-[#3f3f46] bg-transparent text-[#9ca3af] hover:bg-[#3f3f46] hover:text-white"
+          className="border-gray-300 bg-transparent text-gray-600 hover:bg-gray-100 dark:border-[#3f3f46] dark:text-[#9ca3af] dark:hover:bg-[#3f3f46] dark:hover:text-white"
         >
           <PlusIcon className="mr-1 h-4 w-4" />
           추가
@@ -95,8 +95,8 @@ export function ExampleDialogueEditor({
       </div>
 
       {dialogues.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-[#3f3f46] p-6 text-center">
-          <p className="text-sm text-[#9ca3af]">
+        <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center dark:border-[#3f3f46]">
+          <p className="text-sm text-gray-500 dark:text-[#9ca3af]">
             예시 대화를 추가하면 AI가 캐릭터의 말투와 성격을 더 잘 이해할 수
             있습니다
           </p>

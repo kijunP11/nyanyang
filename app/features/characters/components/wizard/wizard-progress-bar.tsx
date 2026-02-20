@@ -53,8 +53,8 @@ export function WizardProgressBar({
                     : isCompleted
                       ? "border-green-500 bg-green-500 text-white"
                       : isPast
-                        ? "border-[#3f3f46] bg-[#3f3f46] text-[#9ca3af]"
-                        : "border-[#3f3f46] bg-transparent text-[#9ca3af]"
+                        ? "border-gray-300 bg-gray-300 text-gray-600 dark:border-[#3f3f46] dark:bg-[#3f3f46] dark:text-[#9ca3af]"
+                        : "border-gray-300 bg-transparent text-gray-500 dark:border-[#3f3f46] dark:text-[#9ca3af]"
                 }`}
               >
                 {isCompleted ? (
@@ -67,7 +67,7 @@ export function WizardProgressBar({
               {/* Step Label */}
               <span
                 className={`ml-2 hidden md:block text-sm font-medium ${
-                  isActive ? "text-white" : "text-[#9ca3af]"
+                  isActive ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-[#9ca3af]"
                 }`}
               >
                 {STEP_LABELS[step]}
@@ -77,7 +77,7 @@ export function WizardProgressBar({
               {index < steps.length - 1 && (
                 <div
                   className={`mx-4 h-0.5 w-6 md:w-10 ${
-                    step < currentStep ? "bg-[#14b8a6]" : "bg-[#3f3f46]"
+                    step < currentStep ? "bg-[#14b8a6]" : "bg-gray-300 dark:bg-[#3f3f46]"
                   }`}
                 />
               )}
@@ -105,15 +105,15 @@ export function WizardProgressBar({
                     : isCompleted
                       ? "w-2.5 bg-green-500"
                       : isPast
-                        ? "w-2.5 bg-[#6b7280]"
-                        : "w-2.5 bg-[#3f3f46]"
+                        ? "w-2.5 bg-gray-400 dark:bg-[#6b7280]"
+                        : "w-2.5 bg-gray-300 dark:bg-[#3f3f46]"
                 }`}
                 aria-label={STEP_LABELS[step]}
               />
             );
           })}
         </div>
-        <span className="text-sm text-[#9ca3af]">
+        <span className="text-sm text-gray-500 dark:text-[#9ca3af]">
           {currentStep}/5: {STEP_LABELS[currentStep]}
         </span>
       </div>

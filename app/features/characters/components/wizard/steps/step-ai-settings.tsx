@@ -52,7 +52,7 @@ export function StepAISettings() {
       {/* System Prompt */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="system_prompt" className="text-white">
+          <Label htmlFor="system_prompt" className="text-gray-900 dark:text-white">
             시스템 프롬프트 <span className="text-red-500">*</span>
           </Label>
           <Button
@@ -61,7 +61,7 @@ export function StepAISettings() {
             size="sm"
             onClick={handleAutoGenerate}
             disabled={!canGenerate}
-            className="border-[#3f3f46] bg-transparent text-[#14b8a6] hover:bg-[#14b8a6]/10 hover:text-[#14b8a6] disabled:text-[#6b7280]"
+            className="border-gray-300 bg-transparent text-[#14b8a6] hover:bg-[#14b8a6]/10 hover:text-[#14b8a6] disabled:text-gray-400 dark:border-[#3f3f46] dark:disabled:text-[#6b7280]"
           >
             <SparklesIcon className="mr-1 h-4 w-4" />
             자동 생성
@@ -73,24 +73,24 @@ export function StepAISettings() {
           onChange={(e) => updateField("system_prompt", e.target.value)}
           placeholder="AI가 이 캐릭터를 연기할 때 따를 지침을 작성해주세요"
           rows={8}
-          className={`border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6] ${
+          className={`border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280] ${
             errors.system_prompt ? "border-red-500" : ""
           }`}
         />
         {errors.system_prompt && (
           <p className="text-sm text-red-500">{errors.system_prompt}</p>
         )}
-        <p className="text-sm text-[#6b7280]">
+        <p className="text-sm text-gray-500 dark:text-[#6b7280]">
           캐릭터의 말투, 행동 방식, 배경 설정 등을 상세히 작성해주세요.
           {!canGenerate && " (자동 생성을 사용하려면 먼저 이름과 성격을 입력하세요)"}
         </p>
       </div>
 
       {/* Enable Memory */}
-      <div className="flex items-center justify-between rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
+      <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-100 p-4 dark:border-[#3f3f46] dark:bg-[#232323]">
         <div>
-          <div className="font-medium text-white">메모리 기능</div>
-          <div className="text-sm text-[#9ca3af]">
+          <div className="font-medium text-gray-900 dark:text-white">메모리 기능</div>
+          <div className="text-sm text-gray-600 dark:text-[#9ca3af]">
             AI가 이전 대화 내용을 기억하고 활용합니다
           </div>
         </div>
@@ -102,7 +102,7 @@ export function StepAISettings() {
 
       {/* Gender */}
       <div className="space-y-2">
-        <Label htmlFor="gender" className="text-white">
+        <Label htmlFor="gender" className="text-gray-900 dark:text-white">
           캐릭터 성별
         </Label>
         <Select
@@ -111,16 +111,16 @@ export function StepAISettings() {
         >
           <SelectTrigger
             id="gender"
-            className="border-[#3f3f46] bg-[#232323] text-white focus:border-[#14b8a6]"
+            className="border-gray-200 bg-white text-gray-900 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white"
           >
             <SelectValue placeholder="성별 선택" />
           </SelectTrigger>
-          <SelectContent className="border-[#3f3f46] bg-[#232323]">
+          <SelectContent className="border-gray-200 bg-white dark:border-[#3f3f46] dark:bg-[#232323]">
             {GENDER_OPTIONS.map((option) => (
               <SelectItem
                 key={option.value}
                 value={option.value}
-                className="text-white focus:bg-[#3f3f46] focus:text-white"
+                className="text-gray-900 focus:bg-gray-100 dark:text-white dark:focus:bg-[#3f3f46] dark:focus:text-white"
               >
                 {option.label}
               </SelectItem>
@@ -131,7 +131,7 @@ export function StepAISettings() {
 
       {/* Age Rating */}
       <div className="space-y-3">
-        <Label className="text-white">연령 등급</Label>
+        <Label className="text-gray-900 dark:text-white">연령 등급</Label>
         <div className="space-y-2">
           {AGE_RATING_OPTIONS.map((option) => (
             <label
@@ -139,12 +139,12 @@ export function StepAISettings() {
               className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors ${
                 formData.age_rating === option.value
                   ? "border-[#14b8a6] bg-[#14b8a6]/10"
-                  : "border-[#3f3f46] bg-[#232323] hover:border-[#6b7280]"
+                  : "border-gray-200 bg-gray-100 hover:border-gray-300 dark:border-[#3f3f46] dark:bg-[#232323] dark:hover:border-[#6b7280]"
               }`}
             >
               <div>
-                <div className="font-medium text-white">{option.label}</div>
-                <div className="text-sm text-[#9ca3af]">
+                <div className="font-medium text-gray-900 dark:text-white">{option.label}</div>
+                <div className="text-sm text-gray-600 dark:text-[#9ca3af]">
                   {option.description}
                 </div>
               </div>

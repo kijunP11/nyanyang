@@ -55,7 +55,7 @@ export function StepPublishing() {
 
       {/* Category (Genre) */}
       <div className="space-y-2">
-        <Label htmlFor="category" className="text-white">
+        <Label htmlFor="category" className="text-gray-900 dark:text-white">
           카테고리 (장르)
         </Label>
         <Select
@@ -64,16 +64,16 @@ export function StepPublishing() {
         >
           <SelectTrigger
             id="category"
-            className="border-[#3f3f46] bg-[#232323] text-white focus:border-[#14b8a6]"
+            className="border-gray-200 bg-white text-gray-900 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white"
           >
             <SelectValue placeholder="카테고리 선택" />
           </SelectTrigger>
-          <SelectContent className="border-[#3f3f46] bg-[#232323]">
+          <SelectContent className="border-gray-200 bg-white dark:border-[#3f3f46] dark:bg-[#232323]">
             {CATEGORY_OPTIONS.map((option) => (
               <SelectItem
                 key={option.value}
                 value={option.value}
-                className="text-white focus:bg-[#3f3f46] focus:text-white"
+                className="text-gray-900 focus:bg-gray-100 dark:text-white dark:focus:bg-[#3f3f46] dark:focus:text-white"
               >
                 {option.label}
               </SelectItem>
@@ -83,17 +83,17 @@ export function StepPublishing() {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-[#3f3f46]" />
+      <div className="border-t border-gray-200 dark:border-[#3f3f46]" />
 
       {/* Visibility Settings */}
       <div className="space-y-4">
-        <Label className="text-white">공개 설정</Label>
+        <Label className="text-gray-900 dark:text-white">공개 설정</Label>
 
         {/* Is Public */}
-        <div className="flex items-center justify-between rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
+        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-100 p-4 dark:border-[#3f3f46] dark:bg-[#232323]">
           <div>
-            <div className="font-medium text-white">공개 캐릭터</div>
-            <div className="text-sm text-[#9ca3af]">
+            <div className="font-medium text-gray-900 dark:text-white">공개 캐릭터</div>
+            <div className="text-sm text-gray-600 dark:text-[#9ca3af]">
               다른 사용자도 이 캐릭터와 대화할 수 있습니다
             </div>
           </div>
@@ -104,10 +104,10 @@ export function StepPublishing() {
         </div>
 
         {/* Is NSFW */}
-        <div className="flex items-center justify-between rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
+        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-100 p-4 dark:border-[#3f3f46] dark:bg-[#232323]">
           <div>
-            <div className="font-medium text-white">NSFW 콘텐츠</div>
-            <div className="text-sm text-[#9ca3af]">
+            <div className="font-medium text-gray-900 dark:text-white">NSFW 콘텐츠</div>
+            <div className="text-sm text-gray-600 dark:text-[#9ca3af]">
               성인 콘텐츠가 포함된 캐릭터입니다
             </div>
           </div>
@@ -119,15 +119,15 @@ export function StepPublishing() {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-[#3f3f46]" />
+      <div className="border-t border-gray-200 dark:border-[#3f3f46]" />
 
       {/* Character Preview */}
       <CharacterPreviewCard formData={formData} />
 
       {/* Final Notes */}
-      <div className="rounded-lg border border-[#3f3f46] bg-[#2a2a2a] p-4">
-        <h4 className="font-medium text-white">최종 확인 사항</h4>
-        <ul className="mt-2 space-y-1 text-sm text-[#9ca3af]">
+      <div className="rounded-lg border border-gray-200 bg-gray-100 p-4 dark:border-[#3f3f46] dark:bg-[#2a2a2a]">
+        <h4 className="font-medium text-gray-900 dark:text-white">최종 확인 사항</h4>
+        <ul className="mt-2 space-y-1 text-sm text-gray-600 dark:text-[#9ca3af]">
           <li>• 캐릭터 생성 후에도 언제든 수정할 수 있습니다</li>
           <li>• 공개 캐릭터는 다른 사용자에게 노출됩니다</li>
           <li>• NSFW 캐릭터는 성인 인증 후 이용 가능합니다</li>

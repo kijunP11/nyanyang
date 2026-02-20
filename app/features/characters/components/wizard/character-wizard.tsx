@@ -114,16 +114,16 @@ export function CharacterWizard({
 
       {/* Step Title */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           {STEP_LABELS[currentStep]}
         </h2>
-        <p className="mt-1 text-sm text-[#9ca3af]">
+        <p className="mt-1 text-sm text-gray-500 dark:text-[#9ca3af]">
           {getStepDescription(currentStep)}
         </p>
       </div>
 
       {/* Step Content */}
-      <div className="rounded-lg border border-[#3f3f46] bg-[#1a1a1a] p-6">
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-[#3f3f46] dark:bg-[#1a1a1a]">
         {renderStepContent()}
       </div>
 
@@ -134,7 +134,7 @@ export function CharacterWizard({
           variant="outline"
           onClick={isFirstStep ? onCancel : handlePrev}
           disabled={isSubmitting}
-          className="border-[#3f3f46] bg-transparent text-white hover:bg-[#3f3f46]"
+          className="border-gray-300 bg-transparent text-gray-900 hover:bg-gray-100 dark:border-[#3f3f46] dark:text-white dark:hover:bg-[#3f3f46]"
         >
           {isFirstStep ? (
             "취소"
@@ -154,7 +154,7 @@ export function CharacterWizard({
               variant="outline"
               onClick={onSaveDraft}
               disabled={isSubmitting}
-              className="border-[#3f3f46] bg-transparent text-[#9ca3af] hover:bg-[#3f3f46] hover:text-white"
+              className="border-gray-300 bg-transparent text-gray-600 hover:bg-gray-100 dark:border-[#3f3f46] dark:text-[#9ca3af] dark:hover:bg-[#3f3f46] dark:hover:text-white"
             >
               <SaveIcon className="mr-2 h-4 w-4" />
               임시저장

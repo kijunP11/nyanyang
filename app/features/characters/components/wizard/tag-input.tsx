@@ -67,7 +67,7 @@ export function TagInput({
 
   return (
     <div className="space-y-3">
-      <Label className="text-white">{label}</Label>
+      <Label className="text-gray-900 dark:text-white">{label}</Label>
 
       {/* Input */}
       <div className="flex gap-2">
@@ -77,14 +77,14 @@ export function TagInput({
           onKeyDown={handleKeyDown}
           placeholder={isMaxReached ? `최대 ${maxTags}개` : "태그 입력 후 Enter"}
           disabled={isMaxReached}
-          className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+          className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280]"
         />
         <Button
           type="button"
           variant="outline"
           onClick={handleAddTag}
           disabled={!inputValue.trim() || isMaxReached}
-          className="border-[#3f3f46] bg-transparent text-[#9ca3af] hover:bg-[#3f3f46] hover:text-white"
+          className="border-gray-300 bg-transparent text-gray-600 hover:bg-gray-100 dark:border-[#3f3f46] dark:text-[#9ca3af] dark:hover:bg-[#3f3f46] dark:hover:text-white"
         >
           <PlusIcon className="h-4 w-4" />
         </Button>
