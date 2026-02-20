@@ -11,6 +11,7 @@
  */
 import type { Route } from "./+types/join";
 
+import { AlertCircle } from "lucide-react";
 import { Form, Link, data, redirect } from "react-router";
 import { z } from "zod";
 
@@ -143,25 +144,33 @@ export async function action({ request }: Route.ActionArgs) {
  */
 export default function Join({ actionData }: Route.ComponentProps) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-8">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#FAFAFA] px-4 py-8">
       <div className="w-full max-w-[360px]">
-        <h1 className="mb-8 text-center text-2xl font-bold text-black">
+        <h1 className="mb-8 text-center text-2xl font-bold text-[#181D27]">
           회원가입
         </h1>
 
-        <Form className="flex w-full flex-col gap-4" method="post">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="name" className="text-sm font-medium text-black">
+        <Form className="flex w-full flex-col gap-2.5" method="post">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="name" className="text-sm text-[#414651]">
               이름
             </Label>
-            <Input
-              id="name"
-              name="name"
-              required
-              type="text"
-              placeholder="이름 입력"
-              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
-            />
+            <div className="relative">
+              <Input
+                id="name"
+                name="name"
+                required
+                type="text"
+                placeholder="이름 입력"
+                aria-invalid={!!(actionData && "fieldErrors" in actionData && actionData.fieldErrors?.name)}
+                className="h-11 border-[#D5D7DA] bg-white text-base text-black shadow-xs placeholder:text-[#717680] focus:border-[#36C4B3]"
+              />
+              {actionData &&
+              "fieldErrors" in actionData &&
+              actionData.fieldErrors?.name ? (
+                <AlertCircle className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#F04438]" />
+              ) : null}
+            </div>
             {actionData &&
             "fieldErrors" in actionData &&
             actionData.fieldErrors?.name ? (
@@ -169,18 +178,26 @@ export default function Join({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email" className="text-sm font-medium text-black">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="email" className="text-sm text-[#414651]">
               이메일
             </Label>
-            <Input
-              id="email"
-              name="email"
-              required
-              type="email"
-              placeholder="이메일 입력"
-              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
-            />
+            <div className="relative">
+              <Input
+                id="email"
+                name="email"
+                required
+                type="email"
+                placeholder="이메일 입력"
+                aria-invalid={!!(actionData && "fieldErrors" in actionData && actionData.fieldErrors?.email)}
+                className="h-11 border-[#D5D7DA] bg-white text-base text-black shadow-xs placeholder:text-[#717680] focus:border-[#36C4B3]"
+              />
+              {actionData &&
+              "fieldErrors" in actionData &&
+              actionData.fieldErrors?.email ? (
+                <AlertCircle className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#F04438]" />
+              ) : null}
+            </div>
             {actionData &&
             "fieldErrors" in actionData &&
             actionData.fieldErrors?.email ? (
@@ -188,19 +205,27 @@ export default function Join({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password" className="text-sm font-medium text-black">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="password" className="text-sm text-[#414651]">
               비밀번호
             </Label>
-            <Input
-              id="password"
-              name="password"
-              required
-              type="password"
-              placeholder="비밀번호 입력"
-              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
-            />
-            <p className="text-xs text-gray-400">
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                required
+                type="password"
+                placeholder="비밀번호 입력"
+                aria-invalid={!!(actionData && "fieldErrors" in actionData && actionData.fieldErrors?.password)}
+                className="h-11 border-[#D5D7DA] bg-white text-base text-black shadow-xs placeholder:text-[#717680] focus:border-[#36C4B3]"
+              />
+              {actionData &&
+              "fieldErrors" in actionData &&
+              actionData.fieldErrors?.password ? (
+                <AlertCircle className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#F04438]" />
+              ) : null}
+            </div>
+            <p className="text-sm text-[#535862]">
               영문, 숫자를 포함하여 8자 이상 입력해주세요.
             </p>
             {actionData &&
@@ -210,18 +235,26 @@ export default function Join({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="confirmPassword" className="text-sm font-medium text-black">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="confirmPassword" className="text-sm text-[#414651]">
               비밀번호 확인
             </Label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              required
-              type="password"
-              placeholder="비밀번호 입력"
-              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
-            />
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                required
+                type="password"
+                placeholder="비밀번호 입력"
+                aria-invalid={!!(actionData && "fieldErrors" in actionData && actionData.fieldErrors?.confirmPassword)}
+                className="h-11 border-[#D5D7DA] bg-white text-base text-black shadow-xs placeholder:text-[#717680] focus:border-[#36C4B3]"
+              />
+              {actionData &&
+              "fieldErrors" in actionData &&
+              actionData.fieldErrors?.confirmPassword ? (
+                <AlertCircle className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#F04438]" />
+              ) : null}
+            </div>
             {actionData &&
             "fieldErrors" in actionData &&
             actionData.fieldErrors?.confirmPassword ? (
@@ -229,19 +262,27 @@ export default function Join({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="nickname" className="text-sm font-medium text-black">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="nickname" className="text-sm font-medium text-[#414651]">
               닉네임
             </Label>
-            <Input
-              id="nickname"
-              name="nickname"
-              required
-              type="text"
-              placeholder="닉네임 입력"
-              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
-            />
-            <p className="text-xs text-gray-400">
+            <div className="relative">
+              <Input
+                id="nickname"
+                name="nickname"
+                required
+                type="text"
+                placeholder="닉네임 입력"
+                aria-invalid={!!(actionData && "fieldErrors" in actionData && actionData.fieldErrors?.nickname)}
+                className="h-11 border-[#D5D7DA] bg-white text-base text-black shadow-xs placeholder:text-[#717680] focus:border-[#36C4B3]"
+              />
+              {actionData &&
+              "fieldErrors" in actionData &&
+              actionData.fieldErrors?.nickname ? (
+                <AlertCircle className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#F04438]" />
+              ) : null}
+            </div>
+            <p className="text-sm text-[#535862]">
               닉네임은 2~20자의 한글/영문/숫자만 가능합니다.
             </p>
             {actionData &&
@@ -251,8 +292,8 @@ export default function Join({ actionData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="referralCode" className="text-sm font-medium text-black">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="referralCode" className="text-sm font-medium text-[#414651]">
               추천인 코드
             </Label>
             <Input
@@ -260,13 +301,13 @@ export default function Join({ actionData }: Route.ComponentProps) {
               name="referralCode"
               type="text"
               placeholder="추천인 코드 입력"
-              className="h-12 border-gray-300 bg-white text-black placeholder:text-gray-400 focus:border-[#41C7BD]"
+              className="h-11 border-[#D5D7DA] bg-white text-base text-black shadow-xs placeholder:text-[#717680] focus:border-[#36C4B3]"
             />
           </div>
 
           <FormButton
             label="가입 완료"
-            className="mt-4 h-12 w-full bg-[#41C7BD] text-white hover:bg-[#41C7BD]/90"
+            className="mt-[22px] h-12 w-full rounded-lg bg-[#36C4B3] text-base font-semibold text-white shadow-xs hover:bg-[#36C4B3]/90"
           />
 
           {actionData && "error" in actionData && actionData.error ? (
@@ -274,13 +315,13 @@ export default function Join({ actionData }: Route.ComponentProps) {
           ) : null}
         </Form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-[#181D27]">
           이미 계정이 있으신가요?{" "}
           <Link
             to="/login"
             viewTransition
             data-testid="form-signin-link"
-            className="text-[#41C7BD] hover:underline"
+            className="font-semibold text-[#28A393] underline"
           >
             로그인하기
           </Link>

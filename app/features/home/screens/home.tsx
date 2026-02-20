@@ -23,7 +23,6 @@ type Character = Database["public"]["Tables"]["characters"]["Row"];
 
 type CharacterWithCreator = Character & {
   creator_name: string | null;
-  creator_badge_type: string | null;
 };
 
 interface LoaderData {
@@ -112,28 +111,21 @@ export async function loader({ request }: Route.LoaderArgs) {
     const { data: profiles } = creatorIds.length > 0
       ? await client
           .from("profiles")
-          .select("profile_id, name, badge_type")
+          .select("profile_id, name")
           .in("profile_id", creatorIds)
       : { data: [] };
 
-    // creator_id → { name, badge_type } 매핑
+    // creator_id → name 매핑
     const profileMap = new Map(
-      (profiles || []).map((p) => [
-        p.profile_id,
-        { name: p.name, badge_type: p.badge_type },
-      ])
+      (profiles || []).map((p) => [p.profile_id, p.name])
     );
 
-    // creator_name, creator_badge_type 추가
+    // creator_name 추가
     const addCreatorName = (chars: Character[]): CharacterWithCreator[] =>
-      chars.map((c) => {
-        const profile = profileMap.get(c.creator_id);
-        return {
-          ...c,
-          creator_name: profile?.name || null,
-          creator_badge_type: profile?.badge_type || null,
-        };
-      });
+      chars.map((c) => ({
+        ...c,
+        creator_name: profileMap.get(c.creator_id) || null,
+      }));
 
     return data(
       {
@@ -315,14 +307,16 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
           {/* 2. AI 추천 검색 */}
           <section>
-            <div className="flex h-12 w-full items-center gap-3 rounded-xl border border-[#E9EAEB] bg-[#F5F5F5] px-4 dark:border-[#333741] dark:bg-[#1F242F]">
-              <span className="flex-shrink-0 rounded-md bg-[#41C7BD] px-2 py-0.5 text-xs font-bold text-white">
-                AI 추천 대화
-              </span>
-              <p className="min-w-0 flex-1 truncate text-sm text-[#535862] dark:text-[#94969C]">
-                올해의 &apos;달콤살벌 매력&apos;에 빠져볼까? 지금 바로 시작하세요
-              </p>
-              <Search className="h-5 w-5 flex-shrink-0 text-[#A4A7AE] dark:text-[#717680]" />
+            <div className="relative rounded-[24px] bg-gradient-to-r from-[#F472B6] via-[#A78BFA] to-[#14B8A6] p-[1.5px] shadow-[0_0_20px_rgba(244,114,182,0.3)]">
+              <div className="flex h-12 w-full items-center gap-3 rounded-[23px] bg-white px-4 dark:bg-[#181D27]">
+                <span className="flex-shrink-0 rounded-md bg-[#41C7BD] px-2 py-0.5 text-xs font-bold text-white">
+                  AI 추천 대화
+                </span>
+                <p className="min-w-0 flex-1 truncate text-sm text-[#535862] dark:text-[#94969C]">
+                  올해의 &apos;달콤살벌 매력&apos;에 빠져볼까? 지금 바로 시작하세요
+                </p>
+                <Search className="h-5 w-5 flex-shrink-0 text-[#A4A7AE] dark:text-[#717680]" />
+              </div>
             </div>
           </section>
 
@@ -370,7 +364,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   key={character.character_id}
                   character={character}
                   creatorName={character.creator_name}
-                  creatorBadgeType={character.creator_badge_type}
                   onClick={() => setSelectedCharacterId(character.character_id)}
                 />
               ))}
@@ -381,19 +374,17 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           {popularCharacters.length > 0 && (
             <ScrollSection
               title="실시간 인기"
-              badge="HOT"
               moreLink="/characters?sort=popular"
             >
-            {popularCharacters.map((character) => (
-              <VerticalCharacterCard
-                key={character.character_id}
-                character={character}
-                creatorName={character.creator_name}
-                creatorBadgeType={character.creator_badge_type}
-                badge="HOT"
-                onClick={() => setSelectedCharacterId(character.character_id)}
-              />
-            ))}
+              {popularCharacters.map((character) => (
+                <VerticalCharacterCard
+                  key={character.character_id}
+                  character={character}
+                  creatorName={character.creator_name}
+                  badge="HOT"
+                  onClick={() => setSelectedCharacterId(character.character_id)}
+                />
+              ))}
             </ScrollSection>
           )}
 
@@ -401,7 +392,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           {newestCharacters.length > 0 && (
             <ScrollSection
               title="크리에이터 신작"
-              badge="NEW"
               moreLink="/characters?sort=newest"
             >
               {newestCharacters.map((character) => (
@@ -409,27 +399,23 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   key={character.character_id}
                   character={character}
                   creatorName={character.creator_name}
-                  creatorBadgeType={character.creator_badge_type}
                   onClick={() => setSelectedCharacterId(character.character_id)}
                 />
               ))}
             </ScrollSection>
           )}
 
-          {/* 7. 프로모션 배너 — 다크 배경 + 캐릭터 이미지 */}
+          {/* 7. 프로모션 배너 */}
           <section>
             <Link
               to="/notices"
               className="group block overflow-hidden rounded-2xl transition-transform hover:scale-[1.01]"
             >
-              <div className="relative flex h-[140px] items-center bg-gradient-to-r from-[#1a1a2e] to-[#16213e]">
+              <div className="relative flex h-[140px] items-center bg-[#060809]">
                 <div className="relative z-10 flex-1 px-8">
-                  <p className="text-lg font-bold text-white">나냥 기획전</p>
-                  <p className="mt-1 text-sm text-white/70">
+                  <p className="text-[20px] font-bold text-white">나냥 기획전</p>
+                  <p className="mt-1 text-sm text-[#D5D7DA]">
                     특별한 캐릭터를 만나보세요
-                  </p>
-                  <p className="mt-0.5 text-xs text-white/50">
-                    매력적인 캐릭터와 이벤트가 기다립니다
                   </p>
                 </div>
                 <div className="absolute right-0 top-0 h-full w-[200px] overflow-hidden">
@@ -438,7 +424,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                     alt="프로모션"
                     className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a2e] to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#060809] to-transparent" />
                 </div>
               </div>
             </Link>

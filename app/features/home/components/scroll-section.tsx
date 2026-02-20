@@ -1,7 +1,7 @@
 /**
  * Scroll Section
  *
- * 가로 스크롤 섹션 래퍼 (타이틀 + 우측 화살표 버튼)
+ * 가로 스크롤 섹션 래퍼 (타이틀 + 전체보기 + 카드 목록)
  */
 
 import { ChevronRight } from "lucide-react";
@@ -12,14 +12,12 @@ interface ScrollSectionProps {
   title: string;
   children: React.ReactNode;
   moreLink?: string;
-  badge?: string;
 }
 
 export function ScrollSection({
   title,
   children,
   moreLink,
-  badge,
 }: ScrollSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showArrow, setShowArrow] = useState(false);
@@ -60,24 +58,14 @@ export function ScrollSection({
     <section>
       {/* 헤더 */}
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold text-[#181D27] dark:text-white">{title}</h2>
-          {badge && (
-            <span
-              className={`rounded-full px-2 py-0.5 text-xs font-bold text-white ${
-                badge === "HOT" ? "bg-red-500" : "bg-[#41C7BD]"
-              }`}
-            >
-              {badge}
-            </span>
-          )}
-        </div>
+        <h2 className="text-[20px] font-bold text-black dark:text-white">{title}</h2>
         {moreLink && (
           <Link
             to={moreLink}
-            className="text-sm text-[#A4A7AE] hover:text-[#535862] dark:text-[#717680] dark:hover:text-[#94969C]"
+            className="flex items-center gap-0.5 text-xs text-black hover:text-[#535862] dark:text-white dark:hover:text-[#94969C]"
           >
             전체보기
+            <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         )}
       </div>
@@ -87,7 +75,7 @@ export function ScrollSection({
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="scrollbar-hide flex gap-4 overflow-x-auto pb-2"
+          className="scrollbar-hide flex gap-2 overflow-x-auto pb-2"
         >
           {children}
         </div>
