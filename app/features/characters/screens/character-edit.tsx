@@ -533,15 +533,15 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
     <div className="container mx-auto max-w-4xl py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">{character.name} 편집</h1>
-          <p className="mt-2 text-[#9ca3af]">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{character.name} 편집</h1>
+          <p className="mt-2 text-gray-500 dark:text-[#9ca3af]">
             캐릭터 정보를 수정하고 관리하세요
           </p>
         </div>
         <Button
           variant="outline"
           onClick={() => window.history.back()}
-          className="border-[#3f3f46] bg-transparent text-white hover:bg-[#3f3f46]"
+          className="border-gray-300 bg-transparent text-gray-700 hover:bg-gray-100 dark:border-[#3f3f46] dark:text-white dark:hover:bg-[#3f3f46]"
         >
           돌아가기
         </Button>
@@ -564,22 +564,22 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
       )}
 
       <Tabs defaultValue="info" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 bg-[#232323]">
+        <TabsList className="grid w-full grid-cols-3 bg-gray-200 dark:bg-[#232323]">
           <TabsTrigger
             value="info"
-            className="data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white"
+            className="text-gray-700 data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white dark:text-gray-300"
           >
             캐릭터 정보
           </TabsTrigger>
           <TabsTrigger
             value="keywords"
-            className="data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white"
+            className="text-gray-700 data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white dark:text-gray-300"
           >
             키워드북
           </TabsTrigger>
           <TabsTrigger
             value="safety"
-            className="data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white"
+            className="text-gray-700 data-[state=active]:bg-[#14b8a6] data-[state=active]:text-white dark:text-gray-300"
           >
             안전 필터
           </TabsTrigger>
@@ -600,9 +600,9 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
           <div className="space-y-6">
             {/* Existing Keywords */}
             {character.keywords && character.keywords.length > 0 && (
-              <Card className="border-[#3f3f46] bg-[#1a1a1a]">
+              <Card className="border-gray-200 bg-gray-50 dark:border-[#3f3f46] dark:bg-[#1a1a1a]">
                 <CardHeader>
-                  <CardTitle className="text-white">등록된 키워드</CardTitle>
+                  <CardTitle className="text-gray-900 dark:text-white">등록된 키워드</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {character.keywords.map(
@@ -614,19 +614,19 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                     }) => (
                       <div
                         key={kw.keyword_id}
-                        className="flex items-start justify-between rounded border border-[#3f3f46] bg-[#232323] p-3"
+                        className="flex items-start justify-between rounded border border-gray-200 bg-white p-3 dark:border-[#3f3f46] dark:bg-[#232323]"
                       >
                         <div className="flex-1">
                           <div className="mb-1 flex items-center gap-2">
                             <Badge className="bg-[#14b8a6]/20 text-[#14b8a6]">
                               {kw.keyword}
                             </Badge>
-                            <span className="text-xs text-[#6b7280]">
+                            <span className="text-xs text-gray-500 dark:text-[#6b7280]">
                               우선순위: {kw.priority}
                             </span>
                           </div>
                           {kw.description && (
-                            <p className="text-sm text-[#9ca3af]">
+                            <p className="text-sm text-gray-500 dark:text-[#9ca3af]">
                               {kw.description}
                             </p>
                           )}
@@ -647,7 +647,7 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                             variant="ghost"
                             size="sm"
                             disabled={isSubmitting}
-                            className="text-[#9ca3af] hover:bg-[#3f3f46] hover:text-red-400"
+                            className="text-gray-600 hover:bg-gray-200 hover:text-red-500 dark:text-[#9ca3af] dark:hover:bg-[#3f3f46] dark:hover:text-red-400"
                           >
                             삭제
                           </Button>
@@ -660,16 +660,16 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
             )}
 
             {/* Add Keyword Form */}
-            <Card className="border-[#3f3f46] bg-[#1a1a1a]">
+            <Card className="border-gray-200 bg-gray-50 dark:border-[#3f3f46] dark:bg-[#1a1a1a]">
               <CardHeader>
-                <CardTitle className="text-white">새 키워드 추가</CardTitle>
+                <CardTitle className="text-gray-900 dark:text-white">새 키워드 추가</CardTitle>
               </CardHeader>
               <CardContent>
                 <Form method="post" className="space-y-4">
                   <input type="hidden" name="_action" value="add_keyword" />
 
                   <div>
-                    <Label htmlFor="keyword" className="text-white">
+                    <Label htmlFor="keyword" className="text-gray-900 dark:text-white">
                       키워드
                     </Label>
                     <Input
@@ -677,24 +677,24 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       name="keyword"
                       required
                       placeholder="예: 밥"
-                      className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+                      className="border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280] dark:focus:border-[#14b8a6]"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="keyword_description" className="text-white">
+                    <Label htmlFor="keyword_description" className="text-gray-900 dark:text-white">
                       설명
                     </Label>
                     <Input
                       id="keyword_description"
                       name="keyword_description"
                       placeholder="이 키워드에 대한 설명"
-                      className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+                      className="border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280] dark:focus:border-[#14b8a6]"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="response_template" className="text-white">
+                    <Label htmlFor="response_template" className="text-gray-900 dark:text-white">
                       응답 템플릿 (선택)
                     </Label>
                     <Textarea
@@ -702,12 +702,12 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       name="response_template"
                       rows={2}
                       placeholder='예: *배고픈 듯 쳐다본다* "밥 먹고 싶어..."'
-                      className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+                      className="border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280] dark:focus:border-[#14b8a6]"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="priority" className="text-white">
+                    <Label htmlFor="priority" className="text-gray-900 dark:text-white">
                       우선순위
                     </Label>
                     <Input
@@ -717,9 +717,9 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       defaultValue={0}
                       min={0}
                       max={100}
-                      className="border-[#3f3f46] bg-[#232323] text-white focus:border-[#14b8a6]"
+                      className="border-gray-300 bg-white text-gray-900 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:focus:border-[#14b8a6]"
                     />
-                    <p className="mt-1 text-sm text-[#6b7280]">
+                    <p className="mt-1 text-sm text-gray-500 dark:text-[#6b7280]">
                       높을수록 우선 적용됩니다
                     </p>
                   </div>
@@ -741,13 +741,13 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
         <TabsContent value="safety">
           <Form method="post">
             <input type="hidden" name="_action" value="update_safety" />
-            <Card className="border-[#3f3f46] bg-[#1a1a1a]">
+            <Card className="border-gray-200 bg-gray-50 dark:border-[#3f3f46] dark:bg-[#1a1a1a]">
               <CardHeader>
-                <CardTitle className="text-white">안전 필터 설정</CardTitle>
+                <CardTitle className="text-gray-900 dark:text-white">안전 필터 설정</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-[#3f3f46] dark:bg-[#232323]">
                     <input
                       type="checkbox"
                       id="block_nsfw"
@@ -755,10 +755,10 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       defaultChecked={character.safetyFilter?.block_nsfw ?? true}
                       className="h-4 w-4 accent-[#14b8a6]"
                     />
-                    <span className="text-white">NSFW 콘텐츠 차단</span>
+                    <span className="text-gray-900 dark:text-white">NSFW 콘텐츠 차단</span>
                   </label>
 
-                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-[#3f3f46] dark:bg-[#232323]">
                     <input
                       type="checkbox"
                       id="block_violence"
@@ -768,10 +768,10 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       }
                       className="h-4 w-4 accent-[#14b8a6]"
                     />
-                    <span className="text-white">폭력적 콘텐츠 차단</span>
+                    <span className="text-gray-900 dark:text-white">폭력적 콘텐츠 차단</span>
                   </label>
 
-                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-[#3f3f46] dark:bg-[#232323]">
                     <input
                       type="checkbox"
                       id="block_hate_speech"
@@ -781,10 +781,10 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       }
                       className="h-4 w-4 accent-[#14b8a6]"
                     />
-                    <span className="text-white">혐오 발언 차단</span>
+                    <span className="text-gray-900 dark:text-white">혐오 발언 차단</span>
                   </label>
 
-                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#3f3f46] bg-[#232323] p-4">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-[#3f3f46] dark:bg-[#232323]">
                     <input
                       type="checkbox"
                       id="block_personal_info"
@@ -794,12 +794,12 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       }
                       className="h-4 w-4 accent-[#14b8a6]"
                     />
-                    <span className="text-white">개인정보 차단</span>
+                    <span className="text-gray-900 dark:text-white">개인정보 차단</span>
                   </label>
                 </div>
 
                 <div>
-                  <Label htmlFor="blocked_words" className="text-white">
+                  <Label htmlFor="blocked_words" className="text-gray-900 dark:text-white">
                     차단 단어
                   </Label>
                   <Input
@@ -809,12 +809,12 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                       character.safetyFilter?.blocked_words?.join(", ") || ""
                     }
                     placeholder="쉼표로 구분"
-                    className="border-[#3f3f46] bg-[#232323] text-white placeholder:text-[#6b7280] focus:border-[#14b8a6]"
+                    className="border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:placeholder:text-[#6b7280] dark:focus:border-[#14b8a6]"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="sensitivity_level" className="text-white">
+                  <Label htmlFor="sensitivity_level" className="text-gray-900 dark:text-white">
                     민감도 레벨 (1-10)
                   </Label>
                   <Input
@@ -824,9 +824,9 @@ export default function CharacterEdit({ loaderData }: Route.ComponentProps) {
                     min={1}
                     max={10}
                     defaultValue={character.safetyFilter?.sensitivity_level || 5}
-                    className="border-[#3f3f46] bg-[#232323] text-white focus:border-[#14b8a6]"
+                    className="border-gray-300 bg-white text-gray-900 focus:border-[#14b8a6] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-white dark:focus:border-[#14b8a6]"
                   />
-                  <p className="mt-1 text-sm text-[#6b7280]">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-[#6b7280]">
                     높을수록 더 엄격하게 필터링합니다
                   </p>
                 </div>
