@@ -2,27 +2,26 @@
  * 뱃지 컬렉션 페이지 (F8 리디자인)
  * 탭 제거, 플랫 도전 과제 리스트 + 진행도 바 + 보상 포인트
  */
+import type { BadgeDefinition, BadgeStatus } from "../types";
 import type { Route } from "./+types/badges";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { data } from "react-router";
 import { useFetcher, useRevalidator } from "react-router";
 
-import makeServerClient from "~/core/lib/supa-client.server";
 import { requireAuthentication } from "~/core/lib/guards.server";
+import makeServerClient from "~/core/lib/supa-client.server";
 
-import { getAllBadgeDefinitions, getUserBadges } from "../lib/queries.server";
+import { BadgeCard } from "../components/badge-card";
+import { BadgeClaimModal } from "../components/badge-claim-modal";
+import { BadgeRepresentativeModal } from "../components/badge-representative-modal";
+import { RepresentativeBadgeCard } from "../components/representative-badge-card";
 import {
   evaluateAllBadgesWithMetrics,
   fetchBadgeMetrics,
   fetchBadgeProgressWithMetrics,
 } from "../lib/badge-checker.server";
-
-import type { BadgeDefinition, BadgeStatus } from "../types";
-import { BadgeClaimModal } from "../components/badge-claim-modal";
-import { BadgeRepresentativeModal } from "../components/badge-representative-modal";
-import { RepresentativeBadgeCard } from "../components/representative-badge-card";
-import { BadgeCard } from "../components/badge-card";
+import { getAllBadgeDefinitions, getUserBadges } from "../lib/queries.server";
 
 export const meta: Route.MetaFunction = () => [
   { title: `활동 배지 | ${import.meta.env.VITE_APP_NAME}` },
@@ -52,14 +51,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     claimedBadges.find((b) => b.is_representative) ?? null;
 
   const badgeStatuses: Record<string, boolean> = Object.fromEntries(
-    [...badgeStatusesMap.entries()].map(([k, v]) => [String(k), v])
+    [...badgeStatusesMap.entries()].map(([k, v]) => [String(k), v]),
   );
 
   const badgeProgress: Record<
     string,
     { current: number; target: number; percentage: number }
   > = Object.fromEntries(
-    [...progressMap.entries()].map(([k, v]) => [String(k), v])
+    [...progressMap.entries()].map(([k, v]) => [String(k), v]),
   );
 
   return data(
@@ -70,7 +69,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       badgeProgress,
       representativeBadge,
     },
-    { headers }
+    { headers },
   );
 }
 
@@ -78,7 +77,7 @@ function getStatus(
   def: BadgeDefinition,
   claimedBadges: Route.ComponentProps["loaderData"]["claimedBadges"],
   representativeBadge: Route.ComponentProps["loaderData"]["representativeBadge"],
-  badgeStatuses: Record<string, boolean>
+  badgeStatuses: Record<string, boolean>,
 ): BadgeStatus {
   const claimed = claimedBadges.find((b) => b.badge_id === def.badge_id);
   if (representativeBadge?.badge_id === def.badge_id) return "representative";
@@ -116,9 +115,9 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
   const [representativeModalMode, setRepresentativeModalMode] = useState<
     "set" | "unset"
   >("set");
-  const [pendingClaimBadgeId, setPendingClaimBadgeId] = useState<
-    number | null
-  >(null);
+  const [pendingClaimBadgeId, setPendingClaimBadgeId] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     if (claimFetcher.state !== "idle" || !claimFetcher.data) return;
@@ -160,7 +159,7 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
         method: "POST",
         action: "/api/badges/claim",
         encType: "application/json",
-      }
+      },
     );
   };
 
@@ -184,7 +183,7 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
         method: "POST",
         action: "/api/badges/representative",
         encType: "application/json",
-      }
+      },
     );
   };
 
@@ -196,14 +195,14 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#181D27]">
-      <div className="mx-auto max-w-md px-4 py-10 flex flex-col gap-6">
-        <h1 className="text-xl font-semibold text-black dark:text-white">활동 배지</h1>
+      <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-10">
+        <h1 className="text-xl font-semibold text-black dark:text-white">
+          활동 뱃지
+        </h1>
 
         <RepresentativeBadgeCard
           representativeBadge={
-            representativeDef
-              ? { definition: representativeDef }
-              : null
+            representativeDef ? { definition: representativeDef } : null
           }
           onUnsetClick={() => {
             if (representativeDef) {
@@ -214,7 +213,9 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
           }}
         />
 
-        <h2 className="text-base font-semibold text-black dark:text-white">도전 과제</h2>
+        <h2 className="text-base font-semibold text-black dark:text-white">
+          도전 과제
+        </h2>
 
         <div className="flex flex-col gap-3">
           {visibleBadges.map((def) => {
@@ -222,7 +223,7 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
               def,
               claimedBadges,
               representativeBadge,
-              badgeStatuses
+              badgeStatuses,
             );
             const progress = badgeProgress[String(def.badge_id)] ?? {
               current: 0,
