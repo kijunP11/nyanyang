@@ -19,11 +19,24 @@ import { ScrollSection } from "../components/scroll-section";
 import { VerticalCharacterCard } from "../components/vertical-character-card";
 import { CharacterInfoModal } from "~/features/characters/components/character-info-modal";
 
+/** 한국어 마지막 글자에 받침이 있는지 확인 */
+function hasBatchim(str: string): boolean {
+  const code = str.charCodeAt(str.length - 1);
+  if (code < 0xac00 || code > 0xd7a3) return false;
+  return (code - 0xac00) % 28 !== 0;
+}
+
 type Character = Database["public"]["Tables"]["characters"]["Row"];
 
 type CharacterWithCreator = Character & {
   creator_name: string | null;
+  creator_badge_type: string | null;
 };
+
+interface AiPickCharacter {
+  name: string;
+  tags: string[];
+}
 
 interface LoaderData {
   title: string;
@@ -31,6 +44,7 @@ interface LoaderData {
   featuredCharacters: CharacterWithCreator[];
   popularCharacters: CharacterWithCreator[];
   newestCharacters: CharacterWithCreator[];
+  aiPick: AiPickCharacter | null;
   isLoggedIn: boolean;
   user: ChatSidebarUser | null;
 }
@@ -59,6 +73,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     featuredCharacters: [],
     popularCharacters: [],
     newestCharacters: [],
+    aiPick: null,
     isLoggedIn: false,
     user: null,
   };
@@ -111,28 +126,44 @@ export async function loader({ request }: Route.LoaderArgs) {
     const { data: profiles } = creatorIds.length > 0
       ? await client
           .from("profiles")
-          .select("profile_id, name")
+          .select("profile_id, name, badge_type")
           .in("profile_id", creatorIds)
       : { data: [] };
 
-    // creator_id → name 매핑
+    // creator_id → { name, badge_type } 매핑
     const profileMap = new Map(
-      (profiles || []).map((p) => [p.profile_id, p.name])
+      (profiles || []).map((p) => [
+        p.profile_id,
+        { name: p.name, badge_type: p.badge_type },
+      ])
     );
 
-    // creator_name 추가
-    const addCreatorName = (chars: Character[]): CharacterWithCreator[] =>
-      chars.map((c) => ({
-        ...c,
-        creator_name: profileMap.get(c.creator_id) || null,
-      }));
+    const addCreatorInfo = (chars: Character[]): CharacterWithCreator[] =>
+      chars.map((c) => {
+        const profile = profileMap.get(c.creator_id);
+        return {
+          ...c,
+          creator_name: profile?.name || null,
+          creator_badge_type: profile?.badge_type || null,
+        };
+      });
+
+    // AI 추천 대화: 랜덤 캐릭터 선택
+    const candidates = allCharacters.filter((c) => c.tags && c.tags.length > 0);
+    const picked = candidates.length > 0
+      ? candidates[Math.floor(Math.random() * candidates.length)]
+      : allCharacters[0] || null;
+    const aiPick: AiPickCharacter | null = picked
+      ? { name: picked.name, tags: (picked.tags || []).slice(0, 3) }
+      : null;
 
     return data(
       {
         ...defaultData,
-        featuredCharacters: addCreatorName(featuredResult.data || []),
-        popularCharacters: addCreatorName(popularResult.data || []),
-        newestCharacters: addCreatorName(newestResult.data || []),
+        featuredCharacters: addCreatorInfo(featuredResult.data || []),
+        popularCharacters: addCreatorInfo(popularResult.data || []),
+        newestCharacters: addCreatorInfo(newestResult.data || []),
+        aiPick,
         isLoggedIn: !!user,
         user: user
           ? {
@@ -158,6 +189,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     featuredCharacters,
     popularCharacters,
     newestCharacters,
+    aiPick,
     isLoggedIn,
     user,
   } = loaderData;
@@ -186,6 +218,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   ];
 
   const [tagsExpanded, setTagsExpanded] = useState(false);
+  const [selectedTag, setSelectedTag] = useState("전체");
   const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(
     null
   );
@@ -292,6 +325,15 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   const displayTags = tagsExpanded ? allTags : quickTags;
 
+  // 태그 필터링
+  const filterByTag = (chars: CharacterWithCreator[]) => {
+    if (selectedTag === "전체" || selectedTag === "추천") return chars;
+    return chars.filter((c) => c.tags?.includes(selectedTag));
+  };
+  const filteredFeatured = filterByTag(featuredCharacters);
+  const filteredPopular = filterByTag(popularCharacters);
+  const filteredNewest = filterByTag(newestCharacters);
+
   return (
     <div className="-mx-5 -my-16 flex min-h-[calc(100vh-57px)] bg-white dark:bg-[#181D27] md:-my-32">
       {/* 채팅 사이드바 (md 이상, 로그인/비로그인 모두) */}
@@ -307,21 +349,39 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
           {/* 2. AI 추천 검색 */}
           <section>
-            <div className="relative rounded-[24px] bg-gradient-to-r from-[#F472B6] via-[#A78BFA] to-[#14B8A6] p-[1.5px] shadow-[0_0_20px_rgba(244,114,182,0.3)]">
-              <div className="flex h-12 w-full items-center gap-3 rounded-[23px] bg-white px-4 dark:bg-[#181D27]">
-                <span className="flex-shrink-0 rounded-md bg-[#41C7BD] px-2 py-0.5 text-xs font-bold text-white">
-                  AI 추천 대화
-                </span>
-                <p className="min-w-0 flex-1 truncate text-sm text-[#535862] dark:text-[#94969C]">
-                  올해의 &apos;달콤살벌 매력&apos;에 빠져볼까? 지금 바로 시작하세요
-                </p>
-                <Search className="h-5 w-5 flex-shrink-0 text-[#A4A7AE] dark:text-[#717680]" />
+            {/* 외부: pink→teal 그라데이션 테두리 */}
+            <div className="rounded-[24px] bg-gradient-to-r from-[rgba(255,77,213,0.3)] to-[rgba(0,196,175,0.3)] p-[2px]">
+              {/* 내부: 핑크 보더 + 연핑크 배경 + 핑크 글로우 + 6px 흰색 인셋 */}
+              <div
+                className="relative rounded-[20px] border border-[#FF4DD5] shadow-[0px_0px_16px_0px_#F389DC] dark:border-[#FF4DD5]/60 dark:shadow-[0px_0px_16px_0px_#F389DC]/40"
+                style={{ backgroundImage: "linear-gradient(to left, #ffffff, #FFE9FA)" }}
+              >
+                <div className="pointer-events-none absolute inset-0 rounded-[inherit] shadow-[inset_0px_0px_0px_6px_white] dark:shadow-[inset_0px_0px_0px_6px_#181D27]" />
+                <div className="relative flex h-12 items-center gap-3 px-4">
+                  <img
+                    src="/nft.jpg"
+                    alt=""
+                    className="h-[30px] w-[30px] flex-shrink-0 rounded-full object-cover"
+                  />
+                  <p className="min-w-0 flex-1 truncate text-[16px] leading-[24px] text-[#535862] dark:text-[#94969C]">
+                    <span className="font-bold">[AI 추천 대화]</span>
+                    {aiPick
+                      ? ` 오늘은 '${aiPick.name}'${hasBatchim(aiPick.name) ? "이랑" : "랑"} 얘기 어때요? `
+                      : " 오늘의 추천 캐릭터를 만나보세요 "}
+                    {aiPick && aiPick.tags.length > 0 && (
+                      <span className="text-[#A4A7AE] dark:text-[#717680]">
+                        {aiPick.tags.map((t) => `#${t}`).join(" ")}
+                      </span>
+                    )}
+                  </p>
+                  <Search className="h-5 w-5 flex-shrink-0 text-[#A4A7AE] dark:text-[#717680]" />
+                </div>
               </div>
             </div>
           </section>
 
           {/* 3. 태그 필터 */}
-          <section>
+          <section className="relative">
             <div
               className={
                 tagsExpanded
@@ -333,10 +393,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                 <button
                   key={`${tag}-${index}`}
                   type="button"
-                  className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                    index === 0
-                      ? "bg-[#41C7BD] text-white"
-                      : "bg-[#F5F5F5] text-[#535862] hover:bg-[#E9EAEB] dark:bg-[#1F242F] dark:text-[#94969C] dark:hover:bg-[#333741]"
+                  onClick={() => setSelectedTag(tag)}
+                  className={`flex-shrink-0 rounded-full px-[14px] py-2 text-sm shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors ${
+                    selectedTag === tag
+                      ? "border border-[#36C4B3] bg-[#36C4B3] font-semibold text-white"
+                      : "border border-[#D5D7DA] bg-white text-[#717680] hover:bg-[#F5F5F5] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#94969C] dark:hover:bg-[#333741]"
                   }`}
                 >
                   {tag}
@@ -345,25 +406,30 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               <button
                 type="button"
                 onClick={() => setTagsExpanded(!tagsExpanded)}
-                className="flex flex-shrink-0 items-center gap-1 rounded-full border border-[#E9EAEB] px-4 py-2 text-sm font-medium text-[#A4A7AE] hover:bg-[#F5F5F5] dark:border-[#333741] dark:text-[#717680] dark:hover:bg-[#1F242F]"
+                className="flex flex-shrink-0 items-center gap-1 rounded-full border border-[#D5D7DA] bg-white px-[14px] py-2 text-sm text-[#717680] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] hover:bg-[#F5F5F5] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#94969C] dark:hover:bg-[#333741]"
               >
                 <span>#</span>
                 <span>{tagsExpanded ? "접기" : "태그 더보기"}</span>
               </button>
             </div>
+            {/* 우측 페이드 그라데이션 */}
+            {!tagsExpanded && (
+              <div className="pointer-events-none absolute right-0 top-0 h-full w-[62px] bg-gradient-to-r from-transparent to-white dark:to-[#181D27]" />
+            )}
           </section>
 
           {/* 4. 떠오르는 신예 창작자들 */}
-          {featuredCharacters.length > 0 && (
+          {filteredFeatured.length > 0 && (
             <ScrollSection
               title="떠오르는 신예 창작자들"
               moreLink="/characters?sort=featured"
             >
-              {featuredCharacters.map((character) => (
+              {filteredFeatured.map((character) => (
                 <VerticalCharacterCard
                   key={character.character_id}
                   character={character}
                   creatorName={character.creator_name}
+                  creatorBadgeType={character.creator_badge_type}
                   onClick={() => setSelectedCharacterId(character.character_id)}
                 />
               ))}
@@ -371,16 +437,17 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           )}
 
           {/* 5. 실시간 인기 섹션 */}
-          {popularCharacters.length > 0 && (
+          {filteredPopular.length > 0 && (
             <ScrollSection
               title="실시간 인기"
               moreLink="/characters?sort=popular"
             >
-              {popularCharacters.map((character) => (
+              {filteredPopular.map((character) => (
                 <VerticalCharacterCard
                   key={character.character_id}
                   character={character}
                   creatorName={character.creator_name}
+                  creatorBadgeType={character.creator_badge_type}
                   badge="HOT"
                   onClick={() => setSelectedCharacterId(character.character_id)}
                 />
@@ -389,16 +456,23 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           )}
 
           {/* 6. 크리에이터 신작 섹션 */}
-          {newestCharacters.length > 0 && (
+          {filteredNewest.length > 0 && (
             <ScrollSection
               title="크리에이터 신작"
+              titleIcon={
+                <svg width="15" height="18" viewBox="0 0 15 18" fill="none" aria-hidden="true">
+                  <path d="M7.5 0L13.5 3.5V10.5L7.5 18L1.5 10.5V3.5L7.5 0Z" fill="#36C4B3" />
+                  <path d="M7.5 6L8.4 8.1L10.5 8.5L9 10L9.3 12.1L7.5 11.1L5.7 12.1L6 10L4.5 8.5L6.6 8.1L7.5 6Z" fill="white" />
+                </svg>
+              }
               moreLink="/characters?sort=newest"
             >
-              {newestCharacters.map((character) => (
+              {filteredNewest.map((character) => (
                 <VerticalCharacterCard
                   key={character.character_id}
                   character={character}
                   creatorName={character.creator_name}
+                  creatorBadgeType={character.creator_badge_type}
                   onClick={() => setSelectedCharacterId(character.character_id)}
                 />
               ))}

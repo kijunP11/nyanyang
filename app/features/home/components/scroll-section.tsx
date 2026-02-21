@@ -10,12 +10,14 @@ import { Link } from "react-router";
 
 interface ScrollSectionProps {
   title: string;
+  titleIcon?: React.ReactNode;
   children: React.ReactNode;
   moreLink?: string;
 }
 
 export function ScrollSection({
   title,
+  titleIcon,
   children,
   moreLink,
 }: ScrollSectionProps) {
@@ -58,11 +60,14 @@ export function ScrollSection({
     <section>
       {/* 헤더 */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-[20px] font-bold text-black dark:text-white">{title}</h2>
+        <div className="flex items-center gap-1">
+          <h2 className="text-[20px] font-bold leading-[30px] text-black dark:text-white">{title}</h2>
+          {titleIcon}
+        </div>
         {moreLink && (
           <Link
             to={moreLink}
-            className="flex items-center gap-0.5 text-xs text-black hover:text-[#535862] dark:text-white dark:hover:text-[#94969C]"
+            className="flex items-center gap-px text-[12px] leading-[18px] text-black hover:text-[#535862] dark:text-white dark:hover:text-[#94969C]"
           >
             전체보기
             <ChevronRight className="h-3.5 w-3.5" />
