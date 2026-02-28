@@ -193,12 +193,10 @@ const getNavLinkClass = (isActive: boolean) =>
 export function NavigationBar({
   name,
   email,
-  avatarUrl,
   loading,
 }: {
   name?: string;
   email?: string;
-  avatarUrl?: string | null;
   loading: boolean;
 }) {
   return (

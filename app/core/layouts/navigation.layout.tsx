@@ -57,7 +57,6 @@ export default function NavigationLayout({ loaderData }: Route.ComponentProps) {
                   <NavigationBar
                     name={ctx.user!.name}
                     email={ctx.user!.email}
-                    avatarUrl={ctx.user!.avatarUrl}
                     loading={false}
                   />
                 )}
