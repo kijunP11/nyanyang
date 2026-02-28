@@ -102,7 +102,7 @@ function UserMenu({
       <DropdownMenuTrigger asChild>
         <div className="flex size-10 cursor-pointer items-center justify-center">
           <Avatar className="size-6 rounded-full border-[1.667px] border-white shadow-[0px_5px_6.667px_-4px_rgba(10,13,18,0.08),0px_1.667px_2.5px_-2px_rgba(10,13,18,0.03)]">
-            <AvatarImage src={avatarUrl ?? "/default-avatar.png"} />
+            <AvatarImage src={avatarUrl || "/default-avatar.png"} />
             <AvatarFallback className="text-xs">{name.slice(0, 2)}</AvatarFallback>
           </Avatar>
         </div>
