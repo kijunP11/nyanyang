@@ -22,7 +22,7 @@ export default function Footer() {
           <img src="/logo-footer.svg" alt="NYANYANG" className="h-[30px] w-[162px]" />
 
           {/* Company Info */}
-          <div className="space-y-2 text-base text-[#717680] dark:text-white">
+          <div className="space-y-2 text-base text-[#717680] dark:text-[#D5D7DA]">
             <p>
               나냥 | 대표자 김보현 | 사업자등록번호
               448-77-00505
@@ -31,13 +31,13 @@ export default function Footer() {
           </div>
 
           {/* Copyright */}
-          <p className="text-base text-[#717680] dark:text-white">
+          <p className="text-base text-[#717680]">
             &copy; 2025 Nanyang. All rights reserved.
           </p>
         </div>
 
         {/* Bottom Links */}
-        <div className="mt-8 flex h-5 flex-wrap items-center text-sm tracking-[-0.35px] text-[#535862] dark:text-white">
+        <div className="mt-8 flex h-5 flex-wrap items-center text-sm tracking-[-0.35px] text-[#535862] dark:text-[#D5D7DA]">
           <Link
             to="/legal/privacy-policy"
             viewTransition
