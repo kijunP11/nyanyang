@@ -11,7 +11,6 @@ import {
   LogOut,
   Menu,
   Moon,
-  PawPrint,
   Sun,
 } from "lucide-react";
 import { Link, NavLink } from "react-router";
@@ -101,9 +100,9 @@ function ThemeToggle() {
       aria-label="Toggle theme"
     >
       {theme === Theme.DARK ? (
-        <Sun className="size-6 text-[#D5D7DA]" />
+        <Sun className="size-6 text-white" />
       ) : (
-        <Moon className="size-6 text-black/70" />
+        <Moon className="size-6 text-[#181D27]" />
       )}
     </button>
   );
@@ -115,19 +114,21 @@ function AuthButtons() {
       <Link
         to="/login"
         viewTransition
-        className="whitespace-nowrap text-base font-medium text-black/70 transition-colors hover:text-black dark:text-[#D5D7DA] dark:hover:text-white"
+        className="whitespace-nowrap text-base font-medium text-black/70 transition-colors hover:text-black dark:text-white"
       >
         로그인
       </Link>
-      <div className="h-5 w-px bg-black/20 dark:bg-white/20" />
-      <ThemeToggle />
-      <Link
-        to="/notifications"
-        className="flex size-10 items-center justify-center"
-        aria-label="알림"
-      >
-        <Bell className="size-6 text-black/70 dark:text-[#D5D7DA]" />
-      </Link>
+      <div className="h-5 w-px bg-black/30 dark:bg-[#414651]" />
+      <div className="flex items-center">
+        <ThemeToggle />
+        <Link
+          to="/notifications"
+          className="flex size-10 items-center justify-center"
+          aria-label="알림"
+        >
+          <Bell className="size-6 text-[#181D27] dark:text-white" />
+        </Link>
+      </div>
     </div>
   );
 }
@@ -150,11 +151,11 @@ export function NavigationBar({
 }) {
   return (
     <Sheet>
-      <nav className="h-[57px] w-full border-b border-black/20 bg-white dark:border-white/20 dark:bg-[#181D27]">
+      <nav className="h-[57px] w-full border-b border-black/20 bg-white dark:bg-[#181D27]">
         <div className="mx-auto flex h-full w-full max-w-[1440px] items-center justify-between px-5">
           <div className="flex h-full items-center gap-[82px]">
             <Link to="/" className="flex shrink-0 items-center">
-              <img src="/logo3.png" alt="NYANYANG" className="h-[30px]" />
+              <img src="/logo.svg" alt="NYANYANG" className="h-[30px] w-[158px]" />
             </Link>
             <div className="hidden h-full items-center gap-1 md:flex">
               <NavLink
@@ -207,10 +208,14 @@ export function NavigationBar({
                   <div className="flex items-center">
                     <Link
                       to="/dashboard"
-                      className="flex size-10 items-center justify-center text-black/70 dark:text-[#D5D7DA]"
+                      className="flex size-10 items-center justify-center"
                       aria-label="대시보드"
                     >
-                      <PawPrint className="size-6" />
+                      <img
+                        src="/pawprint.svg"
+                        alt=""
+                        className="size-6"
+                      />
                     </Link>
                     <ThemeToggle />
                     <Link
@@ -218,7 +223,7 @@ export function NavigationBar({
                       className="flex size-10 items-center justify-center"
                       aria-label="알림"
                     >
-                      <Bell className="size-6 text-black/70 dark:text-[#D5D7DA]" />
+                      <Bell className="size-6 text-[#181D27] dark:text-white" />
                     </Link>
                     <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
                   </div>
@@ -230,7 +235,7 @@ export function NavigationBar({
           </div>
 
           <SheetTrigger
-            className="flex size-10 items-center justify-center text-black/70 dark:text-[#D5D7DA] md:hidden"
+            className="flex size-10 items-center justify-center text-[#181D27] dark:text-white md:hidden"
             aria-label="메뉴 열기"
           >
             <Menu className="size-6" />
@@ -319,7 +324,7 @@ export function NavigationBar({
                   className="flex size-10 items-center justify-center"
                   aria-label="알림"
                 >
-                  <Bell className="size-6 text-black/70 dark:text-[#D5D7DA]" />
+                  <Bell className="size-6 text-[#181D27] dark:text-white" />
                 </Link>
               </SheetClose>
               {name && (
@@ -330,7 +335,7 @@ export function NavigationBar({
                   <Link
                     to="/login"
                     viewTransition
-                    className="text-base font-medium text-black/70 dark:text-[#D5D7DA]"
+                    className="text-base font-medium text-black/70 dark:text-white"
                   >
                     로그인
                   </Link>
