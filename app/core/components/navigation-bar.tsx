@@ -13,7 +13,6 @@ import {
 import { Link, NavLink } from "react-router";
 import { Theme, useTheme } from "remix-themes";
 
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -91,22 +90,19 @@ function BellIcon({ className }: { className?: string }) {
 function UserMenu({
   name,
   email,
-  avatarUrl,
 }: {
   name: string;
   email?: string;
-  avatarUrl?: string | null;
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="flex size-10 cursor-pointer items-center justify-center">
-          <Avatar className="size-6 rounded-full border-[1.667px] border-white shadow-[0px_5px_6.667px_-4px_rgba(10,13,18,0.08),0px_1.667px_2.5px_-2px_rgba(10,13,18,0.03)]">
-            <AvatarImage src={avatarUrl || "/default-avatar.png"} />
-            <AvatarFallback>
-              <img src="/default-avatar.png" alt="" className="size-full rounded-full object-cover" />
-            </AvatarFallback>
-          </Avatar>
+          <img
+            src="/default-avatar.png"
+            alt="프로필"
+            className="size-6 rounded-full border-[1.667px] border-white object-cover shadow-[0px_5px_6.667px_-4px_rgba(10,13,18,0.08),0px_1.667px_2.5px_-2px_rgba(10,13,18,0.03)]"
+          />
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end">
@@ -281,7 +277,7 @@ export function NavigationBar({
                     >
                       <BellIcon className="size-5 text-[#181D27] dark:text-white" />
                     </Link>
-                    <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
+                    <UserMenu name={name} email={email} />
                   </div>
                 ) : (
                   <AuthButtons />
@@ -384,7 +380,7 @@ export function NavigationBar({
                 </Link>
               </SheetClose>
               {name && (
-                <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
+                <UserMenu name={name} email={email} />
               )}
               {!name && (
                 <SheetClose asChild>
