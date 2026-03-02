@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, LogOut, Mail, MoreVertical } from "lucide-react";
+import { ChevronDown, LogOut, MoreVertical } from "lucide-react";
 import { Link } from "react-router";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -203,26 +203,34 @@ function LoggedOutCTA() {
     <div className="flex flex-1 flex-col">
       <div className="flex-1" />
       <div className="px-4 pb-6">
-        <div className="rounded-xl bg-[#F5F5F5] p-4 dark:bg-[#252B37]">
-          <p className="mb-4 text-sm leading-relaxed text-[#181D27] dark:text-[#94969C]">
+        <div className="rounded-lg bg-[#F5F5F5] px-4 py-5 dark:bg-[#252B37]">
+          <p className="mb-4 text-sm font-semibold leading-5 text-[#181D27] dark:text-[#94969C]">
             로그인하고 개성 넘치는 캐릭터들과 더 깊은 대화를 즐겨보세요!
           </p>
 
           {/* Social Login Buttons */}
-          <div className="mb-3 flex items-center justify-center gap-4">
+          <div className="mb-4 flex items-center justify-center gap-4">
             {/* Kakao */}
             <Link
               to="/auth/social/start/kakao"
               viewTransition
-              className="flex size-12 items-center justify-center rounded-full bg-[#FFE812] transition-opacity hover:opacity-90"
+              className="flex size-12 items-center justify-center rounded-full border border-[#D5D7DA] bg-[#FFE812] transition-opacity hover:opacity-90"
               aria-label="카카오톡으로 로그인"
             >
               <svg
-                className="size-5"
+                className="size-6"
                 viewBox="0 0 24 24"
-                fill="#000000"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.72 1.788 5.108 4.488 6.467l-1.142 4.225a.35.35 0 0 0 .538.384l4.907-3.238c.39.037.787.062 1.209.062 5.523 0 10-3.463 10-7.691S17.523 3 12 3z" />
+                <path
+                  d="M24 22.125C24 23.1606 23.1606 24 22.125 24H1.875C0.839438 24 0 23.1606 0 22.125V1.875C0 0.839438 0.839438 0 1.875 0H22.125C23.1606 0 24 0.839438 24 1.875V22.125Z"
+                  fill="#FFE812"
+                />
+                <path
+                  d="M12 3.375C6.61519 3.375 2.25 6.81684 2.25 11.0625C2.25 13.8074 4.07494 16.2159 6.82013 17.576C6.67078 18.091 5.86041 20.8895 5.82816 21.1093C5.82816 21.1093 5.80875 21.2745 5.91572 21.3375C6.02269 21.4005 6.1485 21.3516 6.1485 21.3516C6.45525 21.3087 9.70566 19.0255 10.2682 18.6291C10.8303 18.7087 11.409 18.75 12 18.75C17.3848 18.75 21.75 15.3082 21.75 11.0625C21.75 6.81684 17.3848 3.375 12 3.375Z"
+                  fill="black"
+                />
               </svg>
             </Link>
             {/* Google */}
@@ -232,21 +240,26 @@ function LoggedOutCTA() {
               className="flex size-12 items-center justify-center rounded-full border border-[#D5D7DA] bg-white transition-opacity hover:opacity-90 dark:border-[#414651] dark:bg-[#1F242F]"
               aria-label="구글로 로그인"
             >
-              <svg className="size-5" viewBox="0 0 24 24">
+              <svg
+                className="size-[18px]"
+                viewBox="0 0 18 18"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                  d="M17.8247 9.20746C17.8247 8.59567 17.7751 7.98057 17.6693 7.37869H9.18018V10.8444H14.0415C13.8397 11.9622 13.1916 12.951 12.2425 13.5793V15.8281H15.1427C16.8458 14.2606 17.8247 11.9457 17.8247 9.20746Z"
                   fill="#4285F4"
                 />
                 <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  d="M9.18008 18.0005C11.6074 18.0005 13.6544 17.2035 15.1459 15.8278L12.2457 13.5791C11.4388 14.128 10.3971 14.4389 9.18338 14.4389C6.83541 14.4389 4.8446 12.8548 4.13029 10.7251H1.13745V13.0433C2.66529 16.0825 5.77717 18.0005 9.18008 18.0005V18.0005Z"
                   fill="#34A853"
                 />
                 <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  fill="#FBBC05"
+                  d="M4.12708 10.7253C3.75008 9.60748 3.75008 8.39712 4.12708 7.27936V4.96115H1.13755C-0.13895 7.50423 -0.13895 10.5004 1.13755 13.0435L4.12708 10.7253V10.7253Z"
+                  fill="#FBBC04"
                 />
                 <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  d="M9.18007 3.56225C10.4632 3.5424 11.7033 4.02523 12.6326 4.9115L15.2021 2.34196C13.5751 0.814129 11.4156 -0.0258495 9.18007 0.000606499C5.77717 0.000606499 2.66528 1.91867 1.13745 4.96111L4.12698 7.27931C4.83798 5.1463 6.83211 3.56225 9.18007 3.56225V3.56225Z"
                   fill="#EA4335"
                 />
               </svg>
@@ -257,9 +270,8 @@ function LoggedOutCTA() {
           <Link
             to="/login"
             viewTransition
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#D5D7DA] px-4 py-2.5 text-sm font-semibold text-[#414651] shadow-xs transition-colors hover:bg-[#F5F5F5] dark:border-[#414651] dark:text-[#D5D7DA] dark:hover:bg-[#1F242F]"
+            className="flex w-full items-center justify-center rounded-lg border border-[#D5D7DA] px-3.5 py-2 text-sm font-semibold text-[#414651] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#F5F5F5] dark:border-[#414651] dark:text-[#D5D7DA] dark:hover:bg-[#1F242F]"
           >
-            <Mail className="size-4" />
             이메일로 시작하기
           </Link>
         </div>
@@ -278,7 +290,7 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
   return (
     <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-[#E2E8F0] bg-[#FDFDFD] dark:border-[#333741] dark:bg-[#181D27]">
       {/* Header */}
-      <div className="flex h-[57px] items-center border-b border-[#E2E8F0] px-4 dark:border-[#333741]">
+      <div className="flex h-[57px] items-center border-b border-[#CBD5E1] px-4 dark:border-[#333741]">
         <h2 className="text-base font-bold text-[#181D27] dark:text-white">
           채팅
         </h2>
