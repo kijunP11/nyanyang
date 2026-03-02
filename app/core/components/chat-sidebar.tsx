@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ChevronDown, LogOut, MoreVertical } from "lucide-react";
 import { Link } from "react-router";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -8,6 +7,79 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
+
+// --- Figma Icons (Untitled UI) ---
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M5 7.5L10 12.5L15 7.5"
+        stroke="currentColor"
+        strokeWidth="1.66667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function LogOutIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M7 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H7M13.3333 14.1667L17.5 10M17.5 10L13.3333 5.83333M17.5 10H7"
+        stroke="currentColor"
+        strokeWidth="1.67"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function DotsVerticalIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 4 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M2 9C2.55228 9 3 8.55228 3 8C3 7.44772 2.55228 7 2 7C1.44772 7 1 7.44772 1 8C1 8.55228 1.44772 9 2 9Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M2 3C2.55228 3 3 2.55228 3 2C3 1.44772 2.55228 1 2 1C1.44772 1 1 1.44772 1 2C1 2.55228 1.44772 3 2 3Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M2 15C2.55228 15 3 14.5523 3 14C3 13.4477 2.55228 13 2 13C1.44772 13 1 13.4477 1 14C1 14.5523 1.44772 15 2 15Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 // --- Types ---
 
@@ -93,7 +165,7 @@ function SectionHeader({
         <span className="text-sm text-[#475569] dark:text-[#94969C]">
           {count}개
         </span>
-        <ChevronDown
+        <ChevronDownIcon
           className={`size-5 text-[#475569] transition-transform dark:text-[#94969C] ${
             open ? "" : "-rotate-90"
           }`}
@@ -132,7 +204,7 @@ function ChatListItem({ chat }: { chat: ChatItem }) {
         aria-label="더보기"
         onClick={(e) => e.preventDefault()}
       >
-        <MoreVertical className="size-4 text-[#A4A7AE] dark:text-[#717680]" />
+        <DotsVerticalIcon className="size-4 text-[#A4A7AE] dark:text-[#717680]" />
       </button>
     </Link>
   );
@@ -171,30 +243,35 @@ function ChatSection({
 
 function UserFooter({ user }: { user: ChatSidebarUser }) {
   return (
-    <div className="flex items-center gap-3 bg-[#FAFAFA] px-4 py-5 dark:bg-[#1F242F]">
-      <img
-        src="/default-avatar.png"
-        alt="프로필"
-        className="size-10 shrink-0 rounded-full object-cover"
-      />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-[#181D27] dark:text-white">
-          {user.name}
-        </p>
-        {user.email && (
-          <p className="truncate text-sm text-[#535862] dark:text-[#94969C]">
-            {user.email}
-          </p>
-        )}
+    <div className="flex flex-col gap-6 bg-[#FAFAFA] px-4 py-8 dark:bg-[#1F242F]">
+      <div className="h-px w-full bg-[#E9EAEB] dark:bg-[#414651]" />
+      <div className="flex items-center justify-between px-2">
+        <div className="flex items-center gap-3">
+          <img
+            src="/default-avatar.png"
+            alt="프로필"
+            className="size-10 shrink-0 rounded-full object-cover"
+          />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold leading-5 text-[#181D27] dark:text-white">
+              {user.name}
+            </p>
+            {user.email && (
+              <p className="truncate text-sm leading-5 text-[#535862] dark:text-[#94969C]">
+                {user.email}
+              </p>
+            )}
+          </div>
+        </div>
+        <Link
+          to="/logout"
+          viewTransition
+          className="shrink-0 text-[#717680] transition-colors hover:text-[#535862] dark:text-[#D5D7DA] dark:hover:text-white"
+          aria-label="로그아웃"
+        >
+          <LogOutIcon className="size-5" />
+        </Link>
       </div>
-      <Link
-        to="/logout"
-        viewTransition
-        className="flex size-8 shrink-0 items-center justify-center rounded-md text-[#A4A7AE] transition-colors hover:bg-[#F5F5F5] hover:text-[#535862] dark:text-[#717680] dark:hover:bg-[#252B37] dark:hover:text-[#D5D7DA]"
-        aria-label="로그아웃"
-      >
-        <LogOut className="size-5" />
-      </Link>
     </div>
   );
 }
@@ -291,8 +368,14 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
   return (
     <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-[#E2E8F0] bg-[#FDFDFD] dark:border-[#414651] dark:bg-[#181D27]">
       {/* Header */}
-      <div className="flex h-[57px] items-center border-b border-[#CBD5E1] px-4 dark:border-[#414651]">
-        <h2 className="text-base font-bold text-[#181D27] dark:text-white">
+      <div className="flex items-center border-b border-[#CBD5E1] px-4 py-5 dark:border-[#414651]">
+        <h2
+          className={
+            isLoggedIn
+              ? "text-sm font-semibold text-black dark:text-white"
+              : "text-base font-bold text-black dark:text-white"
+          }
+        >
           채팅
         </h2>
       </div>
