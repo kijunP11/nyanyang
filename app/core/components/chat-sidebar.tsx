@@ -180,7 +180,7 @@ function ChatListItem({ chat }: { chat: ChatItem }) {
     <Link
       to={`/chat/${chat.roomId}`}
       viewTransition
-      className="flex items-center gap-2 bg-[#FAFAFA] px-4 py-3 transition-colors hover:bg-[#F5F5F5] dark:bg-[#1F242F] dark:hover:bg-[#252B37]"
+      className="flex items-start gap-2 bg-[#FAFAFA] px-4 py-3 transition-colors hover:bg-[#F5F5F5] dark:bg-[#1F242F] dark:hover:bg-[#252B37]"
     >
       <div className="flex flex-1 items-center gap-2">
         <Avatar className="size-9 shrink-0">
@@ -204,7 +204,7 @@ function ChatListItem({ chat }: { chat: ChatItem }) {
         aria-label="더보기"
         onClick={(e) => e.preventDefault()}
       >
-        <DotsVerticalIcon className="size-4 text-[#A4A7AE] dark:text-[#717680]" />
+        <DotsVerticalIcon className="size-4 text-[#535862] dark:text-[#717680]" />
       </button>
     </Link>
   );
