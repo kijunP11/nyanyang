@@ -84,17 +84,17 @@ function SectionHeader({
   return (
     <CollapsibleTrigger
       onClick={onToggle}
-      className="flex w-full items-center justify-between px-4 py-2"
+      className="flex w-full items-center justify-between px-4 pb-3 pt-4"
     >
-      <span className="text-xs font-medium text-[#717680] dark:text-[#94969C]">
+      <span className="text-sm font-semibold text-[#1E293B] dark:text-[#D5D7DA]">
         {label}
       </span>
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs text-[#A4A7AE] dark:text-[#717680]">
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-[#475569] dark:text-[#94969C]">
           {count}개
         </span>
         <ChevronDown
-          className={`size-3.5 text-[#A4A7AE] transition-transform dark:text-[#717680] ${
+          className={`size-5 text-[#475569] transition-transform dark:text-[#94969C] ${
             open ? "" : "-rotate-90"
           }`}
         />
@@ -108,25 +108,27 @@ function ChatListItem({ chat }: { chat: ChatItem }) {
     <Link
       to={`/chat/${chat.roomId}`}
       viewTransition
-      className="group flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors hover:bg-[#F5F5F5] dark:hover:bg-[#1F242F]"
+      className="flex items-center gap-2 bg-[#FAFAFA] px-4 py-3 transition-colors hover:bg-[#F5F5F5] dark:bg-[#1F242F] dark:hover:bg-[#252B37]"
     >
-      <Avatar className="size-8 shrink-0">
-        <AvatarImage src={chat.characterAvatarUrl ?? undefined} />
-        <AvatarFallback className="bg-[#E9EAEB] text-xs text-[#535862] dark:bg-[#333741] dark:text-[#D5D7DA]">
-          {chat.characterName.slice(0, 1)}
-        </AvatarFallback>
-      </Avatar>
-      <div className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-bold text-[#181D27] dark:text-white">
-          {chat.characterName}
-        </span>
+      <div className="flex flex-1 items-center gap-2">
+        <Avatar className="size-9 shrink-0">
+          <AvatarImage src={chat.characterAvatarUrl ?? undefined} />
+          <AvatarFallback className="bg-[#E9EAEB] text-xs text-[#535862] dark:bg-[#333741] dark:text-[#D5D7DA]">
+            {chat.characterName.slice(0, 1)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex min-w-0 flex-col gap-[3px]">
+          <span className="truncate text-sm font-semibold text-black dark:text-white">
+            {chat.characterName}
+          </span>
+          <span className="text-xs text-[#717680] dark:text-[#94969C]">
+            {formatTime(chat.lastMessageAt)}
+          </span>
+        </div>
       </div>
-      <span className="shrink-0 text-xs text-[#A4A7AE] dark:text-[#717680]">
-        {formatTime(chat.lastMessageAt)}
-      </span>
       <button
         type="button"
-        className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+        className="shrink-0"
         aria-label="더보기"
         onClick={(e) => e.preventDefault()}
       >
@@ -149,7 +151,7 @@ function ChatSection({
   if (chats.length === 0) return null;
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen}>
+    <Collapsible open={open} onOpenChange={setOpen} className="border-b border-[#CBD5E1] py-2 dark:border-[#414651]">
       <SectionHeader
         label={label}
         count={chats.length}
@@ -169,19 +171,18 @@ function ChatSection({
 
 function UserFooter({ user }: { user: ChatSidebarUser }) {
   return (
-    <div className="flex items-center gap-3 border-t border-[#E9EAEB] px-4 py-4 dark:border-[#333741]">
-      <Avatar className="size-9">
-        <AvatarImage src={user.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-[#E9EAEB] text-sm text-[#535862] dark:bg-[#333741] dark:text-[#D5D7DA]">
-          {user.name.slice(0, 2)}
-        </AvatarFallback>
-      </Avatar>
+    <div className="flex items-center gap-3 bg-[#FAFAFA] px-4 py-5 dark:bg-[#1F242F]">
+      <img
+        src="/default-avatar.png"
+        alt="프로필"
+        className="size-10 shrink-0 rounded-full object-cover"
+      />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-[#181D27] dark:text-white">
           {user.name}
         </p>
         {user.email && (
-          <p className="truncate text-xs text-[#535862] dark:text-[#94969C]">
+          <p className="truncate text-sm text-[#535862] dark:text-[#94969C]">
             {user.email}
           </p>
         )}
@@ -189,10 +190,10 @@ function UserFooter({ user }: { user: ChatSidebarUser }) {
       <Link
         to="/logout"
         viewTransition
-        className="flex size-8 shrink-0 items-center justify-center rounded-md text-[#A4A7AE] transition-colors hover:bg-[#F5F5F5] hover:text-[#535862] dark:text-[#717680] dark:hover:bg-[#1F242F] dark:hover:text-[#D5D7DA]"
+        className="flex size-8 shrink-0 items-center justify-center rounded-md text-[#A4A7AE] transition-colors hover:bg-[#F5F5F5] hover:text-[#535862] dark:text-[#717680] dark:hover:bg-[#252B37] dark:hover:text-[#D5D7DA]"
         aria-label="로그아웃"
       >
-        <LogOut className="size-4" />
+        <LogOut className="size-5" />
       </Link>
     </div>
   );
@@ -313,15 +314,15 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
           <div className="flex-1" />
           {/* Empty CTA 카드 */}
           <div className="px-4 pb-4">
-            <div className="rounded-xl bg-[#F5F5F5] p-4 dark:bg-[#252B37]">
-              <p className="mb-3 text-sm leading-relaxed text-[#181D27] dark:text-[#94969C]">
+            <div className="rounded-lg bg-[#F5F5F5] px-4 py-5 dark:bg-[#252B37]">
+              <p className="mb-4 text-sm font-semibold leading-5 text-[#181D27] dark:text-[#FDFDFD]">
                 아직 첫 대화를 시작하지 않으셨네요! 마음에 드는 캐릭터와 첫 대화를
                 시작해보세요 :)
               </p>
               <Link
                 to="/characters"
                 viewTransition
-                className="flex w-full items-center justify-center rounded-lg border border-[#D5D7DA] px-4 py-2.5 text-sm font-semibold text-[#414651] shadow-xs transition-colors hover:bg-[#F5F5F5] dark:border-[#414651] dark:text-[#D5D7DA] dark:hover:bg-[#1F242F]"
+                className="flex w-full items-center justify-center rounded-lg border border-[#D5D7DA] bg-white px-3.5 py-2 text-sm font-semibold text-[#414651] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#F5F5F5] dark:bg-[#717680] dark:text-white dark:hover:bg-[#717680]/90"
               >
                 탐색하기
               </Link>
