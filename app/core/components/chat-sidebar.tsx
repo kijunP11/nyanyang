@@ -245,7 +245,7 @@ function UserFooter({ user }: { user: ChatSidebarUser }) {
   return (
     <div className="flex flex-col gap-6 bg-[#FAFAFA] px-4 py-8 dark:bg-[#1F242F]">
       <div className="h-px w-full bg-[#E9EAEB] dark:bg-[#414651]" />
-      <div className="flex items-center justify-between px-2">
+      <div className="flex items-start justify-between px-2">
         <div className="flex items-center gap-3">
           <img
             src="/default-avatar.png"
@@ -386,7 +386,7 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
       ) : !hasChats ? (
         /* Logged in, no chats */
         <div className="flex flex-1 flex-col">
-          <Collapsible defaultOpen>
+          <Collapsible defaultOpen className="border-b border-[#CBD5E1] py-2 dark:border-[#414651]">
             <SectionHeader
               label="오늘"
               count={0}
