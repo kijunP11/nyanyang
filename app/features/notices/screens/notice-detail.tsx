@@ -53,13 +53,13 @@ export default function NoticeDetail({
           )}
           <span className="text-xs text-[rgba(0,0,0,0.7)] dark:text-[rgba(255,255,255,0.7)]">
             {notice.published_at
-              ? new Date(notice.published_at).toLocaleDateString("ko-KR")
+              ? new Date(notice.published_at).toISOString().split("T")[0]
               : ""}
           </span>
         </div>
 
         {/* Top divider */}
-        <hr className="mt-4 border-border" />
+        <hr className="mt-4 border-black/40 dark:border-white/40" />
 
         {/* Content */}
         <div className="py-6 text-sm leading-[1.5] text-[rgba(0,0,0,0.7)] whitespace-pre-wrap dark:text-[rgba(255,255,255,0.7)]">
@@ -67,7 +67,7 @@ export default function NoticeDetail({
         </div>
 
         {/* Bottom divider */}
-        <hr className="border-border" />
+        <hr className="border-black/40 dark:border-white/40" />
       </div>
     </div>
   );
