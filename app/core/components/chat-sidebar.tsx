@@ -223,7 +223,7 @@ function ChatSection({
   if (chats.length === 0) return null;
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="border-b border-[#CBD5E1] py-2 dark:border-[#414651]">
+    <Collapsible open={open} onOpenChange={setOpen} className="border-b border-[#CBD5E1] py-2 last:border-b-0 dark:border-[#414651]">
       <SectionHeader
         label={label}
         count={chats.length}
