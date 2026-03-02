@@ -204,7 +204,7 @@ function LoggedOutCTA() {
       <div className="flex-1" />
       <div className="px-4 pb-6">
         <div className="rounded-lg bg-[#F5F5F5] px-4 py-5 dark:bg-[#252B37]">
-          <p className="mb-4 text-sm font-semibold leading-5 text-[#181D27] dark:text-[#94969C]">
+          <p className="mb-4 text-sm font-semibold leading-5 text-[#181D27] dark:text-[#FDFDFD]">
             로그인하고 개성 넘치는 캐릭터들과 더 깊은 대화를 즐겨보세요!
           </p>
 
@@ -237,7 +237,7 @@ function LoggedOutCTA() {
             <Link
               to="/auth/social/start/google"
               viewTransition
-              className="flex size-12 items-center justify-center rounded-full border border-[#D5D7DA] bg-white transition-opacity hover:opacity-90 dark:border-[#414651] dark:bg-[#1F242F]"
+              className="flex size-12 items-center justify-center rounded-full border border-[#D5D7DA] bg-white transition-opacity hover:opacity-90"
               aria-label="구글로 로그인"
             >
               <svg
@@ -270,7 +270,7 @@ function LoggedOutCTA() {
           <Link
             to="/login"
             viewTransition
-            className="flex w-full items-center justify-center rounded-lg border border-[#D5D7DA] px-3.5 py-2 text-sm font-semibold text-[#414651] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#F5F5F5] dark:border-[#414651] dark:text-[#D5D7DA] dark:hover:bg-[#1F242F]"
+            className="flex w-full items-center justify-center rounded-lg border border-[#D5D7DA] px-3.5 py-2 text-sm font-semibold text-[#414651] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#F5F5F5] dark:bg-[#717680] dark:text-white dark:hover:bg-[#717680]/90"
           >
             이메일로 시작하기
           </Link>
@@ -288,9 +288,9 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
   const hasChats = chats.length > 0;
 
   return (
-    <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-[#E2E8F0] bg-[#FDFDFD] dark:border-[#333741] dark:bg-[#181D27]">
+    <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-[#E2E8F0] bg-[#FDFDFD] dark:border-[#414651] dark:bg-[#181D27]">
       {/* Header */}
-      <div className="flex h-[57px] items-center border-b border-[#CBD5E1] px-4 dark:border-[#333741]">
+      <div className="flex h-[57px] items-center border-b border-[#CBD5E1] px-4 dark:border-[#414651]">
         <h2 className="text-base font-bold text-[#181D27] dark:text-white">
           채팅
         </h2>
