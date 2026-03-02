@@ -158,15 +158,15 @@ function SectionHeader({
       onClick={onToggle}
       className="flex w-full items-center justify-between px-4 pb-3 pt-4"
     >
-      <span className="text-sm font-semibold text-[#1E293B] dark:text-[#D5D7DA]">
+      <span className="text-sm font-semibold text-[#1E293B] dark:text-white">
         {label}
       </span>
       <div className="flex items-center gap-2">
-        <span className="text-sm text-[#475569] dark:text-[#94969C]">
+        <span className="text-sm text-[#475569] dark:text-white">
           {count}개
         </span>
         <ChevronDownIcon
-          className={`size-5 text-[#475569] transition-transform dark:text-[#94969C] ${
+          className={`size-5 text-[#475569] transition-transform dark:text-white ${
             open ? "" : "-rotate-90"
           }`}
         />
@@ -243,7 +243,7 @@ function ChatSection({
 
 function UserFooter({ user }: { user: ChatSidebarUser }) {
   return (
-    <div className="flex flex-col gap-6 bg-[#FAFAFA] px-4 py-8 dark:bg-[#1F242F]">
+    <div className="flex flex-col gap-6 bg-[#FAFAFA] px-4 py-8 dark:bg-[#181D27]">
       <div className="h-px w-full bg-[#E9EAEB] dark:bg-[#414651]" />
       <div className="flex items-start justify-between px-2">
         <div className="flex items-center gap-3">
@@ -257,7 +257,7 @@ function UserFooter({ user }: { user: ChatSidebarUser }) {
               {user.name}
             </p>
             {user.email && (
-              <p className="truncate text-sm leading-5 text-[#535862] dark:text-[#94969C]">
+              <p className="truncate text-sm leading-5 text-[#535862] dark:text-[#717680]">
                 {user.email}
               </p>
             )}
