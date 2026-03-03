@@ -14,12 +14,12 @@ function ChevronDownIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 20 20"
+      viewBox="0 0 11.6667 6.66667"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M5 7.5L10 12.5L15 7.5"
+        d="M0.833333 0.833333L5.83333 5.83333L10.8333 0.833333"
         stroke="currentColor"
         strokeWidth="1.66667"
         strokeLinecap="round"
@@ -33,12 +33,12 @@ function LogOutIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 20 20"
+      viewBox="0 0 16.67 16.67"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M7 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H7M13.3333 14.1667L17.5 10M17.5 10L13.3333 5.83333M17.5 10H7"
+        d="M5.835 15.835H2.50167C2.05964 15.835 1.63572 15.6594 1.32316 15.3468C1.01059 15.0343 0.835 14.6104 0.835 14.1683V2.50167C0.835 2.05964 1.01059 1.63572 1.32316 1.32316C1.63572 1.01059 2.05964 0.835 2.50167 0.835H5.835M11.6683 12.5017L15.835 8.335M15.835 8.335L11.6683 4.16833M15.835 8.335H5.835"
         stroke="currentColor"
         strokeWidth="1.67"
         strokeLinecap="round"
@@ -52,28 +52,28 @@ function DotsVerticalIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 4 16"
+      viewBox="0 0 2.22222 10"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M2 9C2.55228 9 3 8.55228 3 8C3 7.44772 2.55228 7 2 7C1.44772 7 1 7.44772 1 8C1 8.55228 1.44772 9 2 9Z"
+        d="M1.11111 5.55556C1.41794 5.55556 1.66667 5.30683 1.66667 5C1.66667 4.69318 1.41794 4.44444 1.11111 4.44444C0.804286 4.44444 0.555556 4.69318 0.555556 5C0.555556 5.30683 0.804286 5.55556 1.11111 5.55556Z"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.11111"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M2 3C2.55228 3 3 2.55228 3 2C3 1.44772 2.55228 1 2 1C1.44772 1 1 1.44772 1 2C1 2.55228 1.44772 3 2 3Z"
+        d="M1.11111 1.66667C1.41794 1.66667 1.66667 1.41794 1.66667 1.11111C1.66667 0.804286 1.41794 0.555556 1.11111 0.555556C0.804286 0.555556 0.555556 0.804286 0.555556 1.11111C0.555556 1.41794 0.804286 1.66667 1.11111 1.66667Z"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.11111"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M2 15C2.55228 15 3 14.5523 3 14C3 13.4477 2.55228 13 2 13C1.44772 13 1 13.4477 1 14C1 14.5523 1.44772 15 2 15Z"
+        d="M1.11111 9.44444C1.41794 9.44444 1.66667 9.19571 1.66667 8.88889C1.66667 8.58206 1.41794 8.33333 1.11111 8.33333C0.804286 8.33333 0.555556 8.58206 0.555556 8.88889C0.555556 9.19571 0.804286 9.44444 1.11111 9.44444Z"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.11111"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -156,13 +156,13 @@ function SectionHeader({
   return (
     <CollapsibleTrigger
       onClick={onToggle}
-      className="flex w-full items-center justify-between px-4 pb-3 pt-4"
+      className="flex w-full items-center justify-between px-[16px] pb-[12px] pt-[16px]"
     >
-      <span className="text-sm font-semibold text-[#1E293B] dark:text-white">
+      <span className="text-[14px] font-semibold leading-[20px] text-[#1E293B] dark:text-white">
         {label}
       </span>
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-[#475569] dark:text-white">
+      <div className="flex items-center gap-[8px]">
+        <span className="text-[14px] leading-[20px] text-[#475569] dark:text-white">
           {count}개
         </span>
         <ChevronDownIcon
@@ -180,31 +180,31 @@ function ChatListItem({ chat }: { chat: ChatItem }) {
     <Link
       to={`/chat/${chat.roomId}`}
       viewTransition
-      className="flex items-start gap-2 bg-[#FAFAFA] px-4 py-3 transition-colors hover:bg-[#F5F5F5] dark:bg-[#1F242F] dark:hover:bg-[#252B37]"
+      className="flex items-start gap-[8px] bg-[#FAFAFA] px-[16px] py-[12px] transition-colors hover:bg-[#F5F5F5] dark:bg-[#1F242F] dark:hover:bg-[#252B37]"
     >
-      <div className="flex flex-1 items-center gap-2">
-        <Avatar className="size-9 shrink-0">
+      <div className="flex flex-1 items-center gap-[8px]">
+        <Avatar className="size-[36px] shrink-0">
           <AvatarImage src={chat.characterAvatarUrl ?? undefined} />
-          <AvatarFallback className="bg-[#E9EAEB] text-xs text-[#535862] dark:bg-[#333741] dark:text-[#D5D7DA]">
+          <AvatarFallback className="bg-[#E9EAEB] text-[12px] text-[#535862] dark:bg-[#333741] dark:text-[#D5D7DA]">
             {chat.characterName.slice(0, 1)}
           </AvatarFallback>
         </Avatar>
         <div className="flex min-w-0 flex-col gap-[3px]">
-          <span className="truncate text-sm font-semibold text-black dark:text-white">
+          <span className="truncate text-[14px] font-semibold leading-[20px] text-black dark:text-white">
             {chat.characterName}
           </span>
-          <span className="text-xs text-[#717680] dark:text-[#94969C]">
+          <span className="text-[12px] leading-[18px] text-[#717680] dark:text-[#94969C]">
             {formatTime(chat.lastMessageAt)}
           </span>
         </div>
       </div>
       <button
         type="button"
-        className="shrink-0"
+        className="shrink-0 p-[5.33px]"
         aria-label="더보기"
         onClick={(e) => e.preventDefault()}
       >
-        <DotsVerticalIcon className="size-4 text-[#535862] dark:text-[#717680]" />
+        <DotsVerticalIcon className="size-[8.89px] text-[#535862] dark:text-[#717680]" />
       </button>
     </Link>
   );
@@ -223,7 +223,7 @@ function ChatSection({
   if (chats.length === 0) return null;
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="border-b border-[#CBD5E1] py-2 last:border-b-0 dark:border-[#414651]">
+    <Collapsible open={open} onOpenChange={setOpen} className="border-b border-[#CBD5E1] py-[8px] last:border-b-0 dark:border-[#414651]">
       <SectionHeader
         label={label}
         count={chats.length}
@@ -243,21 +243,21 @@ function ChatSection({
 
 function UserFooter({ user }: { user: ChatSidebarUser }) {
   return (
-    <div className="flex flex-col gap-6 bg-[#FAFAFA] px-4 py-8 dark:bg-[#181D27]">
+    <div className="flex flex-col gap-[24px] bg-[#FAFAFA] px-[16px] py-[32px] dark:bg-[#181D27]">
       <div className="h-px w-full bg-[#E9EAEB] dark:bg-[#414651]" />
-      <div className="flex items-start justify-between px-2">
-        <div className="flex items-center gap-3">
+      <div className="flex items-start justify-between px-[8px]">
+        <div className="flex items-center gap-[12px]">
           <img
             src="/default-avatar.png"
             alt="프로필"
-            className="size-10 shrink-0 rounded-full object-cover"
+            className="size-[40px] shrink-0 rounded-[200px] object-cover"
           />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold leading-5 text-[#181D27] dark:text-white">
+            <p className="truncate text-[14px] font-semibold leading-[20px] text-[#181D27] dark:text-white">
               {user.name}
             </p>
             {user.email && (
-              <p className="truncate text-sm leading-5 text-[#535862] dark:text-[#717680]">
+              <p className="truncate text-[14px] leading-[20px] text-[#535862] dark:text-[#717680]">
                 {user.email}
               </p>
             )}
@@ -269,7 +269,7 @@ function UserFooter({ user }: { user: ChatSidebarUser }) {
           className="shrink-0 text-[#717680] transition-colors hover:text-[#535862] dark:text-[#D5D7DA] dark:hover:text-white"
           aria-label="로그아웃"
         >
-          <LogOutIcon className="size-5" />
+          <LogOutIcon className="size-[20px]" />
         </Link>
       </div>
     </div>
@@ -280,23 +280,26 @@ function LoggedOutCTA() {
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex-1" />
-      <div className="px-4 pb-6">
-        <div className="rounded-lg bg-[#F5F5F5] px-4 py-5 dark:bg-[#252B37]">
-          <p className="mb-4 text-sm font-semibold leading-5 text-[#181D27] dark:text-[#FDFDFD]">
+      <div className="flex flex-col gap-[24px] px-[16px] pb-[32px]">
+        {/* Divider — Figma: #E9EAEB 1px */}
+        <div className="h-px w-full bg-[#E9EAEB] dark:bg-[#414651]" />
+        {/* Login Card — Figma: bg #F5F5F5, rounded-[8px], px-16 py-20, gap-16 */}
+        <div className="flex flex-col gap-[16px] rounded-[8px] bg-[#F5F5F5] px-[16px] py-[20px] dark:bg-[#252B37]">
+          <p className="text-[14px] font-semibold leading-[20px] text-[#181D27] dark:text-[#FDFDFD]">
             로그인하고 개성 넘치는 캐릭터들과 더 깊은 대화를 즐겨보세요!
           </p>
 
           {/* Social Login Buttons */}
-          <div className="mb-4 flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-[16px]">
             {/* Kakao */}
             <Link
               to="/auth/social/start/kakao"
               viewTransition
-              className="flex size-12 items-center justify-center rounded-full border border-[#D5D7DA] bg-[#FFE812] transition-opacity hover:opacity-90"
+              className="flex size-[48px] items-center justify-center rounded-[500px] border border-[#D5D7DA] bg-[#FFE812] transition-opacity hover:opacity-90"
               aria-label="카카오톡으로 로그인"
             >
               <svg
-                className="size-6"
+                className="size-[24px]"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -315,7 +318,7 @@ function LoggedOutCTA() {
             <Link
               to="/auth/social/start/google"
               viewTransition
-              className="flex size-12 items-center justify-center rounded-full border border-[#D5D7DA] bg-white transition-opacity hover:opacity-90"
+              className="flex size-[48px] items-center justify-center rounded-[500px] border border-[#D5D7DA] bg-white transition-opacity hover:opacity-90"
               aria-label="구글로 로그인"
             >
               <svg
@@ -348,7 +351,7 @@ function LoggedOutCTA() {
           <Link
             to="/login"
             viewTransition
-            className="flex w-full items-center justify-center rounded-lg border border-[#D5D7DA] px-3.5 py-2 text-sm font-semibold text-[#414651] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#F5F5F5] dark:bg-[#717680] dark:text-white dark:hover:bg-[#717680]/90"
+            className="flex w-full items-center justify-center rounded-[8px] border border-[#D5D7DA] bg-white px-[14px] py-[8px] text-[14px] font-semibold leading-[20px] text-[#414651] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#F5F5F5] dark:bg-[#717680] dark:text-white dark:hover:bg-[#717680]/90"
           >
             이메일로 시작하기
           </Link>
@@ -368,12 +371,12 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
   return (
     <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-[#E2E8F0] bg-[#FDFDFD] dark:border-[#414651] dark:bg-[#181D27]">
       {/* Header */}
-      <div className="flex items-center border-b border-[#CBD5E1] px-4 py-5 dark:border-[#414651]">
+      <div className="flex items-center border-b border-[#CBD5E1] px-[16px] py-[20px] dark:border-[#414651]">
         <h2
           className={
             isLoggedIn
-              ? "text-sm font-semibold text-black dark:text-white"
-              : "text-base font-bold text-black dark:text-white"
+              ? "text-[14px] font-semibold leading-[20px] text-black dark:text-white"
+              : "text-[16px] font-bold leading-[24px] text-black dark:text-white"
           }
         >
           채팅
@@ -386,7 +389,7 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
       ) : !hasChats ? (
         /* Logged in, no chats */
         <div className="flex flex-1 flex-col">
-          <Collapsible defaultOpen className="border-b border-[#CBD5E1] py-2 dark:border-[#414651]">
+          <Collapsible defaultOpen className="border-b border-[#CBD5E1] py-[8px] dark:border-[#414651]">
             <SectionHeader
               label="오늘"
               count={0}
@@ -396,16 +399,16 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
           </Collapsible>
           <div className="flex-1" />
           {/* Empty CTA 카드 */}
-          <div className="px-4 pb-4">
-            <div className="rounded-lg bg-[#F5F5F5] px-4 py-5 dark:bg-[#252B37]">
-              <p className="mb-4 text-sm font-semibold leading-5 text-[#181D27] dark:text-[#FDFDFD]">
+          <div className="px-[16px] pb-[16px]">
+            <div className="flex flex-col gap-[16px] rounded-[8px] bg-[#F5F5F5] px-[16px] py-[20px] dark:bg-[#252B37]">
+              <p className="text-[14px] font-semibold leading-[20px] text-[#181D27] dark:text-[#FDFDFD]">
                 아직 첫 대화를 시작하지 않으셨네요! 마음에 드는 캐릭터와 첫 대화를
                 시작해보세요 :)
               </p>
               <Link
                 to="/characters"
                 viewTransition
-                className="flex w-full items-center justify-center rounded-lg border border-[#D5D7DA] bg-white px-3.5 py-2 text-sm font-semibold text-[#414651] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#F5F5F5] dark:bg-[#717680] dark:text-white dark:hover:bg-[#717680]/90"
+                className="flex w-full items-center justify-center rounded-[8px] border border-[#D5D7DA] bg-white px-[14px] py-[8px] text-[14px] font-semibold leading-[20px] text-[#414651] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#F5F5F5] dark:bg-[#717680] dark:text-white dark:hover:bg-[#717680]/90"
               >
                 탐색하기
               </Link>
@@ -415,8 +418,8 @@ export function ChatSidebar({ user, chats = [] }: ChatSidebarProps) {
         </div>
       ) : (
         /* Logged in, has chats */
-        <div className="flex flex-1 flex-col">
-          <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-1 flex-col gap-[4px]">
+          <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-track]:bg-[#E8E8E8] [&::-webkit-scrollbar-thumb]:rounded-[100px] [&::-webkit-scrollbar-thumb]:bg-[#7A7A7A]">
             <ChatSection label="오늘" chats={grouped.today} />
             <ChatSection
               label="최근 일주일"

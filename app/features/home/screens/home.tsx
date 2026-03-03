@@ -493,20 +493,25 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               to="/notices"
               className="group block overflow-hidden rounded-[8px] border border-[rgba(0,0,0,0.3)] transition-transform hover:scale-[1.01]"
             >
-              <div className="relative flex h-[136px] items-center bg-[#060809]">
-                <div className="relative z-10 flex-1 px-8">
-                  <p className="text-[20px] font-bold text-white">나냥 기획전</p>
-                  <p className="mt-1 text-sm text-[#D5D7DA]">
+              <div className="relative h-[136px] bg-[#060809]">
+                {/* 우측 캐릭터 이미지 — Figma: left-[450px] (55%), 400×508, top-[-88px] */}
+                <div className="absolute right-0 top-0 h-full w-[45%] overflow-hidden">
+                  <img
+                    src="/promo-banner.png"
+                    alt="프로모션"
+                    className="absolute left-0 top-[-88px] h-[508px] w-[400px] max-w-none object-cover transition-opacity group-hover:opacity-90"
+                  />
+                </div>
+                {/* 이미지 위 좌측 그라데이션 — Figma: 152px, left-[438px], black→transparent */}
+                <div className="absolute right-0 top-0 h-full w-[46.3%]">
+                  <div className="absolute inset-y-0 left-0 w-[152px] bg-gradient-to-r from-[#060809] to-transparent" />
+                </div>
+                {/* 텍스트 — Figma: left 19px */}
+                <div className="relative z-10 flex h-full flex-col justify-center pl-[19px]">
+                  <p className="text-[20px] font-bold leading-[30px] text-white">나냥 기획전</p>
+                  <p className="mt-[6px] text-[14px] leading-[20px] text-[#D5D7DA]">
                     특별한 캐릭터를 만나보세요
                   </p>
-                </div>
-                <div className="absolute right-0 top-0 h-full w-[200px] overflow-hidden">
-                  <img
-                    src="/nft.jpg"
-                    alt="프로모션"
-                    className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#060809] to-transparent" />
                 </div>
               </div>
             </Link>
