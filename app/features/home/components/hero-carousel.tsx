@@ -89,26 +89,29 @@ export function HeroCarousel({
       <img
         src={slide.image}
         alt={slide.title}
-        className="h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover"
       />
-      {/* 그라데이션 + 텍스트 */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-      <div className="absolute inset-x-0 bottom-12 flex flex-col items-center px-8 text-center">
+      {/* 그라데이션 — Figma: from transparent to solid black */}
+      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black to-transparent" />
+      {/* 텍스트 그룹 */}
+      <div className="absolute inset-x-0 bottom-[72px] flex flex-col items-center gap-[12px] px-8 text-center">
         {slide.badge && (
-          <span className="mb-3 inline-block rounded-[4px] bg-[#14B8A6] px-2 py-1 text-xs text-white">
+          <span className="inline-flex items-center justify-center rounded-[4px] bg-[#14B8A6] px-[8px] py-[4px] text-[12px] leading-[16px] text-white">
             {slide.badge}
           </span>
         )}
-        <h2 className="text-[28px] font-bold leading-[1.5] text-white">
-          {slide.title}
-        </h2>
-        <p className="mt-1 text-sm leading-[1.5] text-white">{slide.description}</p>
+        <div className="flex flex-col gap-[4px]">
+          <h2 className="text-[28px] font-bold leading-[1.5] text-white">
+            {slide.title}
+          </h2>
+          <p className="text-[14px] leading-[1.5] text-white">{slide.description}</p>
+        </div>
       </div>
     </>
   );
 
   return (
-    <section className="relative h-[240px] overflow-hidden rounded-[12px] border border-[rgba(0,0,0,0.3)] sm:h-[300px] lg:h-[360px]">
+    <section className="relative aspect-[2/1] overflow-hidden rounded-[12px] border border-[rgba(0,0,0,0.3)]">
       {/* 현재 슬라이드 */}
       <div className="relative h-full w-full">
         {slide.link ? (
@@ -121,36 +124,36 @@ export function HeroCarousel({
       </div>
 
       {/* 하단 좌측: 페이지 카운터 + 공유 버튼 */}
-      <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2">
-        <span className="rounded-[50px] bg-[rgba(83,83,83,0.6)] px-[14px] py-[8px] text-sm font-semibold leading-5 text-white backdrop-blur">
+      <div className="absolute bottom-[19px] left-[19px] z-30 flex items-center gap-2">
+        <span className="flex h-[36px] items-center justify-center rounded-[50px] bg-[rgba(83,83,83,0.6)] px-[14px] py-[8px] text-[14px] font-semibold leading-[20px] text-white backdrop-blur">
           {String(currentSlide + 1).padStart(2, "0")}/
           {String(slides.length).padStart(2, "0")}
         </span>
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-[rgba(83,83,83,0.6)] text-white backdrop-blur transition-colors hover:bg-[rgba(83,83,83,0.8)]"
+          className="flex h-[36px] w-[36px] items-center justify-center rounded-full bg-[rgba(83,83,83,0.6)] p-[7.73px] text-white backdrop-blur transition-colors hover:bg-[rgba(83,83,83,0.8)]"
         >
           <LogOutIcon className="h-4 w-4" />
         </button>
       </div>
 
       {/* 하단 우측: ◁ ⏸ ▷ 통합 필 */}
-      <div className="absolute bottom-4 right-4 z-30 flex items-center gap-[7.7px] rounded-full bg-[rgba(83,83,83,0.6)] px-2 py-2 backdrop-blur">
+      <div className="absolute bottom-[19px] right-[19px] z-30 flex h-[36px] items-center gap-[7.73px] rounded-full bg-[rgba(83,83,83,0.6)] p-[8px] backdrop-blur">
         <button
           onClick={goToPrev}
-          className="flex h-5 w-5 items-center justify-center text-white transition-opacity hover:opacity-80"
+          className="flex h-[14px] w-[14px] items-center justify-center text-white transition-opacity hover:opacity-80"
         >
           <ChevronLeftIcon className="h-3.5 w-3.5" />
         </button>
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="flex h-5 w-5 items-center justify-center text-white transition-opacity hover:opacity-80"
+          className="flex h-[14px] w-[14px] items-center justify-center text-white transition-opacity hover:opacity-80"
         >
           <PauseCircleIcon className="h-3.5 w-3.5" />
         </button>
         <button
           onClick={goToNext}
-          className="flex h-5 w-5 items-center justify-center text-white transition-opacity hover:opacity-80"
+          className="flex h-[14px] w-[14px] items-center justify-center text-white transition-opacity hover:opacity-80"
         >
           <ChevronRightIcon className="h-3.5 w-3.5" />
         </button>

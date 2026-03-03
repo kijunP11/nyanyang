@@ -196,9 +196,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   // 히어로 슬라이드 데이터
   const heroSlides: HeroSlide[] = [
     {
-      image: "/nft.jpg",
-      title: "나만의 AI 캐릭터와 대화하세요",
-      description: "다양한 캐릭터들이 기다리고 있어요",
+      image: "/hero-banner.png",
+      title: "총 상금 5억! 캐릭터 콘테스트",
+      description: "역대급 상금의 주인공에 도전하세요",
       badge: "이벤트",
       link: "/characters",
     },
