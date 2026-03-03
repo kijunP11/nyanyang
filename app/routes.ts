@@ -181,7 +181,9 @@ export default [
       route("/notifications", "features/notifications/screens/notifications.tsx"),
     ]),
     // Placeholder routes for upcoming features
-    route("/my-content", "features/placeholder/screens/my-content.tsx"),
+    layout("core/layouts/private.layout.tsx", { id: "private-my-content" }, [
+      route("/my-content", "features/placeholder/screens/my-content.tsx"),
+    ]),
     route("/image-generation", "features/image-generation/screens/image-generation.tsx"),
     // Blog routes moved under the main navigation layout so the NavigationBar persists
     ...prefix("/blog", [
