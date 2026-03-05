@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { data, Link, useSearchParams } from "react-router";
+import { data, Link, useFetcher, useSearchParams } from "react-router";
 import { desc, eq, sql } from "drizzle-orm";
 
 import type { Route } from "./+types/my-content";
@@ -207,6 +207,33 @@ export async function loader({ request }: Route.LoaderArgs) {
     { items, currentPage: page, totalPages },
     { headers },
   );
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  const [client, headers] = makeServerClient(request);
+  await requireAuthentication(client);
+
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+  if (!user) throw new Response("Unauthorized", { status: 401 });
+
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  if (intent === "delete") {
+    const characterId = Number(formData.get("characterId"));
+    if (!characterId) throw new Response("Bad Request", { status: 400 });
+
+    const db = drizzle;
+    await db
+      .delete(characters)
+      .where(
+        sql`${characters.character_id} = ${characterId} AND ${characters.creator_id} = ${user.id}`,
+      );
+  }
+
+  return data(null, { headers });
 }
 
 /** Plus icon — Figma Untitled UI, viewBox 0 0 13.3367 13.3367 */
@@ -830,6 +857,57 @@ function CharacterInfoModal({
   );
 }
 
+/** Delete Confirmation Modal */
+function DeleteConfirmModal({
+  onClose,
+  onConfirm,
+}: {
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(16,24,40,0.7)]"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="flex w-[400px] flex-col gap-[32px] overflow-clip rounded-[12px] bg-white p-[24px] shadow-[0px_20px_24px_-4px_rgba(10,13,18,0.08),0px_8px_8px_-4px_rgba(10,13,18,0.03)]">
+        {/* Text */}
+        <div className="flex w-full flex-col gap-[8px]">
+          <p className="font-semibold text-[18px] leading-[28px] text-[#181d27]">
+            캐릭터를 삭제하시겠습니까?
+          </p>
+          <p className="text-[14px] leading-[20px] text-[#535862]">
+            다시 한번 확인해주세요
+          </p>
+        </div>
+        {/* Actions */}
+        <div className="flex w-full gap-[12px]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex flex-1 items-center justify-center overflow-clip rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)]"
+          >
+            <span className="whitespace-nowrap font-semibold text-[16px] leading-[24px] text-[#414651]">
+              돌아가기
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex flex-1 items-center justify-center overflow-clip rounded-[8px] border border-[#36c4b3] bg-[#36c4b3] px-[18px] py-[10px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)]"
+          >
+            <span className="whitespace-nowrap font-semibold text-[16px] leading-[24px] text-white">
+              삭제하기
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Content item for table rows */
 interface ContentItem {
   id: number;
@@ -852,11 +930,22 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCharacter, setSelectedCharacter] =
     useState<CharacterInfo | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+  const fetcher = useFetcher();
 
   function goToPage(page: number) {
     const params = new URLSearchParams(searchParams);
     params.set("page", String(page));
     setSearchParams(params);
+  }
+
+  function handleDelete() {
+    if (deleteTargetId === null) return;
+    fetcher.submit(
+      { intent: "delete", characterId: String(deleteTargetId) },
+      { method: "post" },
+    );
+    setDeleteTargetId(null);
   }
 
   return (
@@ -865,6 +954,12 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
         <CharacterInfoModal
           character={selectedCharacter}
           onClose={() => setSelectedCharacter(null)}
+        />
+      )}
+      {deleteTargetId !== null && (
+        <DeleteConfirmModal
+          onClose={() => setDeleteTargetId(null)}
+          onConfirm={handleDelete}
         />
       )}
       <div className="mx-auto flex max-w-[816px] flex-col gap-[30px] py-[40px]">
@@ -1034,6 +1129,7 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
                     </button>
                     <button
                       type="button"
+                      onClick={() => setDeleteTargetId(item.id)}
                       className="flex items-center justify-center overflow-hidden rounded-[8px] p-[10px] text-[#535862]"
                     >
                       <TrashIcon className="size-[20px]" />
