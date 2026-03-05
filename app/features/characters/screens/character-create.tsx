@@ -4,10 +4,17 @@
  * Multi-step wizard form for creating a new character.
  * Uses WizardContext for state management across steps.
  */
-import type { Route } from "./+types/character-create";
+// NOTE: This file is no longer the active route for /characters/create.
+// See create-content.tsx instead.
+// import type { Route } from "./+types/character-create";
 
 import { useCallback, useState } from "react";
 import { data, redirect, useActionData, useNavigate, useNavigation } from "react-router";
+namespace Route {
+  export type MetaFunction = () => Array<{ title: string }>;
+  export type LoaderArgs = { request: Request };
+  export type ActionArgs = { request: Request };
+}
 import { z } from "zod";
 
 import { Alert, AlertDescription } from "~/core/components/ui/alert";

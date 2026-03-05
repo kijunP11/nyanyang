@@ -203,7 +203,7 @@ export default [
     ...prefix("/characters", [
       index("features/characters/screens/character-list.tsx"),
       layout("core/layouts/private.layout.tsx", { id: "private-characters" }, [
-        route("/create", "features/characters/screens/character-create.tsx"),
+        route("/create", "features/characters/screens/create-content.tsx"),
         route(
           "/:characterId/edit",
           "features/characters/screens/character-edit.tsx",
