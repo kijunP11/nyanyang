@@ -27,31 +27,29 @@ function ChevronRightIcon({ stroke = "white" }: { stroke?: string }) {
 }
 function ChevronDownIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M4 7L10 13L16 7" stroke="#181D27" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
+      <path d="M1 1L7 7L13 1" stroke="#181D27" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 function ChevronUpIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M16 13L10 7L4 13" stroke="#181D27" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
+      <path d="M1 7L7 1L13 7" stroke="#181D27" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 function HelpCircleIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="6.583" stroke="#A4A7AE" strokeWidth="1.33" />
-      <path d="M6.06 6.06a2.167 2.167 0 0 1 4.21.72c0 1.447-2.17 2.17-2.17 2.17v.72" stroke="#A4A7AE" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="8" cy="12" r="0.5" fill="#A4A7AE" />
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <path d="M8.09 8C8.3251 7.33167 8.78915 6.76811 9.39995 6.40913C10.0108 6.05016 10.7289 5.91894 11.4272 6.03871C12.1255 6.15849 12.7588 6.52152 13.2151 7.06353C13.6713 7.60553 13.9211 8.29152 13.92 9C13.92 11 10.92 12 10.92 12M11 16H11.01M21 11C21 16.5228 16.5228 21 11 21C5.47715 21 1 16.5228 1 11C1 5.47715 5.47715 1 11 1C16.5228 1 21 5.47715 21 11Z" stroke="#A4A7AE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 function XCloseRedIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 11.6667 11.6667" fill="none">
-      <path d="M10.8333 0.833333L0.833333 10.8333M0.833333 0.833333L10.8333 10.8333" stroke="#D92D20" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10.8333 0.833333L0.833333 10.8333M0.833333 0.833333L10.8333 10.8333" stroke="#D92D20" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -72,14 +70,14 @@ function XCloseIcon() {
 function UserIcon() {
   return (
     <svg width="16" height="18" viewBox="0 0 15.0033 16.67" fill="none">
-      <path d="M13.3333 15.8333v-1.6666A3.3333 3.3333 0 0 0 10 10.8333H5.0033a3.3333 3.3333 0 0 0-3.3333 3.3334v1.6666M7.5017.8333a3.3333 3.3333 0 1 0 0 6.6667 3.3333 3.3333 0 0 0 0-6.6667Z" stroke="#717680" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14.1683 15.835V14.1683C14.1683 13.2843 13.8171 12.4364 13.192 11.8113C12.5669 11.1862 11.7191 10.835 10.835 10.835H4.16833C3.28428 10.835 2.43643 11.1862 1.81131 11.8113C1.18619 12.4364 0.835 13.2843 0.835 14.1683V15.835M10.835 4.16833C10.835 6.00928 9.34262 7.50167 7.50167 7.50167C5.66072 7.50167 4.16833 6.00928 4.16833 4.16833C4.16833 2.32738 5.66072 0.835 7.50167 0.835C9.34262 0.835 10.835 2.32738 10.835 4.16833Z" stroke="#717680" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 function MessageCircleIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 16.67 16.67" fill="none">
-      <path d="M15.8333 8.055a6.847 6.847 0 0 1-.7366 3.112 6.944 6.944 0 0 1-6.2078 3.833 6.847 6.847 0 0 1-3.1111-.7367L.8333 15.8333l1.5684-4.9444A6.847 6.847 0 0 1 1.665 7.778a6.944 6.944 0 0 1 3.833-6.2078A6.847 6.847 0 0 1 8.6094.8333h.4095a6.927 6.927 0 0 1 6.8144 6.8145v.4072Z" stroke="#717680" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M15.835 7.91836C15.8379 9.01825 15.5809 10.1033 15.085 11.085C14.497 12.2615 13.5931 13.251 12.4746 13.9428C11.356 14.6345 10.0669 15.0012 8.75169 15.0017C7.6518 15.0046 6.56679 14.7476 5.58502 14.2517L0.835023 15.835L2.41836 11.085C1.92247 10.1033 1.66549 9.01825 1.66836 7.91836C1.66886 6.60315 2.03553 5.31407 2.72729 4.19548C3.41904 3.0769 4.40857 2.173 5.58502 1.58502C6.56679 1.08913 7.6518 0.832156 8.75169 0.835024H9.16836C10.9053 0.93085 12.5459 1.66399 13.776 2.89407C15.0061 4.12415 15.7392 5.76473 15.835 7.50169V7.91836Z" stroke="#717680" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -100,14 +98,14 @@ function MinusIcon() {
 function TrashIcon() {
   return (
     <svg width="18" height="20" viewBox="0 0 17 18.6667" fill="none">
-      <path d="M1 4.333H2.667M2.667 4.333H16M2.667 4.333V16c0 .442.175.866.488 1.179.312.312.737.488 1.178.488h8.334c.441 0 .866-.176 1.178-.488.313-.313.488-.737.488-1.179V4.333H2.667ZM5.167 4.333V2.667c0-.442.175-.866.488-1.179C5.967 1.176 6.391 1 6.833 1h3.334c.441 0 .866.176 1.178.488.313.313.488.737.488 1.179V4.333M6.833 8.5v5M10.167 8.5v5" stroke="#717680" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M1 4.33333H2.66667M2.66667 4.33333H16M2.66667 4.33333V16C2.66667 16.442 2.84226 16.8659 3.15482 17.1785C3.46738 17.4911 3.89131 17.6667 4.33333 17.6667H12.6667C13.1087 17.6667 13.5326 17.4911 13.8452 17.1785C14.1577 16.8659 14.3333 16.442 14.3333 16V4.33333H2.66667ZM5.16667 4.33333V2.66667C5.16667 2.22464 5.34226 1.80072 5.65482 1.48816C5.96738 1.17559 6.39131 1 6.83333 1H10.1667C10.6087 1 11.0326 1.17559 11.3452 1.48816C11.6577 1.80072 11.8333 2.22464 11.8333 2.66667V4.33333M6.83333 8.5V13.5M10.1667 8.5V13.5" stroke="#717680" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 function EditIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 17 16.2678" fill="none">
-      <path d="M8.5 15.6H15.5M12 1.267a1.886 1.886 0 1 1 2.667 2.667L5.333 13.267l-3.666.933.933-3.666L12 1.267Z" stroke="#717680" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8.50002 15.2678H16M12.25 1.51777C12.5815 1.18625 13.0312 1 13.5 1C13.7322 1 13.962 1.04572 14.1765 1.13456C14.391 1.2234 14.5859 1.35361 14.75 1.51777C14.9142 1.68192 15.0444 1.8768 15.1332 2.09127C15.2221 2.30575 15.2678 2.53562 15.2678 2.76777C15.2678 2.99991 15.2221 3.22979 15.1332 3.44426C15.0444 3.65874 14.9142 3.85361 14.75 4.01777L4.33335 14.4344L1.00002 15.2678L1.83335 11.9344L12.25 1.51777Z" stroke="#717680" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -139,8 +137,7 @@ function HeartIcon() {
 function PlaceholderSilhouette({ w = 125, h = 159 }: { w?: number; h?: number }) {
   return (
     <svg width={w} height={h} viewBox="0 0 125 159" fill="none">
-      <ellipse cx="62.5" cy="45" rx="28" ry="30" fill="#C6C6C6" />
-      <ellipse cx="62.5" cy="140" rx="50" ry="40" fill="#C6C6C6" />
+      <path d="M125 132.477C109.414 148.82 87.4376 159 63.0834 159C38.7291 159 15.6466 148.298 0 131.229L42.9363 116.006L43.1972 105.137C37.9281 105.553 35.6887 104.853 34.7364 104.189C34.2935 103.88 34.4293 103.198 34.9556 103.079C38.2584 102.333 39.186 99.9383 39.186 99.9383C28.1664 103.207 23.2492 97.0399 22.0207 95.1164C21.8339 94.8244 21.9281 94.4428 22.2229 94.2635C26.4934 91.6649 26.2202 89.2006 26.2202 89.2006C19.2442 89.6116 16.7748 88.5811 15.9723 88.0357C15.784 87.9075 15.7932 87.6294 15.9892 87.5181C20.1702 85.1327 19.9973 82.0427 19.9973 82.0427C17.4986 84.2768 15.6127 84.629 14.6434 84.6182C14.3641 84.6151 14.2375 84.2613 14.452 84.0821C19.7581 79.6001 18.7025 76.745 18.7025 76.745C13.5214 67.2757 12.5089 60.8501 13.6341 50.9282C14.7592 41.0079 21.5176 26.6905 25.7958 18.5747C30.0755 10.4573 34.3552 6.96257 44.8285 2.67833C52.7058 -0.54297 58.0366 1.40062 60.1927 2.56245C60.8687 2.92552 61.6897 2.89927 62.3287 2.47285C69.9575 -2.63951 78.6034 0.822795 88.072 6.96257C97.9819 13.3882 108.653 35.4274 110.596 40.5861C112.539 45.7433 112.96 47.6884 113.382 58.0027C113.804 68.317 109.806 71.6712 108.004 75.0547C106.683 77.5313 108.477 81.8867 109.529 84.0373C109.801 84.5935 109.25 85.2038 108.674 84.9751C106.199 83.9894 103.836 81.1976 103.836 81.1976C103.084 83.5012 106.19 87.5444 107.555 89.1713C107.863 89.5374 107.711 90.1044 107.258 90.2558C102.911 91.7236 98.1486 88.9194 98.1486 88.9194C97.4248 90.3238 100.373 94.5664 101.559 96.1793C101.867 96.5965 101.882 97.165 101.592 97.5945C98.0066 102.926 86.3419 100.858 86.7184 101.826C87.0163 102.594 89.532 103.714 90.7451 104.216C91.0445 104.341 91.0862 104.76 90.8068 104.927C87.95 106.64 81.2009 105.378 81.2009 105.378V116.281L124.997 132.479L125 132.477Z" fill="#C6C6C6" />
     </svg>
   );
 }
@@ -372,83 +369,124 @@ function CharacterSetupTab() {
   };
 
   return (
-    <div className="space-y-[24px]">
+    <div className="flex flex-col gap-[20px]">
       {/* 캐릭터 이미지 */}
-      <div className="flex items-start gap-[20px]">
-        <div className="relative h-[140px] w-[140px] flex-shrink-0 overflow-hidden rounded-[8px] bg-[#ededed]">
-          {formData.avatar_url ? (
-            <img src={formData.avatar_url} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <PlaceholderSilhouette w={80} h={100} />
+      <div className="flex flex-col gap-[4px]">
+        <SectionTitle label="캐릭터 이미지" required description="이미지를 등록해주세요. 부적절한 이미지는 제한될 수 있어요." />
+        <div className="mt-[8px] flex items-start gap-[20px]">
+          <div className="relative h-[140px] w-[140px] flex-shrink-0 overflow-hidden rounded-[8px] bg-[#ededed]">
+            {formData.avatar_url ? (
+              <img src={formData.avatar_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <PlaceholderSilhouette w={80} h={100} />
+              </div>
+            )}
+            <span className="absolute bottom-[8px] left-[8px] rounded-[6px] bg-[rgba(0,0,0,0.8)] px-[8px] py-[4px] text-[12px] font-semibold text-white">
+              3:4
+            </span>
+          </div>
+          <div className="flex flex-col gap-[12px]">
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            <div className="flex gap-[12px]">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="rounded-[8px] border border-[#d5d7da] bg-white px-[16px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
+              >
+                업로드하기
+              </button>
+              <button
+                type="button"
+                className="rounded-[8px] border border-[#d5d7da] bg-white px-[16px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
+              >
+                편집
+              </button>
             </div>
-          )}
-          <span className="absolute bottom-[8px] left-[8px] rounded-[6px] bg-[rgba(0,0,0,0.8)] px-[8px] py-[4px] text-[12px] font-semibold text-white">
-            3:4
-          </span>
-        </div>
-        <div className="flex flex-col gap-[8px] pt-[4px]">
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
-          >
-            업로드하기
-          </button>
+            <p className="text-[14px] leading-[20px] text-[#414651]">
+              PNG, JPG, WebP 이미지 파일만 올릴 수 있어요.용량은 00mb이하, 3:4 비율을 권장해요.
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* 구분선 */}
+      <div className="h-px bg-[#d9d9d9]" />
 
       {/* 캐릭터 이름 */}
-      <div>
+      <div className="flex flex-col gap-[4px]">
         <SectionTitle label="캐릭터 이름" required />
-        <div className="mt-[8px]">
-          <FormInput
-            value={formData.name}
-            onChange={(v) => dispatch({ type: "UPDATE_FIELD", payload: { field: "name", value: v } })}
-            maxLength={12}
-            placeholder="캐릭터 이름을 입력해주세요"
-          />
+        <div className="flex flex-col gap-[6px]">
+          <div className="flex flex-col gap-[8px]">
+            <p className="text-[14px] font-medium leading-[20px] text-[#717680]">
+              2~12자 이내로 입력해주세요. 특수문자, 이모지 제외
+            </p>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => dispatch({ type: "UPDATE_FIELD", payload: { field: "name", value: e.target.value.slice(0, 12) } })}
+              placeholder="캐릭터 이름을 입력해주세요"
+              className="h-[44px] w-full rounded-[8px] border border-[#d5d7da] px-[14px] text-[16px] font-normal text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#717680] focus:border-[#535862]"
+            />
+          </div>
+          <p className="text-right text-[14px] text-[#535862]">
+            {formData.name.length}/12
+          </p>
         </div>
       </div>
+
+      {/* 구분선 */}
+      <div className="h-px bg-[#d9d9d9]" />
 
       {/* 한줄 소개 */}
-      <div>
+      <div className="flex flex-col gap-[4px]">
         <SectionTitle label="한줄 소개" required />
-        <div className="mt-[8px]">
-          <FormTextarea
-            value={formData.tagline}
-            onChange={(v) => dispatch({ type: "UPDATE_FIELD", payload: { field: "tagline", value: v } })}
-            maxLength={30}
-            placeholder="캐릭터를 소개해주세요"
-            height="h-[88px]"
-          />
+        <div className="flex flex-col gap-[6px]">
+          <div className="flex flex-col gap-[8px]">
+            <p className="text-[14px] font-medium leading-[20px] text-[#717680]">
+              30자 이내로 입력해주세요.
+            </p>
+            <textarea
+              value={formData.tagline}
+              onChange={(e) => dispatch({ type: "UPDATE_FIELD", payload: { field: "tagline", value: e.target.value.slice(0, 30) } })}
+              placeholder="캐릭터를 소개해주세요"
+              className="h-[88px] w-full resize-none rounded-[8px] border border-[#d5d7da] px-[14px] py-[10px] text-[16px] font-normal text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#717680] focus:border-[#535862]"
+            />
+          </div>
+          <p className="text-right text-[14px] text-[#535862]">
+            {formData.tagline.length}/30
+          </p>
         </div>
       </div>
 
+      {/* 구분선 */}
+      <div className="h-px bg-[#d9d9d9]" />
+
       {/* 태그 */}
-      <div>
-        <SectionTitle label="태그" />
-        <div className="mt-[8px] flex gap-[8px]">
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
-            placeholder="태그를 입력해주세요"
-            className="h-[44px] flex-1 rounded-[8px] border border-[#d5d7da] px-[14px] text-[14px] text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#a4a7ae] focus:border-[#535862]"
-          />
-          <button
-            type="button"
-            onClick={addTag}
-            className="h-[44px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
-          >
-            등록
-          </button>
+      <div className="flex flex-col gap-[4px]">
+        <SectionTitle label="태그" required />
+        <div className="flex flex-col gap-[6px]">
+          <div className="flex flex-col gap-[8px]">
+            <p className="text-[14px] font-medium leading-[20px] text-[#717680]">
+              내 컨텐츠를 찾기 쉽도록 태그를 추가해주세요
+            </p>
+            <div className="flex gap-[8px]">
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
+                placeholder="태그 추가"
+                className="h-[44px] flex-1 rounded-[8px] border border-[#d5d7da] px-[14px] text-[16px] text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#717680] focus:border-[#535862]"
+              />
+            </div>
+          </div>
+          <p className="text-[14px] text-[#535862]">
+            {formData.tags.length}/10 태그 선택됨
+          </p>
         </div>
-        <p className="mt-[6px] text-right text-[14px] text-[#535862]">{formData.tags.length}/10</p>
         {formData.tags.length > 0 && (
-          <div className="mt-[8px] flex flex-wrap gap-[6px]">
+          <div className="mt-[4px] flex flex-wrap gap-[6px]">
             {formData.tags.map((tag) => (
               <span key={tag} className="inline-flex items-center gap-[4px] rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px] text-[12px] text-[#535862]">
                 {tag}
@@ -460,10 +498,10 @@ function CharacterSetupTab() {
       </div>
 
       {/* 경고 바 */}
-      <div className="flex items-start gap-[8px] rounded-[8px] border border-[#f5e6b0] bg-[#faf6e6] px-[16px] py-[12px]">
-        <div className="mt-[2px] flex-shrink-0"><HelpCircleIcon /></div>
-        <p className="text-[14px] leading-[20px] text-[#414651]">
-          캐릭터 이미지와 이름은 다른 사용자에게 노출되는 정보입니다. 부적절한 내용은 관리자에 의해 수정될 수 있습니다.
+      <div className="flex items-center gap-[8px] rounded-[8px] bg-[#f5f5f5] px-[14px] py-[10px] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]">
+        <div className="flex-shrink-0"><HelpCircleIcon /></div>
+        <p className="flex-1 text-[16px] leading-[24px] text-[#717680]">
+          폭력, 혐오, 성적묘사 등의 표현 및 이미지는 규정에 따라 영구적으로 제재될 수 있어요
         </p>
       </div>
     </div>
