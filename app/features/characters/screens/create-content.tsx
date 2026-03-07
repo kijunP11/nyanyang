@@ -207,12 +207,12 @@ function SectionTitle({ label, required, description, children }: {
   return (
     <div className="flex items-start justify-between">
       <div>
-        <h3 className="text-[18px] font-semibold leading-[28px] text-[#414651]">
+        <h3 className="text-[18px] font-semibold leading-[28px] text-[#414651] dark:text-[#CECFD2]">
           {label}
           {required && <span className="text-[#f04438]"> *</span>}
         </h3>
         {description && (
-          <p className="mt-[6px] text-[14px] font-medium leading-[20px] text-[#717680]">
+          <p className="mt-[6px] text-[14px] font-medium leading-[20px] text-[#717680] dark:text-[#9ca3af]">
             {Array.isArray(description)
               ? description.map((d, i) => (
                   <span key={i}>
@@ -243,10 +243,10 @@ function FormInput({ value, onChange, maxLength, placeholder, className }: {
         value={value}
         onChange={(e) => onChange(maxLength ? e.target.value.slice(0, maxLength) : e.target.value)}
         placeholder={placeholder}
-        className="h-[44px] w-full rounded-[8px] border border-[#d5d7da] px-[14px] text-[14px] font-normal text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#a4a7ae] focus:border-[#535862]"
+        className="h-[44px] w-full rounded-[8px] border border-[#d5d7da] px-[14px] text-[14px] font-normal text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#a4a7ae] focus:border-[#535862] dark:border-[#333741] dark:bg-[#1F242F] dark:text-white dark:placeholder:text-[#555] dark:focus:border-[#94969C]"
       />
       {maxLength !== undefined && (
-        <p className="mt-[6px] text-right text-[14px] text-[#535862]">
+        <p className="mt-[6px] text-right text-[14px] text-[#535862] dark:text-[#94969C]">
           {value.length}/{maxLength}
         </p>
       )}
@@ -267,10 +267,10 @@ function FormTextarea({ value, onChange, maxLength, placeholder, height = "h-[12
         value={value}
         onChange={(e) => onChange(maxLength ? e.target.value.slice(0, maxLength) : e.target.value)}
         placeholder={placeholder}
-        className={`${height} w-full resize-none rounded-[8px] border border-[#d5d7da] px-[14px] py-[10px] text-[14px] font-normal text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#a4a7ae] focus:border-[#535862]`}
+        className={`${height} w-full resize-none rounded-[8px] border border-[#d5d7da] px-[14px] py-[10px] text-[14px] font-normal text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#a4a7ae] focus:border-[#535862] dark:border-[#333741] dark:bg-[#1F242F] dark:text-white dark:placeholder:text-[#555] dark:focus:border-[#94969C]`}
       />
       {maxLength !== undefined && (
-        <p className="mt-[6px] text-right text-[14px] text-[#535862]">
+        <p className="mt-[6px] text-right text-[14px] text-[#535862] dark:text-[#94969C]">
           {value.length}/{maxLength}
         </p>
       )}
@@ -301,21 +301,21 @@ function FormSelect({ value, onChange, options, placeholder, renderOption, rende
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex h-[44px] w-full items-center justify-between rounded-[8px] border border-[#d5d7da] bg-white px-[14px] text-left text-[14px] font-medium shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none ${isOpen ? "rounded-b-none border-b-0" : ""}`}
+        className={`flex h-[44px] w-full items-center justify-between rounded-[8px] border border-[#d5d7da] bg-white px-[14px] text-left text-[14px] font-medium shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none dark:border-[#333741] dark:bg-[#1F242F] ${isOpen ? "rounded-b-none border-b-0" : ""}`}
       >
-        <span className={selected ? "text-[#414651]" : "text-[#a4a7ae]"}>
+        <span className={selected ? "text-[#414651] dark:text-[#CECFD2]" : "text-[#a4a7ae]"}>
           {renderValue ? renderValue(selected) : selected?.label || placeholder}
         </span>
         <ChevronDownIcon />
       </button>
       {isOpen && (
-        <div className="absolute left-0 right-0 z-50 max-h-[484px] overflow-y-auto rounded-b-[8px] border border-t-0 border-[#e9eaeb] bg-white shadow-[0px_12px_16px_-4px_rgba(10,13,18,0.08),0px_4px_6px_-2px_rgba(10,13,18,0.03)]">
+        <div className="absolute left-0 right-0 z-50 max-h-[484px] overflow-y-auto rounded-b-[8px] border border-t-0 border-[#e9eaeb] bg-white shadow-[0px_12px_16px_-4px_rgba(10,13,18,0.08),0px_4px_6px_-2px_rgba(10,13,18,0.03)] dark:border-[#333741] dark:bg-[#1F242F]">
           {options.map((opt) => (
             <button
               key={opt.value}
               type="button"
               onClick={() => { onChange(opt.value); setIsOpen(false); }}
-              className="flex w-full items-center px-[16px] py-[10px] text-left text-[14px] font-medium text-[#414651] hover:bg-[#fafafa]"
+              className="flex w-full items-center px-[16px] py-[10px] text-left text-[14px] font-medium text-[#414651] hover:bg-[#fafafa] dark:text-[#CECFD2] dark:hover:bg-[#333741]"
             >
               {renderOption ? renderOption(opt, opt.value === value) : opt.label}
             </button>
@@ -374,7 +374,7 @@ function CharacterSetupTab() {
       <div className="flex flex-col gap-[4px]">
         <SectionTitle label="캐릭터 이미지" required description="이미지를 등록해주세요. 부적절한 이미지는 제한될 수 있어요." />
         <div className="mt-[8px] flex items-start gap-[20px]">
-          <div className="relative h-[140px] w-[140px] flex-shrink-0 overflow-hidden rounded-[8px] bg-[#ededed]">
+          <div className="relative h-[140px] w-[140px] flex-shrink-0 overflow-hidden rounded-[8px] bg-[#ededed] dark:bg-[#333741]">
             {formData.avatar_url ? (
               <img src={formData.avatar_url} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -392,18 +392,18 @@ function CharacterSetupTab() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="rounded-[8px] border border-[#d5d7da] bg-white px-[16px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
+                className="rounded-[8px] border border-[#d5d7da] bg-white px-[16px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#CECFD2]"
               >
                 업로드하기
               </button>
               <button
                 type="button"
-                className="rounded-[8px] border border-[#d5d7da] bg-white px-[16px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
+                className="rounded-[8px] border border-[#d5d7da] bg-white px-[16px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#CECFD2]"
               >
                 편집
               </button>
             </div>
-            <p className="text-[14px] leading-[20px] text-[#414651]">
+            <p className="text-[14px] leading-[20px] text-[#414651] dark:text-[#CECFD2]">
               PNG, JPG, WebP 이미지 파일만 올릴 수 있어요.용량은 00mb이하, 3:4 비율을 권장해요.
             </p>
           </div>
@@ -411,14 +411,14 @@ function CharacterSetupTab() {
       </div>
 
       {/* 구분선 */}
-      <div className="h-px bg-[#d9d9d9]" />
+      <div className="h-px bg-[#d9d9d9] dark:bg-[#333741]" />
 
       {/* 캐릭터 이름 */}
       <div className="flex flex-col gap-[4px]">
         <SectionTitle label="캐릭터 이름" required />
         <div className="flex flex-col gap-[6px]">
           <div className="flex flex-col gap-[8px]">
-            <p className="text-[14px] font-medium leading-[20px] text-[#717680]">
+            <p className="text-[14px] font-medium leading-[20px] text-[#717680] dark:text-[#9ca3af]">
               2~12자 이내로 입력해주세요. 특수문자, 이모지 제외
             </p>
             <input
@@ -426,48 +426,48 @@ function CharacterSetupTab() {
               value={formData.name}
               onChange={(e) => dispatch({ type: "UPDATE_FIELD", payload: { field: "name", value: e.target.value.slice(0, 12) } })}
               placeholder="캐릭터 이름을 입력해주세요"
-              className="h-[44px] w-full rounded-[8px] border border-[#d5d7da] px-[14px] text-[16px] font-normal text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#717680] focus:border-[#535862]"
+              className="h-[44px] w-full rounded-[8px] border border-[#d5d7da] px-[14px] text-[16px] font-normal text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#717680] focus:border-[#535862] dark:border-[#333741] dark:bg-[#1F242F] dark:text-white dark:placeholder:text-[#555] dark:focus:border-[#94969C]"
             />
           </div>
-          <p className="text-right text-[14px] text-[#535862]">
+          <p className="text-right text-[14px] text-[#535862] dark:text-[#94969C]">
             {formData.name.length}/12
           </p>
         </div>
       </div>
 
       {/* 구분선 */}
-      <div className="h-px bg-[#d9d9d9]" />
+      <div className="h-px bg-[#d9d9d9] dark:bg-[#333741]" />
 
       {/* 한줄 소개 */}
       <div className="flex flex-col gap-[4px]">
         <SectionTitle label="한줄 소개" required />
         <div className="flex flex-col gap-[6px]">
           <div className="flex flex-col gap-[8px]">
-            <p className="text-[14px] font-medium leading-[20px] text-[#717680]">
+            <p className="text-[14px] font-medium leading-[20px] text-[#717680] dark:text-[#9ca3af]">
               30자 이내로 입력해주세요.
             </p>
             <textarea
               value={formData.tagline}
               onChange={(e) => dispatch({ type: "UPDATE_FIELD", payload: { field: "tagline", value: e.target.value.slice(0, 30) } })}
               placeholder="캐릭터를 소개해주세요"
-              className="h-[88px] w-full resize-none rounded-[8px] border border-[#d5d7da] px-[14px] py-[10px] text-[16px] font-normal text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#717680] focus:border-[#535862]"
+              className="h-[88px] w-full resize-none rounded-[8px] border border-[#d5d7da] px-[14px] py-[10px] text-[16px] font-normal text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#717680] focus:border-[#535862] dark:border-[#333741] dark:bg-[#1F242F] dark:text-white dark:placeholder:text-[#555] dark:focus:border-[#94969C]"
             />
           </div>
-          <p className="text-right text-[14px] text-[#535862]">
+          <p className="text-right text-[14px] text-[#535862] dark:text-[#94969C]">
             {formData.tagline.length}/30
           </p>
         </div>
       </div>
 
       {/* 구분선 */}
-      <div className="h-px bg-[#d9d9d9]" />
+      <div className="h-px bg-[#d9d9d9] dark:bg-[#333741]" />
 
       {/* 태그 */}
       <div className="flex flex-col gap-[4px]">
         <SectionTitle label="태그" required />
         <div className="flex flex-col gap-[6px]">
           <div className="flex flex-col gap-[8px]">
-            <p className="text-[14px] font-medium leading-[20px] text-[#717680]">
+            <p className="text-[14px] font-medium leading-[20px] text-[#717680] dark:text-[#9ca3af]">
               내 컨텐츠를 찾기 쉽도록 태그를 추가해주세요
             </p>
             <div className="flex gap-[8px]">
@@ -477,18 +477,18 @@ function CharacterSetupTab() {
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
                 placeholder="태그 추가"
-                className="h-[44px] flex-1 rounded-[8px] border border-[#d5d7da] px-[14px] text-[16px] text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#717680] focus:border-[#535862]"
+                className="h-[44px] flex-1 rounded-[8px] border border-[#d5d7da] px-[14px] text-[16px] text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#717680] focus:border-[#535862] dark:border-[#333741] dark:bg-[#1F242F] dark:text-white dark:placeholder:text-[#555] dark:focus:border-[#94969C]"
               />
             </div>
           </div>
-          <p className="text-[14px] text-[#535862]">
+          <p className="text-[14px] text-[#535862] dark:text-[#94969C]">
             {formData.tags.length}/10 태그 선택됨
           </p>
         </div>
         {formData.tags.length > 0 && (
           <div className="mt-[4px] flex flex-wrap gap-[6px]">
             {formData.tags.map((tag) => (
-              <span key={tag} className="inline-flex items-center gap-[4px] rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px] text-[12px] text-[#535862]">
+              <span key={tag} className="inline-flex items-center gap-[4px] rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px] text-[12px] text-[#535862] dark:border-[#333741] dark:bg-[#333741] dark:text-[#94969C]">
                 {tag}
                 <button type="button" onClick={() => removeTag(tag)}><XCloseBadgeIcon /></button>
               </span>
@@ -498,9 +498,9 @@ function CharacterSetupTab() {
       </div>
 
       {/* 경고 바 */}
-      <div className="flex items-center gap-[8px] rounded-[8px] bg-[#f5f5f5] px-[14px] py-[10px] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]">
+      <div className="flex items-center gap-[8px] rounded-[8px] bg-[#f5f5f5] px-[14px] py-[10px] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] dark:bg-[#333741]">
         <div className="flex-shrink-0"><HelpCircleIcon /></div>
-        <p className="flex-1 text-[16px] leading-[24px] text-[#717680]">
+        <p className="flex-1 text-[16px] leading-[24px] text-[#717680] dark:text-[#9ca3af]">
           폭력, 혐오, 성적묘사 등의 표현 및 이미지는 규정에 따라 영구적으로 제재될 수 있어요
         </p>
       </div>
@@ -560,25 +560,25 @@ function PromptTab() {
           <button
             type="button"
             onClick={addExampleDialogue}
-            className="rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[8px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
+            className="rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[8px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#CECFD2]"
           >
             예시 추가
           </button>
         </div>
 
         {formData.example_dialogues.map((dialogue, idx) => (
-          <div key={dialogue.id} className="mt-[16px] overflow-hidden rounded-[8px] border border-[#e9eaeb] shadow-[0px_1px_2px_rgba(10,13,18,0.06),0px_1px_3px_rgba(10,13,18,0.1)]">
-            <div className="flex items-center justify-between border-b border-[#e9eaeb] bg-[#fafafa] px-[20px] py-[12px]">
-              <span className="text-[14px] font-semibold text-[#414651]">추천 답변 {idx + 1}</span>
+          <div key={dialogue.id} className="mt-[16px] overflow-hidden rounded-[8px] border border-[#e9eaeb] shadow-[0px_1px_2px_rgba(10,13,18,0.06),0px_1px_3px_rgba(10,13,18,0.1)] dark:border-[#333741]">
+            <div className="flex items-center justify-between border-b border-[#e9eaeb] bg-[#fafafa] px-[20px] py-[12px] dark:border-[#333741] dark:bg-[#0D1117]">
+              <span className="text-[14px] font-semibold text-[#414651] dark:text-[#CECFD2]">추천 답변 {idx + 1}</span>
               <button type="button" onClick={() => removeExampleDialogue(dialogue.id)}>
                 <XCloseRedIcon />
               </button>
             </div>
-            <div className="space-y-[16px] bg-[#fafafa] p-[20px]">
+            <div className="space-y-[16px] bg-[#fafafa] p-[20px] dark:bg-[#0D1117]">
               <div>
                 <div className="mb-[6px] flex items-center gap-[6px]">
                   <UserIcon />
-                  <span className="text-[14px] font-medium text-[#717680]">사용자</span>
+                  <span className="text-[14px] font-medium text-[#717680] dark:text-[#9ca3af]">사용자</span>
                 </div>
                 <FormInput
                   value={dialogue.user}
@@ -590,7 +590,7 @@ function PromptTab() {
               <div>
                 <div className="mb-[6px] flex items-center gap-[6px]">
                   <MessageCircleIcon />
-                  <span className="text-[14px] font-medium text-[#717680]">캐릭터</span>
+                  <span className="text-[14px] font-medium text-[#717680] dark:text-[#9ca3af]">캐릭터</span>
                 </div>
                 <FormInput
                   value={dialogue.character}
@@ -664,7 +664,7 @@ function IntroTab() {
       </div>
 
       {/* 구분선 */}
-      <div className="h-px bg-[#d9d9d9]" />
+      <div className="h-px bg-[#d9d9d9] dark:bg-[#333741]" />
 
       {/* 고급 설정 */}
       <div>
@@ -701,7 +701,7 @@ function IntroTab() {
             <button
               type="button"
               onClick={addSuggestion}
-              className="flex items-center gap-[6px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
+              className="flex items-center gap-[6px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#CECFD2]"
             >
               <PlusIcon /> 추천 답변 추가
             </button>
@@ -710,7 +710,7 @@ function IntroTab() {
             <button
               type="button"
               onClick={removeSuggestion}
-              className="flex items-center gap-[6px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
+              className="flex items-center gap-[6px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#CECFD2]"
             >
               <MinusIcon /> 추천 답변 제거
             </button>
@@ -773,10 +773,10 @@ function KeywordbookTab() {
   return (
     <div className="space-y-[16px]">
       {notes.map((note) => (
-        <div key={note.id} className="rounded-[8px] border border-[#d5d7da] bg-[#f5f5f5]">
+        <div key={note.id} className="rounded-[8px] border border-[#d5d7da] bg-[#f5f5f5] dark:border-[#333741] dark:bg-[#1F242F]">
           {/* Header */}
           <div className="flex items-center justify-between p-[20px]">
-            <span className="text-[18px] font-semibold text-[#414651]">{note.title}</span>
+            <span className="text-[18px] font-semibold text-[#414651] dark:text-[#CECFD2]">{note.title}</span>
             <div className="flex items-center gap-[12px]">
               <button type="button"><EditIcon /></button>
               <button type="button" onClick={() => removeNote(note.id)}><TrashIcon /></button>
@@ -787,7 +787,7 @@ function KeywordbookTab() {
           </div>
 
           {note.isExpanded && (
-            <div className="space-y-[20px] border-t border-[#d5d7da] p-[20px]">
+            <div className="space-y-[20px] border-t border-[#d5d7da] p-[20px] dark:border-[#333741]">
               {/* 정보 */}
               <div>
                 <SectionTitle label="정보" required description="스토리가 불러올 추가 정보를 입력해주세요" />
@@ -811,14 +811,14 @@ function KeywordbookTab() {
                     onChange={(e) => setKeywordInputs({ ...keywordInputs, [note.id]: e.target.value })}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addKeyword(note.id); } }}
                     placeholder="키워드를 입력해주세요"
-                    className="h-[44px] w-full rounded-[8px] border border-[#d5d7da] bg-white px-[14px] text-[14px] text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#a4a7ae]"
+                    className="h-[44px] w-full rounded-[8px] border border-[#d5d7da] bg-white px-[14px] text-[14px] text-[#181d27] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] outline-none placeholder:text-[#a4a7ae] dark:border-[#333741] dark:bg-[#1F242F] dark:text-white dark:placeholder:text-[#555]"
                   />
-                  <p className="mt-[6px] text-right text-[14px] text-[#535862]">{note.keywords.length}/5</p>
+                  <p className="mt-[6px] text-right text-[14px] text-[#535862] dark:text-[#94969C]">{note.keywords.length}/5</p>
                 </div>
                 {note.keywords.length > 0 && (
                   <div className="mt-[8px] flex flex-wrap gap-[6px]">
                     {note.keywords.map((kw) => (
-                      <span key={kw} className="inline-flex items-center gap-[4px] rounded-[16px] bg-[#f5f5f5] border border-[#d5d7da] px-[10px] py-[4px] text-[12px] text-[#535862]">
+                      <span key={kw} className="inline-flex items-center gap-[4px] rounded-[16px] bg-[#f5f5f5] border border-[#d5d7da] px-[10px] py-[4px] text-[12px] text-[#535862] dark:border-[#333741] dark:bg-[#333741] dark:text-[#94969C]">
                         {kw}
                         <button type="button" onClick={() => updateNote(note.id, "keywords", note.keywords.filter((k) => k !== kw))}>
                           <XCloseBadgeIcon />
@@ -864,7 +864,7 @@ function KeywordbookTab() {
       <button
         type="button"
         onClick={addNote}
-        className="flex w-full items-center justify-center gap-[6px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
+        className="flex w-full items-center justify-center gap-[6px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#CECFD2]"
       >
         <PlusIcon /> 키워드 노트 추가
       </button>
@@ -942,7 +942,7 @@ function CharacterDetailTab() {
                   <span className={`rounded-[6px] border px-[8px] py-[4px] text-[12px] font-semibold ${BADGE_STYLES[model.badge]}`}>
                     {model.badge}
                   </span>
-                  <span className="text-[14px] font-medium text-[#414651]">{model.name}</span>
+                  <span className="text-[14px] font-medium text-[#414651] dark:text-[#CECFD2]">{model.name}</span>
                 </span>
               );
             }}
@@ -955,7 +955,7 @@ function CharacterDetailTab() {
                     <span className={`rounded-[6px] border px-[8px] py-[4px] text-[12px] font-semibold ${BADGE_STYLES[model.badge]}`}>
                       {model.badge}
                     </span>
-                    <span className="text-[14px] font-medium text-[#414651]">{model.name}</span>
+                    <span className="text-[14px] font-medium text-[#414651] dark:text-[#CECFD2]">{model.name}</span>
                   </span>
                   {model.coinCost && (
                     <span className="text-[14px] text-[#535862]">🟠 나냥코인 {model.coinCost}개</span>
@@ -1056,8 +1056,8 @@ function ImageAddTab() {
       />
 
       {/* 업로드 영역 */}
-      <div className="flex h-[272px] w-full items-center justify-center gap-[24px] rounded-[8px] bg-[#fafafa] p-[24px]">
-        <div className="relative h-[140px] w-[140px] flex-shrink-0 overflow-hidden rounded-[8px] bg-[#ededed]">
+      <div className="flex h-[272px] w-full items-center justify-center gap-[24px] rounded-[8px] bg-[#fafafa] p-[24px] dark:bg-[#0D1117]">
+        <div className="relative h-[140px] w-[140px] flex-shrink-0 overflow-hidden rounded-[8px] bg-[#ededed] dark:bg-[#333741]">
           {formData.avatar_url ? (
             <img src={formData.avatar_url} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -1069,7 +1069,7 @@ function ImageAddTab() {
             1:1
           </span>
         </div>
-        <div className="relative h-[140px] w-[105px] flex-shrink-0 overflow-hidden rounded-[8px] bg-[#ededed]">
+        <div className="relative h-[140px] w-[105px] flex-shrink-0 overflow-hidden rounded-[8px] bg-[#ededed] dark:bg-[#333741]">
           {formData.banner_url ? (
             <img src={formData.banner_url} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -1086,11 +1086,11 @@ function ImageAddTab() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
+            className="rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#CECFD2]"
           >
             업로드하기
           </button>
-          <p className="text-center text-[14px] text-[#414651]">
+          <p className="text-center text-[14px] text-[#414651] dark:text-[#CECFD2]">
             PNG, JPG, WebP 이미지 파일만 올릴 수 있어요.<br />
             용량은 5mb이하, 1:1 비율을 권장해요.
           </p>
@@ -1098,19 +1098,19 @@ function ImageAddTab() {
       </div>
 
       {/* 미리보기 갤러리 */}
-      <div className="overflow-hidden rounded-[8px] border border-[#e9eaeb] shadow-[0px_1px_2px_rgba(10,13,18,0.06),0px_1px_3px_rgba(10,13,18,0.1)]">
+      <div className="overflow-hidden rounded-[8px] border border-[#e9eaeb] shadow-[0px_1px_2px_rgba(10,13,18,0.06),0px_1px_3px_rgba(10,13,18,0.1)] dark:border-[#333741]">
         <div className="p-[20px]">
-          <h3 className="text-[18px] font-medium text-[#181d27]">미리보기</h3>
+          <h3 className="text-[18px] font-medium text-[#181d27] dark:text-white">미리보기</h3>
           <div className="mt-[12px] flex max-h-[300px] flex-wrap gap-[8px] overflow-y-auto">
             {uploadedFiles.length > 0 ? (
               uploadedFiles.map((f) => (
-                <div key={f.id} className="h-[80px] w-[80px] overflow-hidden rounded-[8px] bg-[#ededed]">
+                <div key={f.id} className="h-[80px] w-[80px] overflow-hidden rounded-[8px] bg-[#ededed] dark:bg-[#333741]">
                   <img src={f.previewUrl} alt="" className="h-full w-full object-cover" />
                 </div>
               ))
             ) : (
               Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-[80px] w-[80px] rounded-[8px] bg-[#ededed]" />
+                <div key={i} className="h-[80px] w-[80px] rounded-[8px] bg-[#ededed] dark:bg-[#333741]" />
               ))
             )}
           </div>
@@ -1118,12 +1118,12 @@ function ImageAddTab() {
       </div>
 
       {/* 업로드된 파일 관리 */}
-      <div className="overflow-hidden rounded-[8px] border border-[#e9eaeb] shadow-[0px_1px_2px_rgba(10,13,18,0.06),0px_1px_3px_rgba(10,13,18,0.1)]">
+      <div className="overflow-hidden rounded-[8px] border border-[#e9eaeb] shadow-[0px_1px_2px_rgba(10,13,18,0.06),0px_1px_3px_rgba(10,13,18,0.1)] dark:border-[#333741]">
         <div className="px-[24px] py-[20px]">
-          <h3 className="text-[18px] font-medium text-[#181d27]">업로드된 파일 관리</h3>
+          <h3 className="text-[18px] font-medium text-[#181d27] dark:text-white">업로드된 파일 관리</h3>
         </div>
         {/* Table header */}
-        <div className="flex h-[44px] items-center border-y border-[#e9eaeb] px-[24px]">
+        <div className="flex h-[44px] items-center border-y border-[#e9eaeb] px-[24px] dark:border-[#333741]">
           <div className="flex w-[40px] items-center">
             <input
               type="checkbox"
@@ -1132,18 +1132,18 @@ function ImageAddTab() {
               className="h-[16px] w-[16px] rounded border-[#d5d7da]"
             />
           </div>
-          <div className="flex-1 text-[12px] font-medium text-[#535862]">파일명</div>
-          <div className="w-[120px] text-[12px] font-medium text-[#535862]">파일 크기</div>
+          <div className="flex-1 text-[12px] font-medium text-[#535862] dark:text-[#94969C]">파일명</div>
+          <div className="w-[120px] text-[12px] font-medium text-[#535862] dark:text-[#94969C]">파일 크기</div>
           <div className="w-[40px]" />
         </div>
         {/* Table rows */}
         {uploadedFiles.length === 0 ? (
-          <div className="flex h-[72px] items-center justify-center px-[24px] text-[14px] text-[#717680]">
+          <div className="flex h-[72px] items-center justify-center px-[24px] text-[14px] text-[#717680] dark:text-[#9ca3af]">
             업로드된 파일이 없습니다
           </div>
         ) : (
           uploadedFiles.map((f) => (
-            <div key={f.id} className="flex h-[72px] items-center border-b border-[#e9eaeb] bg-[#fafafa] px-[24px] py-[16px]">
+            <div key={f.id} className="flex h-[72px] items-center border-b border-[#e9eaeb] bg-[#fafafa] px-[24px] py-[16px] dark:border-[#333741] dark:bg-[#0D1117]">
               <div className="flex w-[40px] items-center">
                 <input
                   type="checkbox"
@@ -1153,15 +1153,15 @@ function ImageAddTab() {
                 />
               </div>
               <div className="flex flex-1 items-center gap-[12px]">
-                <div className="h-[40px] w-[40px] overflow-hidden rounded-[4px] bg-[#ededed]">
+                <div className="h-[40px] w-[40px] overflow-hidden rounded-[4px] bg-[#ededed] dark:bg-[#333741]">
                   <img src={f.previewUrl} alt="" className="h-full w-full object-cover" />
                 </div>
                 <div>
-                  <p className="text-[14px] font-medium text-[#181d27]">{f.file.name}</p>
-                  <p className="text-[14px] text-[#535862]">{f.file.type}</p>
+                  <p className="text-[14px] font-medium text-[#181d27] dark:text-white">{f.file.name}</p>
+                  <p className="text-[14px] text-[#535862] dark:text-[#94969C]">{f.file.type}</p>
                 </div>
               </div>
-              <div className="w-[120px] text-[14px] text-[#535862]">{formatFileSize(f.file.size)}</div>
+              <div className="w-[120px] text-[14px] text-[#535862] dark:text-[#94969C]">{formatFileSize(f.file.size)}</div>
               <div className="flex w-[40px] justify-center">
                 <button type="button"><MoreVerticalIcon /></button>
               </div>
@@ -1183,15 +1183,15 @@ function PreviewPage({ onBack }: { onBack: () => void }) {
       <SectionTitle label="미리보기" description="마지막으로 미리보기로 내용을 확인해주세요." />
 
       {/* 캐릭터 정보 카드 */}
-      <div className="mx-auto w-[400px] overflow-hidden rounded-[8px] border border-[#a4a7ae]">
+      <div className="mx-auto w-[400px] overflow-hidden rounded-[8px] border border-[#a4a7ae] dark:border-[#333741] dark:bg-[#1F242F]">
         {/* Header */}
         <div className="flex items-center justify-between p-[24px]">
-          <h2 className="text-[20px] font-semibold text-black">캐릭터 정보</h2>
+          <h2 className="text-[20px] font-semibold text-black dark:text-white">캐릭터 정보</h2>
           <button type="button" onClick={onBack}><XCloseIcon /></button>
         </div>
 
         {/* 이미지 */}
-        <div className="relative h-[400px] w-full bg-[#ededed]">
+        <div className="relative h-[400px] w-full bg-[#ededed] dark:bg-[#333741]">
           {formData.avatar_url ? (
             <img src={formData.avatar_url} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -1208,59 +1208,59 @@ function PreviewPage({ onBack }: { onBack: () => void }) {
           </button>
           {/* 하트 버튼 */}
           <div className="absolute bottom-[12px] right-[12px]">
-            <button type="button" className="flex items-center gap-[6px] rounded-[8px] border border-[#d5d7da] bg-white px-[12px] py-[8px] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]">
+            <button type="button" className="flex items-center gap-[6px] rounded-[8px] border border-[#d5d7da] bg-white px-[12px] py-[8px] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F]">
               <HeartIcon />
-              <span className="text-[14px] font-semibold text-[#414651]">1.1K</span>
+              <span className="text-[14px] font-semibold text-[#414651] dark:text-[#CECFD2]">1.1K</span>
             </button>
           </div>
         </div>
 
         {/* 캐릭터 정보 */}
         <div className="p-[24px]">
-          <h3 className="text-[20px] font-semibold text-black">{formData.name || "캐릭터명"}</h3>
+          <h3 className="text-[20px] font-semibold text-black dark:text-white">{formData.name || "캐릭터명"}</h3>
           <div className="mt-[8px] flex items-center gap-[4px]">
-            <span className="rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px] text-[12px] text-[#9ca3af]">
+            <span className="rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px] text-[12px] text-[#9ca3af] dark:border-[#333741] dark:bg-[#333741]">
               @username
             </span>
           </div>
           {formData.tags.length > 0 && (
             <div className="mt-[8px] flex flex-wrap gap-[4px]">
               {formData.tags.map((tag) => (
-                <span key={tag} className="rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px] text-[12px] text-[#9ca3af]">
+                <span key={tag} className="rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px] text-[12px] text-[#9ca3af] dark:border-[#333741] dark:bg-[#333741]">
                   {tag}
                 </span>
               ))}
             </div>
           )}
-          <p className="mt-[12px] text-[16px] font-medium text-black">{formData.tagline || "한줄소개가 여기에 표시됩니다"}</p>
+          <p className="mt-[12px] text-[16px] font-medium text-black dark:text-white">{formData.tagline || "한줄소개가 여기에 표시됩니다"}</p>
         </div>
 
         {/* 구분선 */}
-        <div className="mx-[24px] h-px bg-[#d5d7da]" />
+        <div className="mx-[24px] h-px bg-[#d5d7da] dark:bg-[#333741]" />
 
         {/* 상세 설명 */}
         <div className="p-[24px]">
-          <h4 className="text-[20px] font-semibold text-black">상세 설명</h4>
-          <p className="mt-[8px] text-[14px] text-black">{formData.personality || "상세 설명이 여기에 표시됩니다"}</p>
+          <h4 className="text-[20px] font-semibold text-black dark:text-white">상세 설명</h4>
+          <p className="mt-[8px] text-[14px] text-black dark:text-[#CECFD2]">{formData.personality || "상세 설명이 여기에 표시됩니다"}</p>
         </div>
 
         {/* 구분선 */}
-        <div className="mx-[24px] h-px bg-[#d5d7da]" />
+        <div className="mx-[24px] h-px bg-[#d5d7da] dark:bg-[#333741]" />
 
         {/* 댓글 */}
         <div className="p-[24px]">
           <div className="flex items-center gap-[8px]">
-            <h4 className="text-[20px] font-semibold text-black">댓글</h4>
-            <span className="text-[14px] text-[#535862]">0개</span>
+            <h4 className="text-[20px] font-semibold text-black dark:text-white">댓글</h4>
+            <span className="text-[14px] text-[#535862] dark:text-[#94969C]">0개</span>
           </div>
-          <div className="mt-[12px] rounded-[8px] bg-[#f5f5f5] px-[14px] py-[12px]">
-            <span className="text-[14px] font-semibold text-[#535862]">댓글을 남겨보세요</span>
+          <div className="mt-[12px] rounded-[8px] bg-[#f5f5f5] px-[14px] py-[12px] dark:bg-[#333741]">
+            <span className="text-[14px] font-semibold text-[#535862] dark:text-[#94969C]">댓글을 남겨보세요</span>
           </div>
         </div>
 
         {/* Bottom actions */}
-        <div className="flex items-center gap-[12px] border-t border-[#e9eaeb] p-[24px] shadow-[0px_-4px_16px_rgba(0,0,0,0.05)]">
-          <button type="button" className="flex h-[44px] w-[44px] items-center justify-center rounded-[8px] border border-[#d5d7da] bg-white">
+        <div className="flex items-center gap-[12px] border-t border-[#e9eaeb] p-[24px] shadow-[0px_-4px_16px_rgba(0,0,0,0.05)] dark:border-[#333741]">
+          <button type="button" className="flex h-[44px] w-[44px] items-center justify-center rounded-[8px] border border-[#d5d7da] bg-white dark:border-[#333741] dark:bg-[#1F242F]">
             <HeartIcon />
           </button>
           <button type="button" className="flex-1 rounded-[8px] border border-[#e9faf7] bg-[#e9faf7] px-[18px] py-[10px] text-center text-[16px] font-semibold text-[#28a393]">
@@ -1339,15 +1339,15 @@ function CreateContentInner() {
       {/* Header */}
       <div className="flex items-start justify-between px-[312px] pt-[32px]">
         <div>
-          <h1 className="text-[24px] font-semibold leading-[32px] text-[#181d27]">새 컨텐츠 만들기</h1>
-          <p className="mt-[4px] text-[16px] font-normal leading-[24px] text-[#535862]">
+          <h1 className="text-[24px] font-semibold leading-[32px] text-[#181d27] dark:text-white">새 컨텐츠 만들기</h1>
+          <p className="mt-[4px] text-[16px] font-normal leading-[24px] text-[#535862] dark:text-[#94969C]">
             마음에 드는 캐릭터와 작품을 만들어보세요!
           </p>
         </div>
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="flex items-center gap-[8px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)]"
+          className="flex items-center gap-[8px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#CECFD2]"
         >
           <ChevronLeftIcon />
           뒤로가기
@@ -1355,7 +1355,7 @@ function CreateContentInner() {
       </div>
 
       {/* Tab Bar */}
-      <div className="mt-[24px] flex h-[54px] items-end border-y border-[#d5d7da] bg-[#fafafa] px-[312px]">
+      <div className="mt-[24px] flex h-[54px] items-end border-y border-[#d5d7da] bg-[#fafafa] px-[312px] dark:border-[#333741] dark:bg-[#0D1117]">
         {TAB_LABELS.map((label, idx) => (
           <button
             key={idx}
@@ -1363,8 +1363,8 @@ function CreateContentInner() {
             onClick={() => { setActiveTab(idx); setShowPreview(false); }}
             className={`flex h-full items-center px-[16px] text-[14px] font-medium ${
               activeTab === idx
-                ? "border-b-2 border-[#535862] text-[#414651]"
-                : "text-[#717680]"
+                ? "border-b-2 border-[#535862] text-[#414651] dark:border-[#CECFD2] dark:text-[#CECFD2]"
+                : "text-[#717680] dark:text-[#9ca3af]"
             }`}
           >
             {label}
@@ -1394,11 +1394,11 @@ function CreateContentInner() {
           type="button"
           onClick={handlePrev}
           disabled={activeTab === 0 && !showPreview}
-          className="flex items-center gap-[8px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] disabled:opacity-40"
+          className="flex items-center gap-[8px] rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] text-[14px] font-semibold text-[#414651] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] disabled:opacity-40 dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#CECFD2]"
         >
           이전
         </button>
-        <span className="text-[14px] font-medium text-[#414651]">
+        <span className="text-[14px] font-medium text-[#414651] dark:text-[#CECFD2]">
           Page {getPageNumber(activeTab)} of 4
         </span>
         <button
