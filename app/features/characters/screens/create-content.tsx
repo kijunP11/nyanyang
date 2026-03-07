@@ -1,6 +1,6 @@
 import type { Route } from "./+types/create-content";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { data, redirect, useNavigate, useNavigation } from "react-router";
+import { data, redirect, useFetcher, useNavigate } from "react-router";
 import { z } from "zod";
 import makeServerClient from "~/core/lib/supa-client.server";
 import { WizardProvider, useWizard } from "../lib/wizard-context";
@@ -1279,13 +1279,23 @@ function PreviewPage({ onBack }: { onBack: () => void }) {
 function CreateContentInner() {
   const { state, dispatch } = useWizard();
   const navigate = useNavigate();
-  const navigation = useNavigation();
+  const fetcher = useFetcher();
   const [activeTab, setActiveTab] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isSubmitting = navigation.state === "submitting";
+  const isSubmitting = fetcher.state === "submitting";
   const isLastTab = activeTab === 5;
+
+  useEffect(() => {
+    if (fetcher.state !== "idle" || !fetcher.data) return;
+    const result = fetcher.data as { success?: boolean; error?: string };
+    if (result.success) {
+      navigate("/my-content");
+    } else if (result.error) {
+      setError(result.error);
+    }
+  }, [fetcher.state, fetcher.data, navigate]);
 
   const handlePrev = () => {
     if (showPreview) { setShowPreview(false); return; }
@@ -1298,32 +1308,21 @@ function CreateContentInner() {
     if (activeTab < 5) setActiveTab(activeTab + 1);
   };
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(() => {
     setError(null);
-    try {
-      const { formData } = state;
-      const response = await fetch("/characters/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          _action: "create",
-          ...formData,
-          display_name: formData.display_name || formData.name,
-          example_dialogues: formData.example_dialogues.length > 0
-            ? formData.example_dialogues.map((d) => ({ user: d.user, character: d.character }))
-            : null,
-        }),
-      });
-      const result = await response.json();
-      if (result.success) {
-        navigate("/my-content");
-      } else {
-        setError(result.error || "캐릭터 생성에 실패했습니다");
-      }
-    } catch {
-      setError("캐릭터 생성 중 오류가 발생했습니다");
-    }
-  }, [state, navigate]);
+    const { formData } = state;
+    fetcher.submit(
+      {
+        _action: "create",
+        ...formData,
+        display_name: formData.display_name || formData.name,
+        example_dialogues: formData.example_dialogues.length > 0
+          ? formData.example_dialogues.map((d) => ({ user: d.user, character: d.character }))
+          : null,
+      },
+      { method: "POST", encType: "application/json" },
+    );
+  }, [state, fetcher]);
 
   const tabContent = [
     <CharacterSetupTab key={0} />,
