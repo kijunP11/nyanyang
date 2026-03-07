@@ -354,7 +354,7 @@ function TrashIcon({ className }: { className?: string }) {
 function EmptyAvatar() {
   return (
     <div className="relative size-[140px] rounded-[8px]">
-      <div className="absolute left-0 top-0 size-[140px] overflow-hidden rounded-[8px] bg-[#ededed]">
+      <div className="absolute left-0 top-0 size-[140px] overflow-hidden rounded-[8px] bg-[#ededed] dark:bg-[#333741]">
         <div className="absolute inset-[7.14%_5.71%_-20.71%_5%]">
           <svg
             className="absolute size-full"
@@ -401,7 +401,7 @@ const STATUS_CONFIG: Record<
 function StatusBadge({ status }: { status: string }) {
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.reviewing;
   return (
-    <div className="flex items-start mix-blend-multiply">
+    <div className="flex items-start mix-blend-multiply dark:mix-blend-normal">
       <div
         className={`flex items-center gap-[6px] rounded-[16px] pl-[6px] pr-[8px] py-[2px] ${config.bg}`}
       >
@@ -650,14 +650,14 @@ function CharacterInfoModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative flex max-h-[90vh] w-[400px] flex-col overflow-clip rounded-[8px] bg-white">
+      <div className="relative flex max-h-[90vh] w-[400px] flex-col overflow-clip rounded-[8px] bg-white dark:bg-[#1F242F]">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between px-[24px] pt-[24px] pb-[24px]">
-          <p className="font-semibold text-[20px] leading-[30px] text-black">
+          <p className="font-semibold text-[20px] leading-[30px] text-black dark:text-white">
             캐릭터 정보
           </p>
           <button type="button" onClick={onClose} className="size-[24px]">
-            <XIcon className="mx-auto size-[14px] text-[#181d27]" />
+            <XIcon className="mx-auto size-[14px] text-[#181d27] dark:text-white" />
           </button>
         </div>
 
@@ -700,9 +700,9 @@ function CharacterInfoModal({
           </button>
 
           {/* Like button — right side */}
-          <div className="absolute bottom-[22px] right-[24px] flex items-center gap-[8px] rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[8px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)]">
-            <HeartIcon className="size-[20px] text-[#414651]" />
-            <span className="font-semibold text-[14px] leading-[20px] text-[#414651]">
+          <div className="absolute bottom-[22px] right-[24px] flex items-center gap-[8px] rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[8px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F]">
+            <HeartIcon className="size-[20px] text-[#414651] dark:text-[#CECFD2]" />
+            <span className="font-semibold text-[14px] leading-[20px] text-[#414651] dark:text-[#CECFD2]">
               {character.likeCount}
             </span>
           </div>
@@ -714,10 +714,10 @@ function CharacterInfoModal({
           <div className="flex flex-col gap-[14px] px-[24px] pt-[24px]">
             {/* Name + Username */}
             <div className="flex flex-col gap-[8px]">
-              <p className="font-semibold text-[20px] leading-[30px] text-black">
+              <p className="font-semibold text-[20px] leading-[30px] text-black dark:text-white">
                 {character.name}
               </p>
-              <div className="flex items-center gap-[2px] self-start overflow-hidden rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px]">
+              <div className="flex items-center gap-[2px] self-start overflow-hidden rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px] dark:border-[#333741] dark:bg-[#333741]">
                 <span className="text-[12px] leading-[16px] text-[#9ca3af]">
                   @{character.username}
                 </span>
@@ -731,7 +731,7 @@ function CharacterInfoModal({
                 {character.tags.map((tag) => (
                   <div
                     key={tag}
-                    className="flex items-center justify-center overflow-hidden rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px]"
+                    className="flex items-center justify-center overflow-hidden rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px] dark:border-[#333741] dark:bg-[#333741]"
                   >
                     <span className="text-[12px] leading-[16px] text-[#9ca3af]">
                       #{tag}
@@ -744,11 +744,11 @@ function CharacterInfoModal({
 
           {/* Tagline + Hashtags */}
           <div className="mt-[24px] flex flex-col gap-[4px] px-[24px]">
-            <p className="font-medium text-[16px] leading-[24px] text-black">
+            <p className="font-medium text-[16px] leading-[24px] text-black dark:text-white">
               {character.tagline}
             </p>
             {character.hashtags.length > 0 && (
-              <div className="flex flex-wrap items-center gap-[5px] text-[16px] leading-[24px] text-[#535862]">
+              <div className="flex flex-wrap items-center gap-[5px] text-[16px] leading-[24px] text-[#535862] dark:text-[#94969C]">
                 {character.hashtags.map((h) => (
                   <span key={h}>#{h}</span>
                 ))}
@@ -757,22 +757,22 @@ function CharacterInfoModal({
           </div>
 
           {/* Divider */}
-          <div className="mt-[24px] h-px w-full bg-[#d5d7da]" />
+          <div className="mt-[24px] h-px w-full bg-[#d5d7da] dark:bg-[#333741]" />
 
           {/* 상세 설명 Section */}
           {character.description && (
             <>
               <div className="px-[24px] pt-[21px]">
-                <p className="font-semibold text-[20px] leading-[30px] text-black">
+                <p className="font-semibold text-[20px] leading-[30px] text-black dark:text-white">
                   상세 설명
                 </p>
-                <div className="mt-[14px] w-[352px] whitespace-pre-wrap text-[14px] leading-[20px] text-black">
+                <div className="mt-[14px] w-[352px] whitespace-pre-wrap text-[14px] leading-[20px] text-black dark:text-white">
                   {character.description}
                 </div>
               </div>
 
               {/* Divider */}
-              <div className="mt-[24px] h-px w-full bg-[#d5d7da]" />
+              <div className="mt-[24px] h-px w-full bg-[#d5d7da] dark:bg-[#333741]" />
             </>
           )}
 
@@ -780,10 +780,10 @@ function CharacterInfoModal({
           <div className="px-[24px] pt-[21px] pb-[24px]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[8px]">
-                <p className="font-semibold text-[20px] leading-[30px] text-black">
+                <p className="font-semibold text-[20px] leading-[30px] text-black dark:text-white">
                   댓글
                 </p>
-                <div className="flex items-center justify-center overflow-hidden rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px]">
+                <div className="flex items-center justify-center overflow-hidden rounded-[6px] border border-[#d5d7da] bg-[#f5f5f5] px-[8px] py-[4px] dark:border-[#333741] dark:bg-[#333741]">
                   <span className="text-[12px] leading-[16px] text-[#9ca3af]">
                     {character.commentCount}개
                   </span>
@@ -791,16 +791,16 @@ function CharacterInfoModal({
               </div>
               <button
                 type="button"
-                className="text-[14px] leading-[20px] text-black"
+                className="text-[14px] leading-[20px] text-black dark:text-white"
               >
                 전체보기
               </button>
             </div>
 
             {/* Latest Comment or Empty */}
-            <div className="mt-[12px] flex w-full items-center gap-[8px] overflow-hidden rounded-[8px] bg-[#f5f5f5] px-[14px] py-[12px]">
-              <UserIcon className="size-[20px] shrink-0 text-[#535862]" />
-              <span className="truncate font-semibold text-[14px] leading-[20px] text-[#535862]">
+            <div className="mt-[12px] flex w-full items-center gap-[8px] overflow-hidden rounded-[8px] bg-[#f5f5f5] px-[14px] py-[12px] dark:bg-[#333741]">
+              <UserIcon className="size-[20px] shrink-0 text-[#535862] dark:text-[#94969C]" />
+              <span className="truncate font-semibold text-[14px] leading-[20px] text-[#535862] dark:text-[#94969C]">
                 {character.latestComment ?? "첫 댓글을 남겨보세요!"}
               </span>
             </div>
@@ -808,14 +808,14 @@ function CharacterInfoModal({
         </div>
 
         {/* Bottom Action Bar */}
-        <div className="flex h-[92px] shrink-0 items-start border-t border-[#d5d7da] p-[24px] shadow-[4px_0px_16px_0px_rgba(0,0,0,0.65)]">
+        <div className="flex h-[92px] shrink-0 items-start border-t border-[#d5d7da] p-[24px] shadow-[4px_0px_16px_0px_rgba(0,0,0,0.65)] dark:border-[#333741]">
           <div className="flex w-full flex-1 items-start gap-[12px]">
             {/* Heart button */}
             <button
               type="button"
-              className="flex h-[44px] w-[44px] items-center justify-center rounded-[8px] border border-[#d5d7da] bg-white shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)]"
+              className="flex h-[44px] w-[44px] items-center justify-center rounded-[8px] border border-[#d5d7da] bg-white shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F]"
             >
-              <HeartIcon className="size-[20px] text-[#414651]" />
+              <HeartIcon className="size-[20px] text-[#414651] dark:text-[#CECFD2]" />
             </button>
 
             {character.hasExistingChat ? (
@@ -872,13 +872,13 @@ function DeleteConfirmModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="flex w-[400px] flex-col gap-[32px] overflow-clip rounded-[12px] bg-white p-[24px] shadow-[0px_20px_24px_-4px_rgba(10,13,18,0.08),0px_8px_8px_-4px_rgba(10,13,18,0.03)]">
+      <div className="flex w-[400px] flex-col gap-[32px] overflow-clip rounded-[12px] bg-white p-[24px] shadow-[0px_20px_24px_-4px_rgba(10,13,18,0.08),0px_8px_8px_-4px_rgba(10,13,18,0.03)] dark:bg-[#1F242F]">
         {/* Text */}
         <div className="flex w-full flex-col gap-[8px]">
-          <p className="font-semibold text-[18px] leading-[28px] text-[#181d27]">
+          <p className="font-semibold text-[18px] leading-[28px] text-[#181d27] dark:text-white">
             캐릭터를 삭제하시겠습니까?
           </p>
-          <p className="text-[14px] leading-[20px] text-[#535862]">
+          <p className="text-[14px] leading-[20px] text-[#535862] dark:text-[#94969C]">
             다시 한번 확인해주세요
           </p>
         </div>
@@ -887,9 +887,9 @@ function DeleteConfirmModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex flex-1 items-center justify-center overflow-clip rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)]"
+            className="flex flex-1 items-center justify-center overflow-clip rounded-[8px] border border-[#d5d7da] bg-white px-[18px] py-[10px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F]"
           >
-            <span className="whitespace-nowrap font-semibold text-[16px] leading-[24px] text-[#414651]">
+            <span className="whitespace-nowrap font-semibold text-[16px] leading-[24px] text-[#414651] dark:text-[#CECFD2]">
               돌아가기
             </span>
           </button>
@@ -949,7 +949,7 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#fdfdfd]">
+    <div className="min-h-screen bg-[#fdfdfd] dark:bg-[#181D27]">
       {selectedCharacter && (
         <CharacterInfoModal
           character={selectedCharacter}
@@ -966,10 +966,10 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
         {/* Page Header */}
         <div className="flex gap-[16px] items-start">
           <div className="flex min-h-px min-w-px flex-1 flex-col gap-[4px]">
-            <h1 className="font-semibold text-[24px] leading-[32px] text-[#181d27]">
+            <h1 className="font-semibold text-[24px] leading-[32px] text-[#181d27] dark:text-white">
               내 컨텐츠
             </h1>
-            <p className="text-[16px] leading-[24px] text-[#535862]">
+            <p className="text-[16px] leading-[24px] text-[#535862] dark:text-[#94969C]">
               마음에 드는 캐릭터와 작품을 만들어보세요!
             </p>
           </div>
@@ -1000,31 +1000,31 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
         </div>
 
         {/* Table Card */}
-        <div className="flex w-full flex-col overflow-hidden rounded-[12px] border border-[#e9eaeb] bg-white shadow-[0px_1px_3px_0px_rgba(10,13,18,0.1),0px_1px_2px_0px_rgba(10,13,18,0.06)]">
+        <div className="flex w-full flex-col overflow-hidden rounded-[12px] border border-[#e9eaeb] bg-white shadow-[0px_1px_3px_0px_rgba(10,13,18,0.1),0px_1px_2px_0px_rgba(10,13,18,0.06)] dark:border-[#333741] dark:bg-[#1F242F]">
           {/* Card Header */}
-          <div className="flex flex-col bg-white">
+          <div className="flex flex-col bg-white dark:bg-[#1F242F]">
             <div className="flex items-start gap-[16px] px-[24px] pt-[20px] pb-[19px]">
-              <p className="min-h-px min-w-px flex-1 font-medium text-[18px] leading-[28px] text-[#181d27]">
+              <p className="min-h-px min-w-px flex-1 font-medium text-[18px] leading-[28px] text-[#181d27] dark:text-white">
                 전체 작품
               </p>
               <div className="flex items-center">
                 <button
                   type="button"
-                  className="overflow-hidden size-[20px] text-[#181d27]"
+                  className="overflow-hidden size-[20px] text-[#181d27] dark:text-white"
                 >
                   <DotsVerticalIcon className="mx-auto h-[13.33px] w-[3px]" />
                 </button>
               </div>
             </div>
-            <div className="h-px w-full bg-[#e9eaeb]" />
+            <div className="h-px w-full bg-[#e9eaeb] dark:bg-[#333741]" />
           </div>
 
           {/* Table Content */}
           <div className="flex w-full">
             {/* 작품명 column */}
             <div className="flex min-h-px min-w-px flex-1 flex-col">
-              <div className="flex h-[44px] items-center gap-[12px] border-b border-[#e9eaeb] bg-[#fafafa] px-[24px] py-[12px]">
-                <span className="whitespace-nowrap font-medium text-[12px] leading-[18px] text-[#535862]">
+              <div className="flex h-[44px] items-center gap-[12px] border-b border-[#e9eaeb] bg-[#fafafa] px-[24px] py-[12px] dark:border-[#333741] dark:bg-[#0D1117]">
+                <span className="whitespace-nowrap font-medium text-[12px] leading-[18px] text-[#535862] dark:text-[#94969C]">
                   작품명
                 </span>
               </div>
@@ -1032,9 +1032,9 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
                 items.map((item) => (
                   <div
                     key={`title-${item.id}`}
-                    className="flex h-[72px] items-center gap-[12px] border-b border-[#e9eaeb] px-[24px] py-[16px]"
+                    className="flex h-[72px] items-center gap-[12px] border-b border-[#e9eaeb] px-[24px] py-[16px] dark:border-[#333741]"
                   >
-                    <p className="font-medium text-[14px] leading-[20px] text-[#181d27]">
+                    <p className="font-medium text-[14px] leading-[20px] text-[#181d27] dark:text-white">
                       {item.title}
                     </p>
                   </div>
@@ -1042,8 +1042,8 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
             </div>
             {/* 캐릭터명 column */}
             <div className="flex w-[209px] flex-col">
-              <div className="flex h-[44px] items-center border-b border-[#e9eaeb] bg-[#fafafa] px-[24px] py-[12px]">
-                <span className="whitespace-nowrap font-medium text-[12px] leading-[18px] text-[#535862]">
+              <div className="flex h-[44px] items-center border-b border-[#e9eaeb] bg-[#fafafa] px-[24px] py-[12px] dark:border-[#333741] dark:bg-[#0D1117]">
+                <span className="whitespace-nowrap font-medium text-[12px] leading-[18px] text-[#535862] dark:text-[#94969C]">
                   캐릭터명
                 </span>
               </div>
@@ -1065,18 +1065,18 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
                       <div className="size-[32px] shrink-0 rounded-[200px] bg-[#aa9c75]" />
                     )}
                     <div className="flex flex-col whitespace-nowrap text-[14px] leading-[20px]">
-                      <span className="text-[#181d27]">
+                      <span className="text-[#181d27] dark:text-white">
                         {item.characterName}
                       </span>
-                      <span className="text-[#535862]">{item.tags}</span>
+                      <span className="text-[#535862] dark:text-[#94969C]">{item.tags}</span>
                     </div>
                   </button>
                 ))}
             </div>
             {/* Status column */}
             <div className="flex w-[118px] flex-col">
-              <div className="flex h-[44px] items-center border-b border-[#e9eaeb] bg-[#fafafa] px-[24px] py-[12px]">
-                <span className="whitespace-nowrap font-medium text-[12px] leading-[18px] text-[#535862]">
+              <div className="flex h-[44px] items-center border-b border-[#e9eaeb] bg-[#fafafa] px-[24px] py-[12px] dark:border-[#333741] dark:bg-[#0D1117]">
+                <span className="whitespace-nowrap font-medium text-[12px] leading-[18px] text-[#535862] dark:text-[#94969C]">
                   Status
                 </span>
               </div>
@@ -1084,7 +1084,7 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
                 items.map((item) => (
                   <div
                     key={`status-${item.id}`}
-                    className="flex h-[72px] items-center border-b border-[#e9eaeb] px-[24px] py-[16px]"
+                    className="flex h-[72px] items-center border-b border-[#e9eaeb] px-[24px] py-[16px] dark:border-[#333741]"
                   >
                     <StatusBadge status={item.status} />
                   </div>
@@ -1092,11 +1092,11 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
             </div>
             {/* 만든 일자 column */}
             <div className="flex w-[125px] flex-col">
-              <div className="flex h-[44px] items-center gap-[4px] border-b border-[#e9eaeb] bg-[#fafafa] px-[24px] py-[12px]">
-                <span className="whitespace-nowrap font-medium text-[12px] leading-[18px] text-[#535862]">
+              <div className="flex h-[44px] items-center gap-[4px] border-b border-[#e9eaeb] bg-[#fafafa] px-[24px] py-[12px] dark:border-[#333741] dark:bg-[#0D1117]">
+                <span className="whitespace-nowrap font-medium text-[12px] leading-[18px] text-[#535862] dark:text-[#94969C]">
                   만든 일자
                 </span>
-                <div className="flex size-[16px] items-center justify-center overflow-hidden text-[#535862]">
+                <div className="flex size-[16px] items-center justify-center overflow-hidden text-[#535862] dark:text-[#94969C]">
                   <ArrowDownIcon className="size-[9.33px]" />
                 </div>
               </div>
@@ -1104,9 +1104,9 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
                 items.map((item) => (
                   <div
                     key={`date-${item.id}`}
-                    className="flex h-[72px] items-center border-b border-[#e9eaeb] px-[24px] py-[16px]"
+                    className="flex h-[72px] items-center border-b border-[#e9eaeb] px-[24px] py-[16px] dark:border-[#333741]"
                   >
-                    <p className="whitespace-nowrap text-[14px] leading-[20px] text-[#535862]">
+                    <p className="whitespace-nowrap text-[14px] leading-[20px] text-[#535862] dark:text-[#94969C]">
                       {item.date}
                     </p>
                   </div>
@@ -1114,23 +1114,23 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
             </div>
             {/* Action column */}
             <div className="flex shrink-0 flex-col">
-              <div className="h-[44px] border-b border-[#e9eaeb] bg-[#fafafa]" />
+              <div className="h-[44px] border-b border-[#e9eaeb] bg-[#fafafa] dark:border-[#333741] dark:bg-[#0D1117]" />
               {!isEmpty &&
                 items.map((item) => (
                   <div
                     key={`action-${item.id}`}
-                    className="flex h-[72px] items-center gap-[4px] border-b border-[#e9eaeb] p-[16px]"
+                    className="flex h-[72px] items-center gap-[4px] border-b border-[#e9eaeb] p-[16px] dark:border-[#333741]"
                   >
                     <button
                       type="button"
-                      className="flex items-center justify-center overflow-hidden rounded-[8px] p-[10px] text-[#535862]"
+                      className="flex items-center justify-center overflow-hidden rounded-[8px] p-[10px] text-[#535862] dark:text-[#94969C]"
                     >
                       <EditIcon className="size-[20px]" />
                     </button>
                     <button
                       type="button"
                       onClick={() => setDeleteTargetId(item.id)}
-                      className="flex items-center justify-center overflow-hidden rounded-[8px] p-[10px] text-[#535862]"
+                      className="flex items-center justify-center overflow-hidden rounded-[8px] p-[10px] text-[#535862] dark:text-[#94969C]"
                     >
                       <TrashIcon className="size-[20px]" />
                     </button>
@@ -1145,10 +1145,10 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
               <div className="absolute left-1/2 top-[calc(50%+0.5px)] flex w-[196px] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-[17px]">
                 <EmptyAvatar />
                 <div className="flex h-[56px] w-full flex-col items-center justify-center gap-[4px] text-center">
-                  <p className="min-w-full font-bold text-[18px] leading-[28px] text-[#181d27]">
+                  <p className="min-w-full font-bold text-[18px] leading-[28px] text-[#181d27] dark:text-white">
                     내 캐릭터가 없습니다.
                   </p>
-                  <p className="whitespace-nowrap text-[16px] leading-[24px] text-[#535862]">
+                  <p className="whitespace-nowrap text-[16px] leading-[24px] text-[#535862] dark:text-[#94969C]">
                     첫 번째 캐릭터를 만들어보세요!
                   </p>
                 </div>
@@ -1157,8 +1157,8 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
           )}
 
           {/* Pagination */}
-          <div className="flex items-center justify-between border-t border-[#e9eaeb] px-[24px] pt-[12px] pb-[16px]">
-            <p className="whitespace-nowrap font-medium text-[14px] leading-[20px] text-[#414651]">
+          <div className="flex items-center justify-between border-t border-[#e9eaeb] px-[24px] pt-[12px] pb-[16px] dark:border-[#333741]">
+            <p className="whitespace-nowrap font-medium text-[14px] leading-[20px] text-[#414651] dark:text-[#CECFD2]">
               Page {currentPage} of {totalPages}
             </p>
             <div className="flex items-start gap-[12px]">
@@ -1166,9 +1166,9 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
                 type="button"
                 disabled={currentPage <= 1}
                 onClick={() => goToPage(currentPage - 1)}
-                className="flex items-center justify-center overflow-hidden rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[8px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)]"
+                className="flex items-center justify-center overflow-hidden rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[8px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F]"
               >
-                <span className="whitespace-nowrap font-semibold text-[14px] leading-[20px] text-[#414651]">
+                <span className="whitespace-nowrap font-semibold text-[14px] leading-[20px] text-[#414651] dark:text-[#CECFD2]">
                   이전
                 </span>
               </button>
@@ -1176,9 +1176,9 @@ export default function MyContent({ loaderData }: Route.ComponentProps) {
                 type="button"
                 disabled={currentPage >= totalPages}
                 onClick={() => goToPage(currentPage + 1)}
-                className="flex items-center justify-center overflow-hidden rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[8px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)]"
+                className="flex items-center justify-center overflow-hidden rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[8px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F]"
               >
-                <span className="whitespace-nowrap font-semibold text-[14px] leading-[20px] text-[#414651]">
+                <span className="whitespace-nowrap font-semibold text-[14px] leading-[20px] text-[#414651] dark:text-[#CECFD2]">
                   다음
                 </span>
               </button>
