@@ -18,7 +18,7 @@ import {
   BadgeCategoryGroup,
   type BadgeWithStatus,
 } from "../components/badge-category-group";
-import { BadgesSidebar } from "../components/badges-sidebar";
+import { ChatSidebar } from "~/core/components/chat-sidebar";
 import { BadgesTabs } from "../components/badges-tabs";
 import { RecentBadgeCards } from "../components/recent-badge-cards";
 import { RepresentativeBadgeCard } from "../components/representative-badge-card";
@@ -244,7 +244,7 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
     <div className="-mx-5 -my-16 flex min-h-[calc(100vh-57px)] bg-white dark:bg-[#0C111D] md:-my-32">
       {/* Left sidebar */}
       <div className="sticky top-[57px] hidden h-[calc(100vh-57px)] md:block">
-        <BadgesSidebar user={user} />
+        <ChatSidebar user={user} chats={[]} />
       </div>
 
       {/* Main content */}
