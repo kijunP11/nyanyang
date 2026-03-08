@@ -4,14 +4,14 @@
  */
 
 export const GENRES = [
-  { id: "romance", label: "로맨스", sub: "순정/첫사랑/감성", color: "#F43F5E" },
-  { id: "subculture", label: "서브컬처", sub: "코덕/키치/VTuber", color: "#8B5CF6" },
-  { id: "modern", label: "현대극", sub: "로맨/오피스/뉴에라", color: "#3B82F6" },
-  { id: "fantasy", label: "판타지", sub: "로판/이세계/다판시", color: "#6366F1" },
-  { id: "action", label: "액션", sub: "핵선/밀리/무협", color: "#EF4444" },
-  { id: "dark", label: "다크/스릴러", sub: "미스드/마법", color: "#1F2937" },
-  { id: "healing", label: "힐링/일상", sub: "따뜻한 감성", color: "#10B981" },
-  { id: "game", label: "게임/히어로", sub: "게임감성", color: "#0EA5E9" },
+  { id: "romance", label: "로맨스", sub: "순정/첫사랑/감성", color: "#F43F5E", image: "/images/genres/romance.png" },
+  { id: "subculture", label: "서브컬처", sub: "모에/키치/Vtuber", color: "#8B5CF6", image: "/images/genres/subculture.png" },
+  { id: "modern", label: "현대극", sub: "모던/오피스/누아르", color: "#3B82F6", image: "/images/genres/modern.png" },
+  { id: "fantasy", label: "판타지", sub: "로판/이세계물/마법사", color: "#6366F1", image: "/images/genres/fantasy.png" },
+  { id: "action", label: "액션", sub: "액션/범죄/무협", color: "#EF4444", image: "/images/genres/action.png" },
+  { id: "dark", label: "다크/스릴러", sub: "와일드/악역", color: "#1F2937", image: "/images/genres/dark.png" },
+  { id: "healing", label: "힐링/일상", sub: "따뜻한 감성", color: "#10B981", image: "/images/genres/healing.png" },
+  { id: "game", label: "게임/히어로", sub: "게임감성", color: "#0EA5E9", image: "/images/genres/game.png" },
 ] as const;
 
 /** DALL-E 3 지원 크기: 1024x1024, 1792x1024, 1024x1792 (나머지는 가장 가까운 크기로 매핑) */

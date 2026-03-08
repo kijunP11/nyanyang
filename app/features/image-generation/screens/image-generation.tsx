@@ -209,89 +209,86 @@ export default function ImageGeneration({
       </div>
 
       <div className="relative min-w-0 flex-1">
-        {isLoggedIn ? (
-          <div className="flex h-full">
-            <div className="min-w-0 flex-1 overflow-y-auto">
-              <div className="mx-auto max-w-[800px] px-6 py-6">
-                <GenerationTabs
-                  activeTab={activeTab}
-                  onTabChange={handleTabChange}
-                />
-
-                {activeTab === "new" && (
-                  <>
-                    <PromptInput
-                      value={prompt}
-                      onChange={setPrompt}
-                      onGenerate={handleGenerate}
-                      onAutoGenerate={handleAutoGenerate}
-                      isGenerating={isGenerating}
-                      jellyCost={jellyCost}
-                    />
-                    <GenerationResult
-                      isGenerating={isGenerating}
-                      imageCount={imageCount}
-                      generatedImages={generatedImages}
-                      selectedImageId={selectedImageId}
-                      onSelectImage={handleSelectImage}
-                    />
-                    <GenreCards
-                      selectedGenre={selectedGenre}
-                      onSelect={setSelectedGenre}
-                    />
-                  </>
-                )}
-
-                {activeTab === "edit" && (
-                  <>
-                    {!selectedCharacter ? (
-                      <CharacterSelector
-                        onSelect={setSelectedCharacter}
-                        onCancel={() => setSelectedCharacter(null)}
-                      />
-                    ) : (
-                      <>
-                        <EditPromptInput
-                          value={prompt}
-                          onChange={setPrompt}
-                          onGenerate={handleGenerate}
-                          onUploadImage={handleUploadImage}
-                          isGenerating={isGenerating}
-                          jellyCost={jellyCost}
-                          uploadedImagePreview={uploadedImage?.preview ?? null}
-                          onClearUpload={handleClearUpload}
-                        />
-                        {generatedImages.length === 0 && !isGenerating ? (
-                          <EditEmptyState character={selectedCharacter} />
-                        ) : (
-                          <GenerationResult
-                            isGenerating={isGenerating}
-                            imageCount={imageCount}
-                            generatedImages={generatedImages}
-                            selectedImageId={selectedImageId}
-                            onSelectImage={handleSelectImage}
-                          />
-                        )}
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            <OptionsPanel
-              aspectRatio={aspectRatio}
-              onAspectRatioChange={setAspectRatio}
-              imageCount={imageCount}
-              onImageCountChange={setImageCount}
-              selectedGenre={selectedGenre}
-              onGenreChange={setSelectedGenre}
-              showGenre={activeTab === "new"}
+        <div className="flex h-full">
+          <div className="min-w-0 flex-1 overflow-y-auto">
+            <GenerationTabs
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
             />
+
+            <div className="mx-auto max-w-[768px] py-[35px]">
+              {activeTab === "new" && (
+                <>
+                  <PromptInput
+                    value={prompt}
+                    onChange={setPrompt}
+                    onGenerate={handleGenerate}
+                    onAutoGenerate={handleAutoGenerate}
+                    isGenerating={isGenerating}
+                    jellyCost={jellyCost}
+                  />
+                  <GenerationResult
+                    isGenerating={isGenerating}
+                    imageCount={imageCount}
+                    generatedImages={generatedImages}
+                    selectedImageId={selectedImageId}
+                    onSelectImage={handleSelectImage}
+                  />
+                  <GenreCards
+                    selectedGenre={selectedGenre}
+                    onSelect={setSelectedGenre}
+                  />
+                </>
+              )}
+
+              {activeTab === "edit" && (
+                <>
+                  {!selectedCharacter ? (
+                    <CharacterSelector
+                      onSelect={setSelectedCharacter}
+                      onCancel={() => setSelectedCharacter(null)}
+                    />
+                  ) : (
+                    <>
+                      <EditPromptInput
+                        value={prompt}
+                        onChange={setPrompt}
+                        onGenerate={handleGenerate}
+                        onUploadImage={handleUploadImage}
+                        isGenerating={isGenerating}
+                        jellyCost={jellyCost}
+                        uploadedImagePreview={uploadedImage?.preview ?? null}
+                        onClearUpload={handleClearUpload}
+                      />
+                      {generatedImages.length === 0 && !isGenerating ? (
+                        <EditEmptyState character={selectedCharacter} />
+                      ) : (
+                        <GenerationResult
+                          isGenerating={isGenerating}
+                          imageCount={imageCount}
+                          generatedImages={generatedImages}
+                          selectedImageId={selectedImageId}
+                          onSelectImage={handleSelectImage}
+                        />
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        ) : (
-          <LoginRequiredOverlay />
-        )}
+
+          <OptionsPanel
+            aspectRatio={aspectRatio}
+            onAspectRatioChange={setAspectRatio}
+            imageCount={imageCount}
+            onImageCountChange={setImageCount}
+            selectedGenre={selectedGenre}
+            onGenreChange={setSelectedGenre}
+          />
+        </div>
+
+        {!isLoggedIn && <LoginRequiredOverlay />}
       </div>
     </div>
   );

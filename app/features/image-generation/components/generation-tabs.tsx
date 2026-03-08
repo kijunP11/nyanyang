@@ -8,14 +8,14 @@ interface GenerationTabsProps {
 
 export function GenerationTabs({ activeTab, onTabChange }: GenerationTabsProps) {
   return (
-    <div className="mb-6 flex border-b border-[#E9EAEB] dark:border-[#333741]">
+    <div className="flex h-[60px] border-b border-[#cbd5e1] bg-[#fdfdfd] px-[20px] dark:border-[#333741] dark:bg-[#0C111D]">
       <button
         type="button"
         onClick={() => onTabChange("new")}
-        className={`px-4 py-3 text-sm font-semibold transition-colors ${
+        className={`flex h-[54px] items-center justify-center px-[20px] text-[16px] font-semibold leading-[24px] transition-colors ${
           activeTab === "new"
-            ? "border-b-2 border-[#181D27] text-[#181D27] dark:border-white dark:text-white"
-            : "text-[#A4A7AE] hover:text-[#535862] dark:text-[#717680] dark:hover:text-[#94969C]"
+            ? "border-b-2 border-[#535862] text-[#535862] dark:border-white dark:text-white"
+            : "text-[#535862] hover:text-[#414651] dark:text-[#717680] dark:hover:text-[#94969C]"
         }`}
       >
         신규 캐릭터 생성
@@ -23,10 +23,10 @@ export function GenerationTabs({ activeTab, onTabChange }: GenerationTabsProps) 
       <button
         type="button"
         onClick={() => onTabChange("edit")}
-        className={`px-4 py-3 text-sm font-semibold transition-colors ${
+        className={`flex h-[54px] items-center justify-center px-[20px] text-[16px] font-semibold leading-[24px] transition-colors ${
           activeTab === "edit"
-            ? "border-b-2 border-[#181D27] text-[#181D27] dark:border-white dark:text-white"
-            : "text-[#A4A7AE] hover:text-[#535862] dark:text-[#717680] dark:hover:text-[#94969C]"
+            ? "border-b-2 border-[#535862] text-[#535862] dark:border-white dark:text-white"
+            : "text-[#535862] hover:text-[#414651] dark:text-[#717680] dark:hover:text-[#94969C]"
         }`}
       >
         기존 캐릭터 수정

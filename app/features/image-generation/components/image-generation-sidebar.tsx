@@ -3,7 +3,6 @@
  *
  * 헤더 "생성된 이미지" + 비로그인 시 CTA, 로그인 시 썸네일 스택 + 더 생성하기
  */
-import { Mail } from "lucide-react";
 import { Link } from "react-router";
 
 import type { SelectedCharacter } from "./character-selector";
@@ -26,22 +25,26 @@ function LoggedOutCTA() {
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex-1" />
-      <div className="px-4 pb-6">
-        <div className="rounded-xl border border-[#E9EAEB] p-4 dark:border-[#333741]">
-          <p className="mb-4 text-sm leading-relaxed text-[#535862] dark:text-[#94969C]">
+      <div className="flex flex-col gap-[24px] px-[16px] pb-[32px]">
+        {/* Divider */}
+        <div className="h-px w-full bg-[#D5D7DA] dark:bg-[#333741]" />
+
+        {/* CTA Card */}
+        <div className="flex flex-col gap-[16px] items-center justify-center rounded-[8px] bg-[#f5f5f5] px-[16px] py-[20px] dark:bg-[#1F242F]">
+          <p className="w-full text-[14px] font-semibold leading-[20px] text-[#181D27] dark:text-white">
             로그인하고 개성 넘치는 캐릭터들과 더 깊은 대화를 즐겨보세요!
           </p>
 
           {/* Social Login Buttons */}
-          <div className="mb-3 flex items-center justify-center gap-3">
+          <div className="flex items-start gap-[16px]">
             <Link
               to="/auth/social/start/kakao"
               viewTransition
-              className="flex size-11 items-center justify-center rounded-full bg-[#FEE500] transition-opacity hover:opacity-90"
+              className="flex size-[48px] items-center justify-center overflow-clip rounded-[500px] border border-[#D5D7DA] bg-[#ffe812] transition-opacity hover:opacity-90 dark:border-[#414651]"
               aria-label="카카오톡으로 로그인"
             >
               <svg
-                className="size-5"
+                className="size-[24px]"
                 viewBox="0 0 24 24"
                 fill="#000000"
               >
@@ -51,10 +54,10 @@ function LoggedOutCTA() {
             <Link
               to="/auth/social/start/google"
               viewTransition
-              className="flex size-11 items-center justify-center rounded-full border border-[#D5D7DA] bg-white transition-opacity hover:opacity-90 dark:border-[#414651] dark:bg-[#1F242F]"
+              className="flex size-[48px] items-center justify-center overflow-clip rounded-[500px] border border-[#D5D7DA] bg-white transition-opacity hover:opacity-90 dark:border-[#414651] dark:bg-[#1F242F]"
               aria-label="구글로 로그인"
             >
-              <svg className="size-5" viewBox="0 0 24 24">
+              <svg className="size-[18px]" viewBox="0 0 24 24">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                   fill="#4285F4"
@@ -78,9 +81,8 @@ function LoggedOutCTA() {
           <Link
             to="/login"
             viewTransition
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#D5D7DA] px-4 py-2.5 text-sm font-medium text-[#414651] transition-colors hover:bg-[#F5F5F5] dark:border-[#414651] dark:text-[#D5D7DA] dark:hover:bg-[#1F242F]"
+            className="flex w-full items-center justify-center rounded-[8px] border border-[#D5D7DA] bg-white px-[14px] py-[8px] text-[14px] font-semibold leading-[20px] text-[#414651] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#F5F5F5] dark:border-[#414651] dark:bg-[#1F242F] dark:text-[#D5D7DA] dark:hover:bg-[#333741]"
           >
-            <Mail className="size-4" />
             이메일로 시작하기
           </Link>
         </div>
@@ -108,9 +110,9 @@ export function ImageGenerationSidebar({
   };
 
   return (
-    <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-[#E9EAEB] bg-white dark:border-[#333741] dark:bg-[#181D27]">
-      <div className="flex h-[57px] items-center px-4">
-        <h2 className="text-base font-bold text-[#181D27] dark:text-white">
+    <aside className="flex h-full w-[260px] shrink-0 flex-col overflow-clip border-r border-[#e2e8f0] bg-[#f5f5f5] dark:border-[#333741] dark:bg-[#181D27]">
+      <div className="flex h-[60px] items-center border-b border-[#D5D7DA] px-[16px] py-[20px] dark:border-[#333741]">
+        <h2 className="text-[14px] font-semibold leading-[20px] text-black dark:text-white">
           생성된 이미지
         </h2>
       </div>
@@ -145,7 +147,7 @@ export function ImageGenerationSidebar({
             </div>
           )}
           {images.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2 p-4">
+            <div className="flex flex-wrap gap-[12px] px-[16px] py-[24px]">
               {images.map((img) => (
                 <div
                   key={img.id}
@@ -156,25 +158,40 @@ export function ImageGenerationSidebar({
                     if (e.key === "Enter" || e.key === " ")
                       handleThumbnailClick(img.id);
                   }}
-                  className={`cursor-pointer overflow-hidden rounded-lg transition-all ${
+                  className={`size-[108px] cursor-pointer overflow-hidden rounded-[4px] transition-all ${
                     selectedImageId === img.id
-                      ? "ring-2 ring-[#41C7BD]"
+                      ? "ring-2 ring-[#36c4b3]"
                       : "hover:opacity-80"
                   }`}
                 >
                   <img
                     src={`data:image/png;base64,${img.data}`}
                     alt="생성된 이미지"
-                    className="aspect-square w-full object-cover"
+                    className="size-full object-cover"
                   />
                 </div>
               ))}
+              {/* Add button */}
+              <div className="flex size-[108px] items-center justify-center rounded-[4px] bg-[#e9eaeb] dark:bg-[#333741]">
+                <div className="flex size-[24px] items-center justify-center rounded-[12px] border border-dashed border-[#d5d7da] bg-white dark:border-[#717680] dark:bg-[#1F242F]">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 3.33v9.34M3.33 8h9.34" stroke="#A4A7AE" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center px-4">
-              <p className="text-sm text-[#535862] dark:text-[#94969C]">
-                아직 생성된 이미지가 없어요
-              </p>
+            <div className="flex gap-[12px] px-[16px] py-[24px]">
+              {/* Gradient placeholder */}
+              <div className="size-[108px] rounded-[4px] bg-gradient-to-l from-white to-[#d4d4d4]" />
+              {/* Add button */}
+              <div className="flex size-[108px] items-center justify-center rounded-[4px] bg-[#e9eaeb] dark:bg-[#333741]">
+                <div className="flex size-[24px] items-center justify-center rounded-[12px] border border-dashed border-[#d5d7da] bg-white dark:border-[#717680] dark:bg-[#1F242F]">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 3.33v9.34M3.33 8h9.34" stroke="#A4A7AE" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </div>
             </div>
           )}
         </div>

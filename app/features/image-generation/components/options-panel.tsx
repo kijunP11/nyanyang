@@ -1,5 +1,5 @@
 /**
- * F4-3-2/3-3 우측 옵션 패널: 비율 + 개수 + 이미지 장르
+ * F4-3-2/3-3 우측 옵션 패널: 비율 + 개수 + 장르
  */
 import { ASPECT_RATIOS, GENRES, IMAGE_COUNTS } from "../lib/constants";
 
@@ -10,7 +10,6 @@ interface OptionsPanelProps {
   onImageCountChange: (count: number) => void;
   selectedGenre: string | null;
   onGenreChange: (genreId: string | null) => void;
-  showGenre?: boolean;
 }
 
 function RatioIcon({
@@ -21,19 +20,19 @@ function RatioIcon({
   selected: boolean;
 }) {
   const sizes: Record<string, { w: number; h: number }> = {
-    "1:1": { w: 20, h: 20 },
-    "4:3": { w: 24, h: 18 },
-    "3:4": { w: 18, h: 24 },
-    "16:9": { w: 28, h: 16 },
-    "9:16": { w: 16, h: 28 },
+    "1:1": { w: 12, h: 12 },
+    "4:3": { w: 16, h: 12 },
+    "3:4": { w: 12, h: 16 },
+    "16:9": { w: 22, h: 12 },
+    "9:16": { w: 13, h: 20 },
   };
   const s = sizes[ratio] ?? sizes["1:1"];
   return (
     <div
-      className={`rounded-sm border ${
+      className={`border ${
         selected
-          ? "border-[#41C7BD]"
-          : "border-[#D5D7DA] dark:border-[#414651]"
+          ? "border-[#e277be]"
+          : "border-[#a4a7ae]"
       }`}
       style={{ width: s.w, height: s.h }}
     />
@@ -47,47 +46,55 @@ export function OptionsPanel({
   onImageCountChange,
   selectedGenre,
   onGenreChange,
-  showGenre = true,
 }: OptionsPanelProps) {
+  const firstRow = GENRES.slice(0, 4);
+  const secondRow = GENRES.slice(4, 8);
+
   return (
-    <aside className="hidden w-[180px] shrink-0 border-l border-[#E9EAEB] bg-white p-4 dark:border-[#333741] dark:bg-[#0C111D] lg:block">
-      <div className="mb-6">
-        <h4 className="mb-3 text-sm font-semibold text-[#181D27] dark:text-white">
+    <aside className="hidden w-[260px] shrink-0 border-l border-[#e2e8f0] bg-[#fdfdfd] dark:border-[#333741] dark:bg-[#0C111D] lg:block">
+      {/* 이미지 비율 */}
+      <div className="px-[16px] py-[20px]">
+        <h4 className="mb-[16px] text-[14px] font-bold leading-[21px] text-black dark:text-white">
           이미지 비율
         </h4>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="flex gap-[4px]">
           {ASPECT_RATIOS.map((ratio) => (
             <button
               key={ratio.id}
               type="button"
               onClick={() => onAspectRatioChange(ratio.id)}
-              className={`flex flex-col items-center gap-1 rounded-lg border p-2 text-xs transition-colors ${
+              className={`flex flex-1 flex-col items-center justify-center gap-[10px] rounded-[4px] px-[10px] py-[8px] transition-colors ${
                 aspectRatio === ratio.id
-                  ? "border-[#41C7BD] bg-[#41C7BD]/10 text-[#41C7BD]"
-                  : "border-[#E9EAEB] text-[#535862] hover:border-[#D5D7DA] dark:border-[#333741] dark:text-[#94969C] dark:hover:border-[#414651]"
+                  ? "border border-[#ee46bc] bg-[#fdf2fa]"
+                  : "bg-[#f5f5f5] dark:bg-[#1F242F]"
               }`}
             >
-              <RatioIcon ratio={ratio.id} selected={aspectRatio === ratio.id} />
-              <span>{ratio.label}</span>
+              <div className="flex size-[24px] items-center justify-center">
+                <RatioIcon ratio={ratio.id} selected={aspectRatio === ratio.id} />
+              </div>
+              <span className="text-[12px] leading-[18px] text-black dark:text-white">
+                {ratio.label}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
-      <div>
-        <h4 className="mb-3 text-sm font-semibold text-[#181D27] dark:text-white">
+      {/* 이미지 개수 */}
+      <div className="border-t border-[#e9eaeb] px-[16px] py-[20px] dark:border-[#333741]">
+        <h4 className="mb-[16px] text-[14px] font-bold leading-[21px] text-black dark:text-white">
           이미지 개수
         </h4>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="flex gap-[4px]">
           {IMAGE_COUNTS.map((count) => (
             <button
               key={count}
               type="button"
               onClick={() => onImageCountChange(count)}
-              className={`rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex flex-1 items-center justify-center rounded-[4px] px-[10px] py-[8px] text-[12px] leading-[18px] transition-colors ${
                 imageCount === count
-                  ? "border-[#41C7BD] bg-[#41C7BD] text-white"
-                  : "border-[#E9EAEB] text-[#535862] hover:border-[#D5D7DA] dark:border-[#333741] dark:text-[#94969C] dark:hover:border-[#414651]"
+                  ? "border border-[#ee46bc] bg-[#fce7f6] text-black dark:text-white"
+                  : "bg-[#f5f5f5] text-black dark:bg-[#1F242F] dark:text-white"
               }`}
             >
               {count}개
@@ -96,44 +103,53 @@ export function OptionsPanel({
         </div>
       </div>
 
-      {/* 이미지 장르 (신규 탭에서만) */}
-      {showGenre && (
-        <div className="mt-6">
-          <h4 className="mb-3 text-sm font-semibold text-[#181D27] dark:text-white">
-            이미지 장르
-          </h4>
-          <div className="grid grid-cols-4 gap-2">
-            {GENRES.map((genre) => (
-            <button
-              key={genre.id}
-              type="button"
-              onClick={() =>
-                onGenreChange(selectedGenre === genre.id ? null : genre.id)
-              }
-              className="flex flex-col items-center gap-1"
-            >
-              <div
-                className={`size-9 overflow-hidden rounded-lg ${
-                  selectedGenre === genre.id ? "ring-2 ring-[#41C7BD]" : ""
-                }`}
-                style={{
-                  background: `linear-gradient(135deg, ${genre.color}CC, ${genre.color}66)`,
-                }}
-              />
-              <span
-                className={`text-[10px] ${
-                  selectedGenre === genre.id
-                    ? "font-semibold text-[#41C7BD]"
-                    : "text-[#535862] dark:text-[#94969C]"
-                }`}
-              >
-                {genre.label.replace(/\/.*/, "")}
-              </span>
-            </button>
+      {/* 이미지 장르 */}
+      <div className="border-t border-[#e9eaeb] px-[16px] py-[20px] dark:border-[#333741]">
+        <h4 className="mb-[16px] text-[14px] font-bold leading-[21px] text-black dark:text-white">
+          이미지 장르
+        </h4>
+        <div className="flex flex-col gap-[4px]">
+          {[firstRow, secondRow].map((row, rowIdx) => (
+            <div key={rowIdx} className="flex flex-col gap-[4px]">
+              <div className="flex gap-[5px]">
+                {row.map((genre) => {
+                  const isSelected = selectedGenre === genre.id;
+                  return (
+                    <button
+                      key={genre.id}
+                      type="button"
+                      onClick={() =>
+                        onGenreChange(isSelected ? null : genre.id)
+                      }
+                      className={`relative h-[54px] flex-1 overflow-hidden rounded-[4px] ${
+                        isSelected
+                          ? "border border-[#ee46bc]"
+                          : ""
+                      }`}
+                    >
+                      <img
+                        src={genre.image}
+                        alt={genre.label}
+                        className="absolute inset-0 size-full object-cover"
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex gap-[5px]">
+                {row.map((genre) => (
+                  <span
+                    key={genre.id}
+                    className="flex-1 text-center text-[12px] leading-[18px] text-black dark:text-white"
+                  >
+                    {genre.label.split("/")[0]}
+                  </span>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
-        </div>
-      )}
+      </div>
     </aside>
   );
 }

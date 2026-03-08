@@ -50,7 +50,7 @@ export function EditEmptyState({ character }: EditEmptyStateProps) {
         </div>
         <div className="flex gap-3 rounded-xl border border-[#E9EAEB] p-4 dark:border-[#333741]">
           <img
-            src="/냐냥-이모티콘-최종완성본/냐냥-기쁨.png"
+            src="/냐냥-이모티콘-최종완성본/냐냥-웃음.png"
             alt=""
             className="size-10 shrink-0 object-contain"
           />

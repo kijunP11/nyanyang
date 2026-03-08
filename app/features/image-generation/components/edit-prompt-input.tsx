@@ -97,7 +97,10 @@ export function EditPromptInput({
           className="flex items-center gap-2 rounded-lg bg-[#41C7BD] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#38b5ab] disabled:cursor-not-allowed disabled:bg-[#E9EAEB] disabled:text-[#A4A7AE] dark:disabled:bg-[#333741] dark:disabled:text-[#717680]"
         >
           이미지 생성하기
-          <span className="flex items-center gap-1">🐱 {jellyCost}</span>
+          <span className="flex items-center gap-[4px]">
+            <img src="/icons/pawprint.svg" alt="" className="size-[16px]" />
+            {jellyCost}
+          </span>
         </button>
       </div>
 
