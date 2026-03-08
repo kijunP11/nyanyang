@@ -1,22 +1,17 @@
 /**
- * 뱃지 도전 과제 카드: 아이콘 + 이름/설명 + 진행도 바 + 보상 + 버튼 (F8 리디자인)
+ * 뱃지 카드: 아이콘 + 이름/설명 + [받기] + [대표 뱃지로 설정] 버튼
+ *
+ * 3가지 상태:
+ * - locked: 아이콘 회색, 두 버튼 모두 disabled (회색)
+ * - claimable: 아이콘 컬러, [받기] 틸, [대표 뱃지로 설정] 활성 스타일
+ * - earned/representative: 아이콘 컬러, [받기] disabled, [대표 뱃지로 설정] 활성
  */
-import { Check, PawPrint } from "lucide-react";
-
-import type { BadgeProgress } from "../lib/badge-checker.server";
 import type { BadgeDefinition, BadgeStatus } from "../types";
 import { BadgeIcon } from "./badge-icon";
-
-const DEFAULT_PROGRESS: BadgeProgress = {
-  current: 0,
-  target: 1,
-  percentage: 0,
-};
 
 interface BadgeCardProps {
   definition: BadgeDefinition;
   status: BadgeStatus;
-  progress?: BadgeProgress;
   onClaim: (badgeId: number) => void;
   onSetRepresentative: (badgeId: number) => void;
   isClaiming?: boolean;
@@ -25,7 +20,6 @@ interface BadgeCardProps {
 export function BadgeCard({
   definition,
   status,
-  progress = DEFAULT_PROGRESS,
   onClaim,
   onSetRepresentative,
   isClaiming = false,
@@ -39,81 +33,63 @@ export function BadgeCard({
     : definition.description;
 
   return (
-    <div className="flex gap-3 rounded-lg border border-[#E9EAEB] p-4 dark:border-[#3f3f46]">
+    <div className="flex items-center gap-[20px] overflow-clip rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[16px] dark:border-[#333741] dark:bg-[#1F242F]">
       <BadgeIcon
         iconUrl={definition.icon_url}
         category={definition.category}
         name={definition.name}
-        size={48}
+        size={60}
         inactive={isLocked}
       />
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-base font-semibold text-black dark:text-white">
-              {definition.name}
-              {definition.level && (
-                <span className="ml-1 text-sm font-normal text-[#717680] dark:text-[#9ca3af]">
-                  {definition.level}
-                </span>
-              )}
-            </p>
-          </div>
-          {definition.reward_points > 0 && (
-            <span className="flex shrink-0 items-center gap-0.5 text-sm font-semibold text-[#F5A3C7]">
-              +{definition.reward_points.toLocaleString()}
-              <PawPrint className="size-3.5" />
-            </span>
-          )}
+      <div className="flex min-w-0 flex-1 items-center gap-[16px]">
+        <div className="flex min-w-0 flex-1 flex-col gap-[4px] justify-center">
+          <p className="text-[16px] font-bold leading-[24px] text-[#717680] dark:text-[#94969C]">
+            {definition.level ? `${definition.level} ${definition.name}` : definition.name}
+          </p>
+          <p className="text-[14px] leading-[20px] text-[#717680] dark:text-[#94969C]">
+            {description}
+          </p>
         </div>
 
-        <p className="mt-0.5 text-sm text-[#717680] dark:text-[#9ca3af]">{description}</p>
-
-        {!isEarned && (
-          <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 overflow-hidden rounded-full bg-[#E9EAEB] h-2 dark:bg-[#3f3f46]">
-              <div
-                className="h-full rounded-full bg-[#00C4AF] transition-all"
-                style={{ width: `${progress.percentage}%` }}
-              />
-            </div>
-            <span className="shrink-0 text-xs text-[#717680] dark:text-[#9ca3af]">
-              {progress.current}/{progress.target}
-            </span>
-          </div>
-        )}
-
-        <div className="mt-2 flex items-center gap-2">
-          {isClaimable && (
+        <div className="flex shrink-0 items-center gap-[16px]">
+          {/* 받기 button */}
+          {isClaimable ? (
             <button
               type="button"
               onClick={() => onClaim(definition.badge_id)}
               disabled={isClaiming}
-              className="rounded-lg bg-[#00C4AF] px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[#00b39e] disabled:opacity-50"
+              className="rounded-[8px] bg-[#00c4af] px-[14px] py-[8px] text-[14px] font-semibold leading-[20px] text-white shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#00b39e] disabled:opacity-50"
             >
               {isClaiming ? "받는 중..." : "받기"}
             </button>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="rounded-[8px] border border-[#e9eaeb] bg-[#e9eaeb] px-[14px] py-[8px] text-[14px] font-semibold leading-[20px] text-[#a4a7ae] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#333741] dark:text-[#717680]"
+            >
+              받기
+            </button>
           )}
-          {isEarned && (
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-sm font-semibold text-[#00C4AF]">
-                <Check className="size-4" />
-                달성 완료
-              </span>
-              <button
-                type="button"
-                onClick={() => onSetRepresentative(definition.badge_id)}
-                className="rounded-lg border border-[#D5D7DA] bg-white px-3 py-1.5 text-xs font-semibold text-[#414651] transition-colors hover:bg-[#F5F5F5] dark:border-[#3f3f46] dark:bg-[#232323] dark:text-[#d1d5db] dark:hover:bg-[#3f3f46]"
-              >
-                {status === "representative"
-                  ? "대표 뱃지"
-                  : "대표로 설정"}
-              </button>
-            </div>
-          )}
-          {isLocked && !isClaimable && (
-            <span className="text-xs text-[#A4A7AE] dark:text-[#6b7280]">미달성</span>
+
+          {/* 대표 뱃지로 설정 button */}
+          {isClaimable || isEarned ? (
+            <button
+              type="button"
+              onClick={() => onSetRepresentative(definition.badge_id)}
+              className="whitespace-nowrap rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[8px] text-[14px] font-semibold leading-[20px] text-[#414651] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-colors hover:bg-[#f5f5f5] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#D5D7DA] dark:hover:bg-[#333741]"
+            >
+              {status === "representative" ? "대표 뱃지" : "대표 뱃지로 설정"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="whitespace-nowrap rounded-[8px] border border-[#e9eaeb] bg-white px-[14px] py-[8px] text-[14px] font-semibold leading-[20px] text-[#d5d7da] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#717680]"
+            >
+              대표 뱃지로 설정
+            </button>
           )}
         </div>
       </div>

@@ -1,20 +1,26 @@
 /**
- * 뱃지 컬렉션 페이지 (F8 리디자인)
- * 탭 제거, 플랫 도전 과제 리스트 + 진행도 바 + 보상 포인트
+ * 뱃지 컬렉션 페이지 — Figma 픽셀 퍼펙트
+ *
+ * 레이아웃: 좌측 사이드바(260px) + 탭바 + 3섹션(대표 뱃지, 최근 달성, 수집한 뱃지)
  */
 import type { BadgeDefinition, BadgeStatus } from "../types";
 import type { Route } from "./+types/badges";
 
-import { useEffect, useState } from "react";
-import { data } from "react-router";
-import { useFetcher, useRevalidator } from "react-router";
+import { Fragment, useCallback, useEffect, useState } from "react";
+import { data, useFetcher, useRevalidator } from "react-router";
 
 import { requireAuthentication } from "~/core/lib/guards.server";
 import makeServerClient from "~/core/lib/supa-client.server";
 
-import { BadgeCard } from "../components/badge-card";
 import { BadgeClaimModal } from "../components/badge-claim-modal";
 import { BadgeRepresentativeModal } from "../components/badge-representative-modal";
+import {
+  BadgeCategoryGroup,
+  type BadgeWithStatus,
+} from "../components/badge-category-group";
+import { BadgesSidebar } from "../components/badges-sidebar";
+import { BadgesTabs } from "../components/badges-tabs";
+import { RecentBadgeCards } from "../components/recent-badge-cards";
 import { RepresentativeBadgeCard } from "../components/representative-badge-card";
 import {
   evaluateAllBadgesWithMetrics,
@@ -24,7 +30,7 @@ import {
 import { getAllBadgeDefinitions, getUserBadges } from "../lib/queries.server";
 
 export const meta: Route.MetaFunction = () => [
-  { title: `활동 배지 | ${import.meta.env.VITE_APP_NAME}` },
+  { title: `수집한 뱃지 | ${import.meta.env.VITE_APP_NAME}` },
 ];
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -61,6 +67,18 @@ export async function loader({ request }: Route.LoaderArgs) {
     [...progressMap.entries()].map(([k, v]) => [String(k), v]),
   );
 
+  // Recent badges — claimed, sorted by newest first (already sorted from query)
+  const recentBadges = claimedBadges
+    .filter((cb) => !cb.is_representative)
+    .slice(0, 10)
+    .map((cb) => ({
+      definition: definitions.find(
+        (d) => d.badge_id === cb.badge_id,
+      ) as BadgeDefinition,
+      claimed_at: String(cb.claimed_at),
+    }))
+    .filter((b) => b.definition);
+
   return data(
     {
       definitions: definitions as BadgeDefinition[],
@@ -68,6 +86,15 @@ export async function loader({ request }: Route.LoaderArgs) {
       badgeStatuses,
       badgeProgress,
       representativeBadge,
+      recentBadges,
+      user: {
+        name:
+          user.user_metadata?.nickname ||
+          user.user_metadata?.name ||
+          "Anonymous",
+        email: user.email,
+        avatarUrl: user.user_metadata?.avatar_url || null,
+      },
     },
     { headers },
   );
@@ -86,13 +113,17 @@ function getStatus(
   return "locked";
 }
 
+/** Figma에 표시되는 카테고리 순서 */
+const VISIBLE_CATEGORIES = ["followers", "likes", "conversations"] as const;
+
 export default function Badges({ loaderData }: Route.ComponentProps) {
   const {
     definitions,
     claimedBadges,
     badgeStatuses,
-    badgeProgress,
     representativeBadge,
+    recentBadges,
+    user,
   } = loaderData;
 
   const revalidator = useRevalidator();
@@ -106,6 +137,7 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
     error?: string;
   }>();
 
+  const [activeTab, setActiveTab] = useState<"missions" | "badges">("badges");
   const [claimModalOpen, setClaimModalOpen] = useState(false);
   const [claimModalBadge, setClaimModalBadge] =
     useState<BadgeDefinition | null>(null);
@@ -151,26 +183,32 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
     }
   }, [representativeFetcher.state, representativeFetcher.data, revalidator]);
 
-  const onClaim = (badgeId: number) => {
-    setPendingClaimBadgeId(badgeId);
-    claimFetcher.submit(
-      { badge_id: badgeId },
-      {
-        method: "POST",
-        action: "/api/badges/claim",
-        encType: "application/json",
-      },
-    );
-  };
+  const onClaim = useCallback(
+    (badgeId: number) => {
+      setPendingClaimBadgeId(badgeId);
+      claimFetcher.submit(
+        { badge_id: badgeId },
+        {
+          method: "POST",
+          action: "/api/badges/claim",
+          encType: "application/json",
+        },
+      );
+    },
+    [claimFetcher],
+  );
 
-  const onSetRepresentative = (badgeId: number) => {
-    const def = definitions.find((d) => d.badge_id === badgeId);
-    if (def) {
-      setRepresentativeModalBadge(def);
-      setRepresentativeModalMode("set");
-      setRepresentativeModalOpen(true);
-    }
-  };
+  const onSetRepresentative = useCallback(
+    (badgeId: number) => {
+      const def = definitions.find((d) => d.badge_id === badgeId);
+      if (def) {
+        setRepresentativeModalBadge(def);
+        setRepresentativeModalMode("set");
+        setRepresentativeModalOpen(true);
+      }
+    },
+    [definitions],
+  );
 
   const onRepresentativeModalConfirm = () => {
     if (!representativeModalBadge) return;
@@ -191,63 +229,96 @@ export default function Badges({ loaderData }: Route.ComponentProps) {
     ? definitions.find((d) => d.badge_id === representativeBadge.badge_id)
     : null;
 
-  const visibleBadges = definitions.filter((d) => !d.is_hidden);
+  // Group visible badges by category
+  const categoryGroups = VISIBLE_CATEGORIES.map((catKey) => {
+    const catBadges: BadgeWithStatus[] = definitions
+      .filter((d) => d.category === catKey && !d.is_hidden)
+      .map((def) => ({
+        definition: def,
+        status: getStatus(def, claimedBadges, representativeBadge, badgeStatuses),
+      }));
+    return { key: catKey, badges: catBadges };
+  }).filter((g) => g.badges.length > 0);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#181D27]">
-      <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-10">
-        <h1 className="text-xl font-semibold text-black dark:text-white">
-          활동 뱃지
-        </h1>
+    <div className="-mx-5 -my-16 flex min-h-[calc(100vh-57px)] bg-white dark:bg-[#0C111D] md:-my-32">
+      {/* Left sidebar */}
+      <div className="sticky top-[57px] hidden h-[calc(100vh-57px)] md:block">
+        <BadgesSidebar user={user} />
+      </div>
 
-        <RepresentativeBadgeCard
-          representativeBadge={
-            representativeDef ? { definition: representativeDef } : null
-          }
-          onUnsetClick={() => {
-            if (representativeDef) {
-              setRepresentativeModalBadge(representativeDef);
-              setRepresentativeModalMode("unset");
-              setRepresentativeModalOpen(true);
-            }
-          }}
-        />
+      {/* Main content */}
+      <div className="min-w-0 flex-1">
+        <BadgesTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-        <h2 className="text-base font-semibold text-black dark:text-white">
-          도전 과제
-        </h2>
-
-        <div className="flex flex-col gap-3">
-          {visibleBadges.map((def) => {
-            const status = getStatus(
-              def,
-              claimedBadges,
-              representativeBadge,
-              badgeStatuses,
-            );
-            const progress = badgeProgress[String(def.badge_id)] ?? {
-              current: 0,
-              target: 1,
-              percentage: 0,
-            };
-            return (
-              <BadgeCard
-                key={def.badge_id}
-                definition={def}
-                status={status}
-                progress={progress}
-                onClaim={onClaim}
-                onSetRepresentative={onSetRepresentative}
-                isClaiming={
-                  claimFetcher.state !== "idle" &&
-                  pendingClaimBadgeId === def.badge_id
+        <div className="mx-auto max-w-[769px] px-[20px] pt-[40px] pb-[35px] md:px-0">
+          {activeTab === "badges" && (
+            <div className="flex flex-col gap-[30px]">
+              {/* 대표 뱃지 */}
+              <RepresentativeBadgeCard
+                representativeBadge={
+                  representativeDef
+                    ? { definition: representativeDef }
+                    : null
                 }
+                onUnsetClick={() => {
+                  if (representativeDef) {
+                    setRepresentativeModalBadge(representativeDef);
+                    setRepresentativeModalMode("unset");
+                    setRepresentativeModalOpen(true);
+                  }
+                }}
               />
-            );
-          })}
+
+              {/* 최근 달성 뱃지 */}
+              <RecentBadgeCards recentBadges={recentBadges} />
+
+              {/* 수집한 뱃지 */}
+              <section>
+                <div className="flex flex-col gap-[6px]">
+                  <h2 className="text-[20px] font-bold leading-[30px] text-[#414651] dark:text-white">
+                    수집한 뱃지
+                  </h2>
+                  <p className="text-[14px] leading-[20px] text-[#717680] dark:text-[#94969C]">
+                    수집 가능한 모든 뱃지를 확인해보세요.
+                  </p>
+                </div>
+
+                <div className="mt-[20px] flex flex-col gap-[40px]">
+                  {categoryGroups.map((group, idx) => (
+                    <Fragment key={group.key}>
+                      {idx > 0 && (
+                        <div className="h-px w-full bg-[#d5d7da] dark:bg-[#333741]" />
+                      )}
+                      <BadgeCategoryGroup
+                        categoryKey={group.key}
+                        badges={group.badges}
+                        onClaim={onClaim}
+                        onSetRepresentative={onSetRepresentative}
+                        claimingBadgeId={
+                          claimFetcher.state !== "idle"
+                            ? pendingClaimBadgeId
+                            : null
+                        }
+                      />
+                    </Fragment>
+                  ))}
+                </div>
+              </section>
+            </div>
+          )}
+
+          {activeTab === "missions" && (
+            <div className="flex h-[400px] flex-col items-center justify-center">
+              <p className="text-[16px] font-semibold text-[#717680] dark:text-[#94969C]">
+                리워드 미션 (준비 중)
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Modals */}
       <BadgeClaimModal
         open={claimModalOpen}
         onOpenChange={setClaimModalOpen}
