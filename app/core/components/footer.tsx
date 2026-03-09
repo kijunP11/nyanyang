@@ -25,14 +25,14 @@ export default function Footer() {
           <div className="space-y-2 text-base text-[#717680] dark:text-[#D5D7DA]">
             <p>
               나냥 | 대표자 김보현 | 사업자등록번호
-              448-77-00505
+              448-77-00505 | 02-000-0000
             </p>
             <p>울산광역시 남구 삼산로 57, 703-11호 (신정동, 윤영빌딩)</p>
           </div>
 
           {/* Copyright */}
           <p className="text-base text-[#717680]">
-            &copy; 2025 Nanyang. All rights reserved.
+            &copy; 2026 Nanyang. All rights reserved.
           </p>
         </div>
 

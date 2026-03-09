@@ -202,6 +202,7 @@ export default [
     // Character routes
     ...prefix("/characters", [
       index("features/characters/screens/character-list.tsx"),
+      route("/:characterId", "features/characters/screens/detail.tsx"),
       layout("core/layouts/private.layout.tsx", { id: "private-characters" }, [
         route("/create", "features/characters/screens/create-content.tsx"),
         route(

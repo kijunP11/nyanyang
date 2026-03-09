@@ -14,7 +14,7 @@ import makeServerClient from "~/core/lib/supa-client.server";
 import type { Database } from "database.types";
 
 import { HeroCarousel, type HeroSlide } from "../components/hero-carousel";
-import { ScrollSection } from "../components/scroll-section";
+import { CharacterGridSection } from "../components/character-grid-section";
 import { VerticalCharacterCard } from "../components/vertical-character-card";
 import { CharacterInfoModal } from "~/features/characters/components/character-info-modal";
 
@@ -216,27 +216,10 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     },
   ];
 
-  const [tagsExpanded, setTagsExpanded] = useState(false);
   const [selectedTag, setSelectedTag] = useState("전체");
   const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(
     null
   );
-
-  const quickTags = [
-    "전체",
-    "추천",
-    "남성",
-    "여성",
-    "로맨스",
-    "순애",
-    "구원",
-    "추리",
-    "집착",
-    "소꿉친구",
-    "유명인",
-    "판타지",
-    "일상",
-  ];
 
   const allTags = [
     "전체",
@@ -322,8 +305,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     "방탈출",
   ];
 
-  const displayTags = tagsExpanded ? allTags : quickTags;
-
   // 태그 필터링
   const filterByTag = (chars: CharacterWithCreator[]) => {
     if (selectedTag === "전체" || selectedTag === "추천") return chars;
@@ -342,7 +323,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
       {/* 메인 콘텐츠 */}
       <div className="min-w-0 flex-1">
-        <div className="mx-auto flex max-w-screen-2xl flex-col gap-[40px] px-4 pt-[40px] pb-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[816px] px-[20px] pt-[40px] pb-[40px] md:px-0">
+          {/* 히어로 + 검색 + 태그 영역 */}
+          <div className="flex flex-col gap-[18px]">
           {/* 1. 히어로 캐러셀 */}
           <HeroCarousel slides={heroSlides} />
 
@@ -383,14 +366,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
           {/* 3. 태그 필터 */}
           <section className="relative">
-            <div
-              className={
-                tagsExpanded
-                  ? "flex flex-wrap gap-2"
-                  : "scrollbar-hide flex gap-2 overflow-x-auto"
-              }
-            >
-              {displayTags.map((tag, index) => (
+            <div className="scrollbar-hide flex gap-2 overflow-x-auto">
+              {allTags.map((tag, index) => (
                 <button
                   key={`${tag}-${index}`}
                   type="button"
@@ -404,28 +381,21 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   {tag}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => setTagsExpanded(!tagsExpanded)}
-                className="flex flex-shrink-0 items-center gap-1 rounded-full border border-[rgba(153,163,183,0.3)] bg-[#F5F5F5] px-[16px] py-2 text-sm text-[#99A3B7] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] hover:bg-[#E9EAEB] dark:border-[#333741] dark:bg-[#1F242F] dark:text-[#94969C] dark:hover:bg-[#333741]"
-              >
-                <span>#</span>
-                <span>{tagsExpanded ? "접기" : "태그 더보기"}</span>
-              </button>
             </div>
             {/* 우측 페이드 그라데이션 */}
-            {!tagsExpanded && (
-              <div className="pointer-events-none absolute right-0 top-0 h-full w-[62px] bg-gradient-to-r from-transparent to-white dark:to-[#181D27]" />
-            )}
+            <div className="pointer-events-none absolute right-0 top-0 h-full w-[75px] bg-gradient-to-r from-transparent to-white dark:to-[#181D27]" />
           </section>
+          </div>
 
+          {/* 카드 섹션 영역 */}
+          <div className="mt-[18px] flex flex-col gap-[30px]">
           {/* 4. 떠오르는 신예 창작자들 */}
           {filteredFeatured.length > 0 && (
-            <ScrollSection
+            <CharacterGridSection
               title="떠오르는 신예 창작자들"
               moreLink="/characters?sort=featured"
             >
-              {filteredFeatured.map((character) => (
+              {filteredFeatured.slice(0, 5).map((character) => (
                 <VerticalCharacterCard
                   key={character.character_id}
                   character={character}
@@ -433,16 +403,16 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   onClick={() => setSelectedCharacterId(character.character_id)}
                 />
               ))}
-            </ScrollSection>
+            </CharacterGridSection>
           )}
 
           {/* 5. 실시간 인기 섹션 */}
           {filteredPopular.length > 0 && (
-            <ScrollSection
+            <CharacterGridSection
               title="실시간 인기"
               moreLink="/characters?sort=popular"
             >
-              {filteredPopular.map((character) => (
+              {filteredPopular.slice(0, 5).map((character) => (
                 <VerticalCharacterCard
                   key={character.character_id}
                   character={character}
@@ -451,12 +421,12 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   onClick={() => setSelectedCharacterId(character.character_id)}
                 />
               ))}
-            </ScrollSection>
+            </CharacterGridSection>
           )}
 
           {/* 6. 크리에이터 신작 섹션 */}
           {filteredNewest.length > 0 && (
-            <ScrollSection
+            <CharacterGridSection
               title="크리에이터 신작"
               titleIcon={
                 <svg width="15" height="18" viewBox="0 0 14.89 18" fill="none" aria-hidden="true">
@@ -476,7 +446,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               }
               moreLink="/characters?sort=newest"
             >
-              {filteredNewest.map((character) => (
+              {filteredNewest.slice(0, 5).map((character) => (
                 <VerticalCharacterCard
                   key={character.character_id}
                   character={character}
@@ -484,11 +454,12 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   onClick={() => setSelectedCharacterId(character.character_id)}
                 />
               ))}
-            </ScrollSection>
+            </CharacterGridSection>
           )}
+          </div>
 
           {/* 7. 프로모션 배너 */}
-          <section>
+          <section className="mt-[40px]">
             <Link
               to="/notices"
               className="group block overflow-hidden rounded-[8px] border border-[rgba(0,0,0,0.3)] transition-transform hover:scale-[1.01]"
