@@ -9,6 +9,7 @@ import { eq, and, isNull, desc, lt, sql, inArray } from "drizzle-orm";
 
 import db from "~/core/db/drizzle-client.server";
 import { profiles } from "~/features/users/schema";
+import { userBadges, badgeDefinitions } from "~/features/badges/schema";
 
 import { comments, commentLikes } from "../schema";
 
@@ -31,6 +32,10 @@ export interface CommentWithAuthor {
   isLiked: boolean;
   isOwner: boolean;
   reply_count: number;
+  // 대표 뱃지
+  badge_level: string | null;
+  badge_name: string | null;
+  badge_icon_url: string | null;
 }
 
 /**
@@ -85,6 +90,9 @@ export async function getComments(
         isLiked: false,
         isOwner: userId ? c.user_id === userId : false,
         reply_count: 0,
+        badge_level: null,
+        badge_name: null,
+        badge_icon_url: null,
       })),
       nextCursor: null,
     };
@@ -122,6 +130,30 @@ export async function getComments(
     }
   }
 
+  // 대표 뱃지 조회
+  const uniqueUserIds = [...new Set(items.map((c) => c.user_id))];
+  const badgeMap: Record<string, { level: string | null; name: string; icon_url: string | null }> = {};
+  if (uniqueUserIds.length > 0) {
+    const badgeRows = await db
+      .select({
+        user_id: userBadges.user_id,
+        level: badgeDefinitions.level,
+        name: badgeDefinitions.name,
+        icon_url: badgeDefinitions.icon_url,
+      })
+      .from(userBadges)
+      .innerJoin(badgeDefinitions, eq(userBadges.badge_id, badgeDefinitions.badge_id))
+      .where(
+        and(
+          inArray(userBadges.user_id, uniqueUserIds),
+          eq(userBadges.is_representative, true)
+        )
+      );
+    for (const row of badgeRows) {
+      badgeMap[row.user_id] = { level: row.level, name: row.name, icon_url: row.icon_url };
+    }
+  }
+
   const enriched: CommentWithAuthor[] = items.map((c) => ({
     ...c,
     author_name: c.author_name ?? null,
@@ -129,6 +161,9 @@ export async function getComments(
     isLiked: likedSet.has(c.comment_id),
     isOwner: userId ? c.user_id === userId : false,
     reply_count: replyCounts[c.comment_id] ?? 0,
+    badge_level: badgeMap[c.user_id]?.level ?? null,
+    badge_name: badgeMap[c.user_id]?.name ?? null,
+    badge_icon_url: badgeMap[c.user_id]?.icon_url ?? null,
   }));
 
   return {
@@ -182,6 +217,30 @@ export async function getReplies(
     }
   }
 
+  // 대표 뱃지 조회
+  const uniqueUserIds = [...new Set(rows.map((c) => c.user_id))];
+  const badgeMap: Record<string, { level: string | null; name: string; icon_url: string | null }> = {};
+  if (uniqueUserIds.length > 0) {
+    const badgeRows = await db
+      .select({
+        user_id: userBadges.user_id,
+        level: badgeDefinitions.level,
+        name: badgeDefinitions.name,
+        icon_url: badgeDefinitions.icon_url,
+      })
+      .from(userBadges)
+      .innerJoin(badgeDefinitions, eq(userBadges.badge_id, badgeDefinitions.badge_id))
+      .where(
+        and(
+          inArray(userBadges.user_id, uniqueUserIds),
+          eq(userBadges.is_representative, true)
+        )
+      );
+    for (const row of badgeRows) {
+      badgeMap[row.user_id] = { level: row.level, name: row.name, icon_url: row.icon_url };
+    }
+  }
+
   return rows.map((c) => ({
     ...c,
     author_name: c.author_name ?? null,
@@ -189,6 +248,9 @@ export async function getReplies(
     isLiked: likedSet.has(c.comment_id),
     isOwner: userId ? c.user_id === userId : false,
     reply_count: 0,
+    badge_level: badgeMap[c.user_id]?.level ?? null,
+    badge_name: badgeMap[c.user_id]?.name ?? null,
+    badge_icon_url: badgeMap[c.user_id]?.icon_url ?? null,
   }));
 }
 

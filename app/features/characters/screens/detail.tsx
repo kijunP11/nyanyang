@@ -115,6 +115,49 @@ function UserIcon({ className }: { className?: string }) {
   );
 }
 
+function CornerDownRightIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
+      <polyline
+        points="15 10 20 15 15 20"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 4v7a4 4 0 0 0 4 4h12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CheckBadgeIcon() {
+  return (
+    <div className="flex size-[16px] shrink-0 items-center justify-center rounded-full bg-[#36c4b3]">
+      <svg width="9.6" height="9.6" viewBox="0 0 24 24" fill="none">
+        <polyline
+          points="20 6 9 17 4 12"
+          stroke="white"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  );
+}
+
 /* ──────────────── 유틸 ──────────────── */
 
 function formatCount(n: number): string {
@@ -193,10 +236,14 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 function DetailCommentItem({
   comment,
+  creatorId,
+  isReply,
   onReply,
   onDelete,
 }: {
   comment: CommentWithAuthor;
+  creatorId: string;
+  isReply?: boolean;
   onReply?: (id: number) => void;
   onDelete?: (id: number) => void;
 }) {
@@ -256,7 +303,7 @@ function DetailCommentItem({
       {/* 본문 */}
       <div className="flex min-w-0 flex-1 flex-col gap-[11px]">
         <div className="flex flex-col gap-[8px]">
-          {/* 닉네임 + 날짜 + 메뉴 */}
+          {/* 닉네임 + 날짜 + 뱃지 + 메뉴 */}
           <div className="flex items-center gap-[15px]">
             <div className="flex flex-1 items-end gap-[8px]">
               <span className="text-[14px] font-semibold leading-[20px] text-black dark:text-white">
@@ -265,6 +312,30 @@ function DetailCommentItem({
               <span className="text-[12px] leading-[18px] text-[#717680]">
                 {formatDate(comment.created_at)}
               </span>
+              {/* 레벨 뱃지 */}
+              {comment.badge_level && comment.badge_name && (
+                <div className="flex items-end gap-[8px]">
+                  <span className="text-[12px] font-bold leading-[18px] text-[#5925dc] whitespace-nowrap">
+                    Lv.{comment.badge_level} {comment.badge_name}
+                  </span>
+                  {comment.badge_icon_url && (
+                    <img
+                      src={comment.badge_icon_url}
+                      alt=""
+                      className="size-[20px] shrink-0 rounded-full object-cover"
+                    />
+                  )}
+                </div>
+              )}
+              {/* 제작자 뱃지 */}
+              {comment.user_id === creatorId && (
+                <div className="flex items-center gap-[4px]">
+                  <CheckBadgeIcon />
+                  <span className="text-[12px] font-bold leading-[18px] text-[#36c4b3] whitespace-nowrap">
+                    제작자
+                  </span>
+                </div>
+              )}
             </div>
             {comment.isOwner && (
               <div className="relative" ref={menuRef}>
@@ -310,11 +381,13 @@ function DetailCommentItem({
           </p>
 
           {comment.image_url && (
-            <img
-              src={comment.image_url}
-              alt="첨부 이미지"
-              className="max-h-48 rounded-lg object-cover"
-            />
+            <div className="size-[100px] shrink-0 overflow-hidden rounded-[8px]">
+              <img
+                src={comment.image_url}
+                alt="첨부 이미지"
+                className="size-full object-cover"
+              />
+            </div>
           )}
         </div>
 
@@ -337,26 +410,30 @@ function DetailCommentItem({
             )}
           </button>
 
-          <button
-            type="button"
-            onClick={() => onReply?.(comment.comment_id)}
-            className="flex items-center gap-[4px]"
-          >
-            <MessageSquareIcon className="text-[#717680]" />
-            {comment.reply_count > 0 && (
-              <span className="text-[14px] leading-[20px] text-[#717680]">
-                {comment.reply_count}
-              </span>
-            )}
-          </button>
+          {!isReply && (
+            <>
+              <button
+                type="button"
+                onClick={() => onReply?.(comment.comment_id)}
+                className="flex items-center gap-[4px]"
+              >
+                <MessageSquareIcon className="text-[#717680]" />
+                {comment.reply_count > 0 && (
+                  <span className="text-[14px] leading-[20px] text-[#717680]">
+                    {comment.reply_count}
+                  </span>
+                )}
+              </button>
 
-          <button
-            type="button"
-            onClick={() => onReply?.(comment.comment_id)}
-            className="text-[14px] leading-[20px] text-[#717680] hover:underline"
-          >
-            댓글 달기
-          </button>
+              <button
+                type="button"
+                onClick={() => onReply?.(comment.comment_id)}
+                className="text-[14px] leading-[20px] text-[#717680] hover:underline"
+              >
+                댓글 달기
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -385,8 +462,11 @@ export default function CharacterDetailScreen() {
   const [commentContent, setCommentContent] = useState("");
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState("");
+  const [repliesMap, setRepliesMap] = useState<Record<number, CommentWithAuthor[]>>({});
+  const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
   const isLoadMoreRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const replyFetcher = useFetcher();
 
   // 댓글 로드
   useEffect(() => {
@@ -430,6 +510,35 @@ export default function CharacterDetailScreen() {
     }
     prevCreateRef.current = commentCreateFetcher.state;
   }, [commentCreateFetcher.state, commentCreateFetcher.data]);
+
+  // 답글 로드 처리
+  useEffect(() => {
+    const data = replyFetcher.data as
+      | { replies?: CommentWithAuthor[] }
+      | undefined;
+    if (!data?.replies) return;
+    if (data.replies.length > 0) {
+      const parentId = data.replies[0].parent_id;
+      if (parentId != null) {
+        setRepliesMap((prev) => ({ ...prev, [parentId]: data.replies! }));
+      }
+    }
+  }, [replyFetcher.data]);
+
+  const handleToggleReplies = useCallback((commentId: number) => {
+    setExpandedReplies((prev) => {
+      const next = new Set(prev);
+      if (next.has(commentId)) {
+        next.delete(commentId);
+      } else {
+        next.add(commentId);
+        if (!repliesMap[commentId]) {
+          replyFetcher.load(`/api/comments/list?parent_id=${commentId}`);
+        }
+      }
+      return next;
+    });
+  }, [repliesMap]);
 
   const handleLoadMore = useCallback(() => {
     if (cursor == null || commentFetcher.state === "loading") return;
@@ -706,41 +815,66 @@ export default function CharacterDetailScreen() {
                 )}
                 <DetailCommentItem
                   comment={comment}
-                  onReply={(id) =>
-                    setReplyingTo(replyingTo === id ? null : id)
-                  }
+                  creatorId={character.creator_id}
+                  onReply={(id) => {
+                    setReplyingTo(replyingTo === id ? null : id);
+                    if (comment.reply_count > 0 && !expandedReplies.has(id)) {
+                      handleToggleReplies(id);
+                    }
+                  }}
                   onDelete={handleDeleteComment}
                 />
 
+                {/* 답글 목록 */}
+                {expandedReplies.has(comment.comment_id) &&
+                  repliesMap[comment.comment_id]?.map((reply) => (
+                    <div
+                      key={reply.comment_id}
+                      className="ml-[31px] mt-[12px]"
+                    >
+                      <DetailCommentItem
+                        comment={reply}
+                        creatorId={character.creator_id}
+                        isReply
+                        onDelete={handleDeleteComment}
+                      />
+                    </div>
+                  ))}
+
                 {/* 답글 입력 */}
                 {replyingTo === comment.comment_id && (
-                  <div className="ml-[31px] mt-[12px] flex gap-[8px]">
-                    <input
-                      value={replyContent}
-                      onChange={(e) => setReplyContent(e.target.value)}
-                      placeholder="답글을 입력하세요..."
-                      className="flex-1 rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[8px] text-[14px] leading-[20px] outline-none placeholder:text-[#717680] dark:border-[#414651] dark:bg-[#333741] dark:text-white"
-                      maxLength={1000}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSubmitComment(comment.comment_id);
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleSubmitComment(comment.comment_id)
-                      }
-                      disabled={
-                        commentCreateFetcher.state === "submitting" ||
-                        !replyContent.trim()
-                      }
-                      className="shrink-0 rounded-[8px] bg-[#36c4b3] px-[12px] py-[8px] text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                    >
-                      등록
-                    </button>
+                  <div className="mt-[12px] flex items-start gap-[10px]">
+                    <CornerDownRightIcon className="shrink-0 text-[#717680]" />
+                    <div className="flex h-[136px] flex-1 flex-col rounded-[8px] border border-[#d5d7da] bg-white px-[14px] py-[10px] shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] dark:border-[#414651] dark:bg-[#1F242F]">
+                      <textarea
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        placeholder="타인에게 부적절한 댓글은 재재될 수 있습니다."
+                        className="flex-1 resize-none bg-transparent text-[16px] leading-[24px] text-black outline-none placeholder:text-[#717680] dark:text-white dark:placeholder:text-[#717680]"
+                        maxLength={1000}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSubmitComment(comment.comment_id);
+                          }
+                        }}
+                      />
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleSubmitComment(comment.comment_id)
+                          }
+                          disabled={
+                            commentCreateFetcher.state === "submitting" ||
+                            !replyContent.trim()
+                          }
+                          className="rounded-[8px] border border-[#36c4b3] bg-[#36c4b3] px-[18px] py-[10px] text-[16px] font-semibold leading-[24px] text-white shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] transition-opacity hover:opacity-90 disabled:opacity-50"
+                        >
+                          등록하기
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
