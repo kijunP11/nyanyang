@@ -133,6 +133,7 @@ export default function ChatScreen() {
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
   const [showDepletionModal, setShowDepletionModal] = useState(false);
   const [showPurchaseSheet, setShowPurchaseSheet] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -256,32 +257,9 @@ export default function ChatScreen() {
         />
       </div>
 
-      <div className="relative flex flex-1 overflow-hidden">
-        {settings.background_enabled && settings.background_image_url ? (
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              backgroundImage: `url(${settings.background_image_url})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-        ) : room.character.avatar_url ? (
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              backgroundImage: `url(${room.character.avatar_url})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              filter: "blur(20px)",
-              transform: "scale(1.1)",
-            }}
-          />
-        ) : null}
-        <div className="absolute inset-0 z-0 bg-white/60 dark:bg-black/50" />
-
-        <div className="relative z-10 flex min-w-0 flex-1">
-          <div className="mx-auto flex h-full w-full max-w-[600px] flex-col bg-white/95 dark:bg-black/60">
+      <div className="flex flex-1 overflow-hidden bg-white">
+        <div className="flex min-w-0 flex-1">
+          <div className="mx-auto flex h-full w-full max-w-[768px] flex-col bg-white">
             <ChatHeaderBar
               character={characterInfo}
               roomTitle={room.title}
@@ -299,29 +277,42 @@ export default function ChatScreen() {
               onJellyClick={() => setShowPurchaseSheet(true)}
             />
 
-          <div className="bg-gray-200/90 dark:bg-[#3f3f46]/80 px-4 py-2 text-center text-xs text-gray-600 dark:text-[#9ca3af]">
-            이 캐릭터는 유저가 기입한 정보를 토대로 제작된 AI 챗봇입니다. 동명의 실존인물 혹은 단체와는 관련이 없습니다.
-          </div>
-
-          <ModelStatusBanner
-            status={modelStatus}
-            currentModel={selectedModel}
-            recommendedAlternatives={["gemini-2.5-flash", "claude-sonnet"]}
-            onSwitchModel={(model) => setSelectedModel(model as AIModel)}
-            onClick={() => setModelWarningOpen(true)}
-          />
-
           <div className="flex-1 overflow-y-auto">
             <div
-              className="space-y-4 px-4 py-6"
+              className="flex flex-col gap-[24px] px-[24px] py-[24px]"
               style={{ fontSize: `${settings.font_size}px` }}
             >
+              {/* ModelStatusBanner moved to modal layer below */}
               {messageList.length === 0 && !isStreaming && (
                 <EmptyState
                   character={characterInfo}
                   roomTitle={room.title}
                   greetingMessage={room.character.greeting_message}
                 />
+              )}
+
+              {/* 캐릭터 헤더 (아바타 + 이름) */}
+              {messageList.length > 0 && (
+                <div className="flex items-center gap-[8px]">
+                  <div className="size-[32px] shrink-0 overflow-hidden rounded-full">
+                    {characterInfo.avatar_url ? (
+                      <img
+                        src={characterInfo.avatar_url}
+                        alt={characterInfo.display_name ?? ""}
+                        className="size-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-full items-center justify-center bg-[#e9eaeb]">
+                        <span className="text-[14px] font-semibold text-[#535862]">
+                          {(characterInfo.display_name ?? "?")[0]}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[14px] font-semibold leading-[20px] text-[#535862]">
+                    {characterInfo.display_name ?? "캐릭터명"}
+                  </span>
+                </div>
               )}
 
               {summaries.map((s) => (
@@ -334,24 +325,33 @@ export default function ChatScreen() {
                 />
               ))}
 
-              {messageList.map((msg, index) => (
-                <Fragment key={msg.message_id}>
-                  {index > 0 && index % 20 === 0 && (
-                    <SummaryButton onClick={handleSummary} isLoading={summaryLoading} />
-                  )}
-                  <MessageBubble
-                    message={msg}
-                    character={characterInfo}
-                    onRollback={openRollbackDialog}
-                    onRegenerate={(messageId) => {
-                      setRegenTargetId(messageId);
-                      setRegenDialogOpen(true);
-                    }}
-                    isStreaming={isStreaming}
-                    onImageClick={handleImageClick}
-                  />
-                </Fragment>
-              ))}
+              {/* 메시지 목록 (AI는 pl-[40px]) */}
+              {messageList.map((msg, index) => {
+                const isLastAssistant =
+                  msg.role === "assistant" &&
+                  messageList.slice(index + 1).every((m) => m.role !== "assistant");
+                return (
+                  <Fragment key={msg.message_id}>
+                    {index > 0 && index % 20 === 0 && (
+                      <SummaryButton onClick={handleSummary} isLoading={summaryLoading} />
+                    )}
+                    <div className={msg.role === "assistant" ? "pl-[40px]" : ""}>
+                      <MessageBubble
+                        message={msg}
+                        character={characterInfo}
+                        onRollback={openRollbackDialog}
+                        onRegenerate={(messageId) => {
+                          setRegenTargetId(messageId);
+                          setRegenDialogOpen(true);
+                        }}
+                        isStreaming={isStreaming}
+                        onImageClick={handleImageClick}
+                        isLastAssistant={isLastAssistant}
+                      />
+                    </div>
+                  </Fragment>
+                );
+              })}
 
               {comparison && (
                 <RegenerationComparison
@@ -492,6 +492,18 @@ export default function ChatScreen() {
           isStreaming={isStreaming}
         />
 
+        {!bannerDismissed && (
+          <ModelStatusBanner
+            status={modelStatus}
+            currentModel={selectedModel}
+            onClick={() => {
+              setBannerDismissed(true);
+              setModelWarningOpen(true);
+            }}
+            onDismiss={() => setBannerDismissed(true)}
+          />
+        )}
+
         <ModelWarningModal
           open={modelWarningOpen}
           onOpenChange={setModelWarningOpen}
@@ -514,28 +526,30 @@ function EmptyState({
   greetingMessage: string | null;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12">
-      {character.avatar_url ? (
-        <img
-          src={character.avatar_url}
-          alt={character.display_name ?? undefined}
-          className="mb-4 h-24 w-24 rounded-full object-cover"
-        />
-      ) : (
-        <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gray-200 dark:bg-[#3f3f46]">
-          <span className="text-3xl font-semibold text-gray-900 dark:text-white">
-            {(character.display_name ?? "?")[0]}
-          </span>
-        </div>
-      )}
-      <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">{character.display_name}</h3>
-      <p className="mb-6 text-sm text-gray-500 dark:text-[#9ca3af]">{roomTitle}</p>
+    <div className="flex flex-col items-center justify-center py-[48px]">
+      <div className="mb-[16px] size-[80px] shrink-0 overflow-hidden rounded-full">
+        {character.avatar_url ? (
+          <img
+            src={character.avatar_url}
+            alt={character.display_name ?? undefined}
+            className="size-full object-cover"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center bg-[#e9eaeb]">
+            <span className="text-[24px] font-semibold text-[#535862]">
+              {(character.display_name ?? "?")[0]}
+            </span>
+          </div>
+        )}
+      </div>
+      <h3 className="mb-[8px] text-[20px] font-semibold leading-[30px] text-black">{character.display_name}</h3>
+      <p className="mb-[24px] text-[14px] leading-[20px] text-[#717680]">{roomTitle}</p>
       {greetingMessage && (
-        <div className="max-w-[320px] rounded-2xl bg-gray-200 px-4 py-3 text-center dark:bg-[#2f3032]">
-          <p className="text-sm leading-relaxed text-gray-900 dark:text-white">{greetingMessage}</p>
+        <div className="max-w-[400px] rounded-tr-[8px] rounded-br-[8px] rounded-bl-[8px] bg-[#f5f5f5] p-[14px]">
+          <p className="text-[14px] leading-[20px] text-[#535862]">{greetingMessage}</p>
         </div>
       )}
-      <p className="mt-6 text-xs text-gray-500 dark:text-[#6b7280]">아래에 메시지를 입력해서 대화를 시작해보세요</p>
+      <p className="mt-[24px] text-[14px] leading-[20px] text-[#717680]">아래에 메시지를 입력해서 대화를 시작해보세요</p>
     </div>
   );
 }

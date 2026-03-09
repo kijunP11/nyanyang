@@ -1,12 +1,79 @@
 /**
- * 채팅 헤더 바
- * 뒤로가기, 캐릭터 아바타/이름, 모델 배지, 메뉴(모델선택, 메모리, 브랜치)
+ * 채팅 헤더 바 — Figma 픽셀 퍼펙트 (906:16273)
+ * "캐릭터명 >" + 3-dot 메뉴
  */
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, Brain, Menu, Settings, Palette, PanelRight } from "lucide-react";
 import { ModelSelector, type AIModel } from "./model-selector";
 import { JellyDisplay } from "./jelly-display";
+
+/* ── Figma 인라인 SVG (Untitled UI) ── */
+
+function ChevronRightIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 5.33333 9.33333" fill="none">
+      <path
+        d="M0.666667 8.66667L4.66667 4.66667L0.666667 0.666667"
+        stroke="currentColor"
+        strokeWidth="1.33333"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function MoreVerticalIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 4 18" fill="none">
+      <path d="M2 10C2.55228 10 3 9.55228 3 9C3 8.44772 2.55228 8 2 8C1.44772 8 1 8.44772 1 9C1 9.55228 1.44772 10 2 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2 3C2.55228 3 3 2.55228 3 2C3 1.44772 2.55228 1 2 1C1.44772 1 1 1.44772 1 2C1 2.55228 1.44772 3 2 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2 17C2.55228 17 3 16.5523 3 16C3 15.4477 2.55228 15 2 15C1.44772 15 1 15.4477 1 16C1 16.5523 1.44772 17 2 17Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/* ── 메뉴 아이콘 (Figma Untitled UI) ── */
+
+function SettingsIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function PaletteIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <circle cx="13.5" cy="6.5" r="2" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17.5" cy="10.5" r="2" stroke="currentColor" strokeWidth="2" />
+      <circle cx="8.5" cy="7.5" r="2" stroke="currentColor" strokeWidth="2" />
+      <circle cx="6.5" cy="12.5" r="2" stroke="currentColor" strokeWidth="2" />
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function PanelRightIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+      <line x1="15" y1="3" x2="15" y2="21" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  );
+}
+
+function BrainIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2a4 4 0 0 0-4 4v1a4 4 0 0 0-4 4 4 4 0 0 0 3 3.87V17a5 5 0 0 0 10 0v-2.13A4 4 0 0 0 20 11a4 4 0 0 0-4-4V6a4 4 0 0 0-4-4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/* ── Types ── */
 
 interface BranchInfo {
   branch_name: string;
@@ -68,36 +135,19 @@ export function ChatHeaderBar({
   }, [showMenu]);
 
   return (
-    <div className="relative flex items-center justify-between bg-white/95 dark:bg-[#232323]/90 px-4 py-3">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-
-        {character.avatar_url ? (
-          <img
-            src={character.avatar_url}
-            alt={character.display_name ?? undefined}
-            className="h-14 w-14 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-200 dark:bg-[#3f3f46]">
-            <span className="text-lg font-semibold text-gray-900 dark:text-white">
-              {(character.display_name ?? "?")[0]}
-            </span>
-          </div>
-        )}
-
-        <div>
-          <h2 className="font-semibold text-gray-900 dark:text-white">{character.display_name}</h2>
-          <p className="text-sm text-gray-500 dark:text-[#9ca3af]">{roomTitle || "알수없음"}</p>
-        </div>
+    <div className="relative flex items-center justify-between border-b border-[#d5d7da] bg-white px-[24px] py-[17px] shadow-[0px_4px_16px_0px_rgba(0,0,0,0.07)]">
+      {/* 좌측: 캐릭터 이름 + > */}
+      <div className="flex items-center gap-[4px]">
+        <span className="text-[20px] font-semibold leading-[30px] text-black">
+          {character.display_name ?? roomTitle}
+        </span>
+        <span className="text-[#717680]">
+          <ChevronRightIcon />
+        </span>
       </div>
 
-      <div className="flex items-center gap-2">
+      {/* 우측: 더보기 메뉴 */}
+      <div className="flex items-center gap-[8px]">
         {onJellyClick != null && (
           <JellyDisplay
             balance={jellyBalance ?? 0}
@@ -106,27 +156,24 @@ export function ChatHeaderBar({
             onClick={onJellyClick}
           />
         )}
-        <span className="rounded-full bg-[#14b8a6] px-3 py-1 text-xs font-medium text-white">
-          {selectedModel.toUpperCase().replace("GEMINI-", "").replace("-", " ")}
-          {character.recommended_model === selectedModel && (
-            <span className="ml-1 text-[10px] opacity-80">권장</span>
-          )}
-        </span>
         <button
+          type="button"
           onClick={() => setShowMenu(!showMenu)}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
+          className="flex items-center justify-center text-[#181d27] transition-opacity hover:opacity-70"
         >
-          <Menu className="h-5 w-5" />
+          <MoreVerticalIcon />
         </button>
       </div>
 
+      {/* 메뉴 드롭다운 */}
       {showMenu && (
         <div
           ref={menuRef}
-          className="absolute right-4 top-full z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-[#3f3f46] dark:bg-[#232323]"
+          className="absolute right-[24px] top-full z-50 mt-[4px] w-[220px] overflow-hidden rounded-[8px] border border-[#e9eaeb] bg-white shadow-[0px_12px_16px_-4px_rgba(10,13,18,0.08),0px_4px_6px_-2px_rgba(10,13,18,0.03)]"
         >
-          <div className="mb-2 border-b border-gray-200 pb-2 dark:border-[#3f3f46]">
-            <p className="px-3 py-1 text-xs text-gray-500 dark:text-[#9ca3af]">AI 모델</p>
+          {/* AI 모델 */}
+          <div className="border-b border-[#e9eaeb] px-[12px] py-[8px]">
+            <p className="mb-[4px] text-[12px] leading-[18px] text-[#717680]">AI 모델</p>
             <ModelSelector
               selectedModel={selectedModel}
               onModelChange={(model) => {
@@ -136,61 +183,64 @@ export function ChatHeaderBar({
             />
           </div>
 
-          {onConversationSettingsClick && (
+          {/* 메뉴 아이템 */}
+          <div className="py-[4px]">
+            {onConversationSettingsClick && (
+              <button
+                type="button"
+                onClick={() => {
+                  onConversationSettingsClick();
+                  setShowMenu(false);
+                }}
+                className="flex w-full items-center gap-[8px] px-[16px] py-[10px] text-[14px] font-medium leading-[20px] text-[#414651] hover:bg-[#f5f5f5]"
+              >
+                <SettingsIcon />
+                대화 설정
+              </button>
+            )}
+            {onCustomizingClick && (
+              <button
+                type="button"
+                onClick={() => {
+                  onCustomizingClick();
+                  setShowMenu(false);
+                }}
+                className="flex w-full items-center gap-[8px] px-[16px] py-[10px] text-[14px] font-medium leading-[20px] text-[#414651] hover:bg-[#f5f5f5]"
+              >
+                <PaletteIcon />
+                커스터마이징
+              </button>
+            )}
+            {onSettingsPanelClick && (
+              <button
+                type="button"
+                onClick={() => {
+                  onSettingsPanelClick();
+                  setShowMenu(false);
+                }}
+                className="flex w-full items-center gap-[8px] px-[16px] py-[10px] text-[14px] font-medium leading-[20px] text-[#414651] hover:bg-[#f5f5f5]"
+              >
+                <PanelRightIcon />
+                설정 패널
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
-                onConversationSettingsClick();
+                onMemoryClick();
                 setShowMenu(false);
               }}
-              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
+              className="flex w-full items-center gap-[8px] px-[16px] py-[10px] text-[14px] font-medium leading-[20px] text-[#414651] hover:bg-[#f5f5f5]"
             >
-              <Settings className="h-4 w-4" />
-              대화 설정
+              <BrainIcon />
+              메모리 관리
             </button>
-          )}
-          {onCustomizingClick && (
-            <button
-              type="button"
-              onClick={() => {
-                onCustomizingClick();
-                setShowMenu(false);
-              }}
-              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
-            >
-              <Palette className="h-4 w-4" />
-              커스터마이징
-            </button>
-          )}
-          {onSettingsPanelClick && (
-            <button
-              type="button"
-              onClick={() => {
-                onSettingsPanelClick();
-                setShowMenu(false);
-              }}
-              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
-            >
-              <PanelRight className="h-4 w-4" />
-              설정 패널
-            </button>
-          )}
+          </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              onMemoryClick();
-              setShowMenu(false);
-            }}
-            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
-          >
-            <Brain className="h-4 w-4" />
-            메모리 관리
-          </button>
-
+          {/* 분기 */}
           {branches.length > 1 && (
-            <div className="mt-2 border-t border-gray-200 pt-2 dark:border-[#3f3f46]">
-              <p className="px-3 py-1 text-xs text-gray-500 dark:text-[#9ca3af]">대화 분기</p>
+            <div className="border-t border-[#e9eaeb] px-[12px] py-[8px]">
+              <p className="mb-[4px] text-[12px] leading-[18px] text-[#717680]">대화 분기</p>
               {branches.map((branch) => (
                 <button
                   key={branch.branch_name}
@@ -198,14 +248,14 @@ export function ChatHeaderBar({
                     onSwitchBranch(branch.branch_name);
                     setShowMenu(false);
                   }}
-                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-sm ${
+                  className={`flex w-full items-center justify-between rounded-[4px] px-[8px] py-[6px] text-[14px] ${
                     branch.is_active
-                      ? "bg-[#14b8a6]/20 text-[#14b8a6]"
-                      : "text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-white/10"
+                      ? "bg-[#36c4b3]/10 font-semibold text-[#36c4b3]"
+                      : "text-[#414651] hover:bg-[#f5f5f5]"
                   }`}
                 >
                   <span>{branch.branch_name}</span>
-                  <span className="text-xs text-gray-500 dark:text-[#9ca3af]">{branch.message_count}개</span>
+                  <span className="text-[12px] text-[#717680]">{branch.message_count}개</span>
                 </button>
               ))}
             </div>

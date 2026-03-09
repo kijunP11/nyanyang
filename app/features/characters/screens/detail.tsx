@@ -15,6 +15,7 @@ import makeServerClient from "~/core/lib/supa-client.server";
 
 import { chatRooms } from "../../chat/schema";
 import type { CommentWithAuthor } from "~/features/comments/lib/queries.server";
+import { ChatInitModal } from "~/features/chat/components/chat-init-modal";
 
 /* ──────────────── 인라인 SVG 아이콘 (Figma 원본) ──────────────── */
 
@@ -454,6 +455,8 @@ export default function CharacterDetailScreen() {
   const [isLiked, setIsLiked] = useState(character.isLiked);
   const [likeCount, setLikeCount] = useState(character.like_count);
   const [isFollowing, setIsFollowing] = useState(character.isFollowing);
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
 
   // 댓글 상태
   const [allComments, setAllComments] = useState<CommentWithAuthor[]>([]);
@@ -576,7 +579,12 @@ export default function CharacterDetailScreen() {
     );
   };
 
-  const handleStartChat = async () => {
+  const handleStartChat = () => {
+    setChatModalOpen(true);
+  };
+
+  const handleConfirmChat = async (_model: string) => {
+    setChatLoading(true);
     try {
       const res = await fetch("/api/chat/create-room", {
         method: "POST",
@@ -587,6 +595,8 @@ export default function CharacterDetailScreen() {
       if (data.room_id) navigate(`/chat/${data.room_id}`);
     } catch {
       /* ignore */
+    } finally {
+      setChatLoading(false);
     }
   };
 
@@ -904,6 +914,16 @@ export default function CharacterDetailScreen() {
 
       {/* 하단 여백 */}
       <div className="h-[80px]" />
+
+      {/* 대화 설정 모달 */}
+      <ChatInitModal
+        open={chatModalOpen}
+        onOpenChange={setChatModalOpen}
+        characterName={character.display_name || character.name}
+        characterDescription={character.description ?? ""}
+        onStartChat={handleConfirmChat}
+        isLoading={chatLoading}
+      />
     </div>
   );
 }
